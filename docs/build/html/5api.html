@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>API &mdash; dms2dfe 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootswatch-3.3.6/united/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="dms2dfe 0.1.0 documentation" href="index.html" />
+    <link rel="prev" title="Example" href="6test.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          dms2dfe</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="1installation.html">Installation</a></li>
+                <li><a href="2usage.html">Usage</a></li>
+                <li><a href="3programs.html">Programs</a></li>
+                <li><a href="4io.html">I/O</a></li>
+                <li><a href="6test.html">Example</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="1installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3programs.html">Programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4io.html">I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6test.html">Example</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">API</a><ul>
+<li><a class="reference internal" href="#convert-seq"><code class="docutils literal"><span class="pre">convert_seq</span></code></a></li>
+<li><a class="reference internal" href="#fit-curve"><code class="docutils literal"><span class="pre">fit_curve</span></code></a></li>
+<li><a class="reference internal" href="#get-protein-features"><code class="docutils literal"><span class="pre">get_protein_features</span></code></a></li>
+<li><a class="reference internal" href="#global-vars"><code class="docutils literal"><span class="pre">global_vars</span></code></a></li>
+<li><a class="reference internal" href="#io-seq-files"><code class="docutils literal"><span class="pre">io_seq_files</span></code></a></li>
+<li><a class="reference internal" href="#io-data-files"><code class="docutils literal"><span class="pre">io_data_files</span></code></a></li>
+<li><a class="reference internal" href="#io-ml"><code class="docutils literal"><span class="pre">io_ml</span></code></a></li>
+<li><a class="reference internal" href="#io-mut-files"><code class="docutils literal"><span class="pre">io_mut_files</span></code></a></li>
+<li><a class="reference internal" href="#plot-pdb"><code class="docutils literal"><span class="pre">plot_pdb</span></code></a></li>
+<li><a class="reference internal" href="#id6"><code class="docutils literal"><span class="pre">io_data_files</span></code></a></li>
+<li><a class="reference internal" href="#io-nums"><code class="docutils literal"><span class="pre">io_nums</span></code></a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="api">
+<span id="id1"></span><h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<p>Backend modules of <a class="reference internal" href="index.html#dms2dfe"><span>dms2dfe</span></a>.</p>
+<span class="target" id="module-dms2dfe.lib.convert_seq"></span><div class="section" id="convert-seq">
+<h2><code class="docutils literal"><span class="pre">convert_seq</span></code><a class="headerlink" href="#convert-seq" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dms2dfe.lib.convert_seq.cds2aas">
+<code class="descclassname">dms2dfe.lib.convert_seq.</code><code class="descname">cds2aas</code><span class="sig-paren">(</span><em>cds_str</em>, <em>host</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.convert_seq.cds2aas" title="Permalink to this definition">¶</a></dt>
+<dd><p>This translates codons to amino acids.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cds_str</strong> &#8211; codon sequence string.</li>
+<li><strong>host</strong> &#8211; name of host organism for choosing codon table. [coli | yeast | sapiens].</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns aas:</th><td class="field-body"><p class="first last">amino acid.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.convert_seq.cmplmt">
+<code class="descclassname">dms2dfe.lib.convert_seq.</code><code class="descname">cmplmt</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.convert_seq.cmplmt" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>Gets complement of a sequence.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>s</strong> &#8211; sequence string.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.convert_seq.revcom">
+<code class="descclassname">dms2dfe.lib.convert_seq.</code><code class="descname">revcom</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.convert_seq.revcom" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>Gets reverse complement of a sequence.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>s</strong> &#8211; sequence string.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.convert_seq.revers">
+<code class="descclassname">dms2dfe.lib.convert_seq.</code><code class="descname">revers</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.convert_seq.revers" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>Gets reverse of a sequence.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>s</strong> &#8211; sequence string.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dms2dfe.lib.fit_curve"></span><div class="section" id="fit-curve">
+<h2><code class="docutils literal"><span class="pre">fit_curve</span></code><a class="headerlink" href="#fit-curve" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dms2dfe.lib.fit_curve.fit_gauss">
+<code class="descclassname">dms2dfe.lib.fit_curve.</code><code class="descname">fit_gauss</code><span class="sig-paren">(</span><em>x</em>, <em>a</em>, <em>x0</em>, <em>sigma</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.fit_curve.fit_gauss" title="Permalink to this definition">¶</a></dt>
+<dd><p>This fits gaussian.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.fit_curve.fit_gauss_params">
+<code class="descclassname">dms2dfe.lib.fit_curve.</code><code class="descname">fit_gauss_params</code><span class="sig-paren">(</span><em>data_vector</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.fit_curve.fit_gauss_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is used to calculate the mximum likelihood of Fitness of synonymous mutations (later used for normalization).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_vector</strong> &#8211; pandas column.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dms2dfe.lib.get_protein_features"></span><div class="section" id="get-protein-features">
+<h2><code class="docutils literal"><span class="pre">get_protein_features</span></code><a class="headerlink" href="#get-protein-features" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dms2dfe.lib.get_protein_features.getdssp_data">
+<code class="descclassname">dms2dfe.lib.get_protein_features.</code><code class="descname">getdssp_data</code><span class="sig-paren">(</span><em>pdb_fh</em>, <em>dssp_fh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.get_protein_features.getdssp_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>This uses DSSP to get structural information.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pdb_fh</strong> &#8211; path to .pdb file</li>
+<li><strong>dssp_fh</strong> &#8211; path to DSSP source.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.get_protein_features.pdb2dfromactivesite">
+<code class="descclassname">dms2dfe.lib.get_protein_features.</code><code class="descname">pdb2dfromactivesite</code><span class="sig-paren">(</span><em>pdb_fh</em>, <em>active_sites=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.get_protein_features.pdb2dfromactivesite" title="Permalink to this definition">¶</a></dt>
+<dd><p>This calculates distances between each ligand atom or optionally provided amino acids (sources) and each residue in the protein.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pdb_fh</strong> &#8211; path to .pdb file.</li>
+<li><strong>active_sites</strong> &#8211; optional list of residue numbers as sources.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dms2dfe.lib.global_vars"></span><div class="section" id="global-vars">
+<h2><code class="docutils literal"><span class="pre">global_vars</span></code><a class="headerlink" href="#global-vars" title="Permalink to this headline">¶</a></h2>
+</div>
+<span class="target" id="module-dms2dfe.lib.io_seq_files"></span><div class="section" id="io-seq-files">
+<h2><code class="docutils literal"><span class="pre">io_seq_files</span></code><a class="headerlink" href="#io-seq-files" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dms2dfe.lib.io_seq_files.Rs2mergedandjoined">
+<code class="descclassname">dms2dfe.lib.io_seq_files.</code><code class="descname">Rs2mergedandjoined</code><span class="sig-paren">(</span><em>fastq_R1_read</em>, <em>fastq_R2_read</em>, <em>fastq_merged_f</em>, <em>fastq_joined_f</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_seq_files.Rs2mergedandjoined" title="Permalink to this definition">¶</a></dt>
+<dd><p>This merges and joins R1 and R2 reads.</p>
+<p>merged files (<a href="#id2"><span class="problematic" id="id3">*</span></a>_dplxd_merged.fastq) have the R1 and R2 mixed together without joining. 
+eg.</p>
+<div class="highlight-text"><div class="highlight"><pre>R1
+R2
+R1
+R2 ..
+</pre></div>
+</div>
+<p>merged files (<a href="#id4"><span class="problematic" id="id5">*</span></a>_dplxd_joined.fastq) have the R1 and R2 joined together.
+eg.</p>
+<div class="highlight-text"><div class="highlight"><pre>    R1R2
+R1R2 ..
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fastq_R1_read</strong> &#8211; sequence of R1 read of .fastq (str).</li>
+<li><strong>fastq_R2_read</strong> &#8211; sequence of R2 read of .fastq (str).</li>
+<li><strong>fastq_merged_f</strong> &#8211; file object for output merged .fastq.</li>
+<li><strong>fastq_joined_f</strong> &#8211; file object for output joined .fastq.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_seq_files.contains_barcode">
+<code class="descclassname">dms2dfe.lib.io_seq_files.</code><code class="descname">contains_barcode</code><span class="sig-paren">(</span><em>barcode_seq</em>, <em>read_seq</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_seq_files.contains_barcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>This searches for barcode sequence in given sequence read     in windows of +/- 5 nucleotide upstream and downstream.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>barcode_seq</strong> &#8211; sequence of barcode (string).</li>
+<li><strong>barcode_seq</strong> &#8211; target sequence (string).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_seq_files.fastq2dplx">
+<code class="descclassname">dms2dfe.lib.io_seq_files.</code><code class="descname">fastq2dplx</code><span class="sig-paren">(</span><em>fastq_R1_fh</em>, <em>fastq_R2_fh</em>, <em>barcode_R1s</em>, <em>barcode_R2s</em>, <em>fastq_fns</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_seq_files.fastq2dplx" title="Permalink to this definition">¶</a></dt>
+<dd><p>This demultiplexes fastq.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fastq_R1_fh</strong> &#8211; path to R1 .fastq file.</li>
+<li><strong>fastq_R2_fh</strong> &#8211; path to R2 .fastq file.</li>
+<li><strong>barcode_R1s</strong> &#8211; barcodes to demultiplex forward reads.</li>
+<li><strong>barcode_R1s</strong> &#8211; barcodes to demultiplex reverse reads.</li>
+<li><strong>fastq_fns</strong> &#8211; file names of demultiplexed .fastq files (saved in same folder as the non-multiplexed input file).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_seq_files.fastq2qcd">
+<code class="descclassname">dms2dfe.lib.io_seq_files.</code><code class="descname">fastq2qcd</code><span class="sig-paren">(</span><em>fastq_fhs_list</em>, <em>trimmomatic_fh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_seq_files.fastq2qcd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses Trimmomatic to filter and trim low quality reads.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fastq_fhs_list</strong> &#8211; list of input .fastq files.</li>
+<li><strong>trimmomatic_fh</strong> &#8211; path to trimmomatic source file.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_seq_files.fastq_writer">
+<code class="descclassname">dms2dfe.lib.io_seq_files.</code><code class="descname">fastq_writer</code><span class="sig-paren">(</span><em>otpt_f</em>, <em>read_id</em>, <em>read_seq</em>, <em>read_qua</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_seq_files.fastq_writer" title="Permalink to this definition">¶</a></dt>
+<dd><p>This appends a sequence reads in fastq format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>otpt_f</strong> &#8211; file object of output file.</li>
+<li><strong>read_id</strong> &#8211; ID of fastq file (str).</li>
+<li><strong>read_seq</strong> &#8211; sequence (str).</li>
+<li><strong>read_qua</strong> &#8211; quality scores (str).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_seq_files.getusablefastqs_list">
+<code class="descclassname">dms2dfe.lib.io_seq_files.</code><code class="descname">getusablefastqs_list</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_seq_files.getusablefastqs_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks sanity of fastq files mentioned in configuration excel file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns fastq_fhs:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">list of paths to .fastq files chich can be used downstream.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_seq_files.qcd2sbam">
+<code class="descclassname">dms2dfe.lib.io_seq_files.</code><code class="descname">qcd2sbam</code><span class="sig-paren">(</span><em>fastq_fhs_list</em>, <em>fsta_fh</em>, <em>alignment_type</em>, <em>bt2_ref_fh</em>, <em>bowtie2_fh</em>, <em>samtools_fh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_seq_files.qcd2sbam" title="Permalink to this definition">¶</a></dt>
+<dd><p>This aligns the fastq files using bowtie2.
+The resultant .sam files are converted to sorted .bam files (.sbam) for downstream ana1_sam2mutmat module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fastq_fhs_list</strong> &#8211; list of input .fastq files.</li>
+<li><strong>fsta_fh</strong> &#8211; path to reference .fasta file.</li>
+<li><strong>alignment_type</strong> &#8211; type of alignment [&#8216;loc&#8217; : local | &#8216;glob&#8217; : global]</li>
+<li><strong>bt2_ref_fh</strong> &#8211; path to bowtie2 reference file.</li>
+<li><strong>bowtie2_fh</strong> &#8211; path to bowtie2 source file.</li>
+<li><strong>samtools_fh</strong> &#8211; path to samtools source file.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dms2dfe.lib.io_data_files"></span><div class="section" id="io-data-files">
+<h2><code class="docutils literal"><span class="pre">io_data_files</span></code><a class="headerlink" href="#io-data-files" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dms2dfe.lib.io_data_files.convert2h5form">
+<code class="descclassname">dms2dfe.lib.io_data_files.</code><code class="descname">convert2h5form</code><span class="sig-paren">(</span><em>df</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_data_files.convert2h5form" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_data_files.csv2src">
+<code class="descclassname">dms2dfe.lib.io_data_files.</code><code class="descname">csv2src</code><span class="sig-paren">(</span><em>csv_fh</em>, <em>src_fh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_data_files.csv2src" title="Permalink to this definition">¶</a></dt>
+<dd><p>This writes <cite>.csv</cite> to <cite>.py</cite> source file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>csv_fh</strong> &#8211; path to input <cite>.csv</cite> file.</li>
+<li><strong>src_fh</strong> &#8211; path to output <cite>.py</cite> source file.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_data_files.csvs2h5">
+<code class="descclassname">dms2dfe.lib.io_data_files.</code><code class="descname">csvs2h5</code><span class="sig-paren">(</span><em>dh</em>, <em>sub_dh_list</em>, <em>fn_list</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_data_files.csvs2h5" title="Permalink to this definition">¶</a></dt>
+<dd><p>This converts csvs into HDF5 tables.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_data_files.info2src">
+<code class="descclassname">dms2dfe.lib.io_data_files.</code><code class="descname">info2src</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_data_files.info2src" title="Permalink to this definition">¶</a></dt>
+<dd><p>This converts <cite>.csv</cite> configuration file to <cite>.py</cite> source file saved in <cite>/tmp/</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_data_files.is_cfg_ok">
+<code class="descclassname">dms2dfe.lib.io_data_files.</code><code class="descname">is_cfg_ok</code><span class="sig-paren">(</span><em>cfg_dh</em>, <em>cfgs</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_data_files.is_cfg_ok" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the required files are present in given directory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cfg_dh</strong> &#8211; path to directory.</li>
+<li><strong>cfgs</strong> &#8211; list of names of files.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_data_files.is_info_ok">
+<code class="descclassname">dms2dfe.lib.io_data_files.</code><code class="descname">is_info_ok</code><span class="sig-paren">(</span><em>xls_fh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_data_files.is_info_ok" title="Permalink to this definition">¶</a></dt>
+<dd><p>This checks the sanity of info sheet in the configuration excel file.
+For example if the files exists or not.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_data_files.is_xls_ok">
+<code class="descclassname">dms2dfe.lib.io_data_files.</code><code class="descname">is_xls_ok</code><span class="sig-paren">(</span><em>cfg_xls</em>, <em>cfg_xls_sheetnames_required</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_data_files.is_xls_ok" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the required sheets are present in the configuration excel file.
+Input/s : path to configuration excel file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_data_files.raw_input2info">
+<code class="descclassname">dms2dfe.lib.io_data_files.</code><code class="descname">raw_input2info</code><span class="sig-paren">(</span><em>prj_dh</em>, <em>inputORdefault</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_data_files.raw_input2info" title="Permalink to this definition">¶</a></dt>
+<dd><p>This writes configuration <cite>.csv</cite> file from <cite>raw_input</cite> from prompt.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>prj_dh</strong> &#8211; path to project directory.</li>
+<li><strong>inputORdefault</strong> &#8211; column name &#8220;input&#8221; or &#8220;default&#8221;.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_data_files.xls2csvs">
+<code class="descclassname">dms2dfe.lib.io_data_files.</code><code class="descname">xls2csvs</code><span class="sig-paren">(</span><em>cfg_xls</em>, <em>cfg_xls_sheetnames_required</em>, <em>output_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_data_files.xls2csvs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts configuration excel file to HDF5(h5) file.
+Here sheets in excel files are converted to groups in HDF5 file.
+Input/s : (path to configuration excel file, path to output HDF5 file)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_data_files.xls2h5">
+<code class="descclassname">dms2dfe.lib.io_data_files.</code><code class="descname">xls2h5</code><span class="sig-paren">(</span><em>cfg_xls</em>, <em>cfg_h5</em>, <em>cfg_xls_sheetnames_required</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_data_files.xls2h5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts configuration excel file to HDF5(h5) file.
+Here sheets in excel files are converted to groups in HDF5 file.
+Input/s : (path to configuration excel file, path to output HDF5 file)</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dms2dfe.lib.io_ml"></span><div class="section" id="io-ml">
+<h2><code class="docutils literal"><span class="pre">io_ml</span></code><a class="headerlink" href="#io-ml" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dms2dfe.lib.io_ml.X_cols2numeric">
+<code class="descclassname">dms2dfe.lib.io_ml.</code><code class="descname">X_cols2numeric</code><span class="sig-paren">(</span><em>data_all</em>, <em>X_cols</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_ml.X_cols2numeric" title="Permalink to this definition">¶</a></dt>
+<dd><p>This converts features in text form (eg. C, H, L, ..) to numeric (eg. 0, 1, 2, ..)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data_all</strong> &#8211; dataframe with all Xs in columns.</li>
+<li><strong>X_cols</strong> &#8211; name/s of colum/s with feature/s</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns data_all:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">dataframe with all numeric Xs.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_ml.data_fit2ml">
+<code class="descclassname">dms2dfe.lib.io_ml.</code><code class="descname">data_fit2ml</code><span class="sig-paren">(</span><em>data_fit_key</em>, <em>prj_dh</em>, <em>data_feats</em>, <em>y_coln</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_ml.data_fit2ml" title="Permalink to this definition">¶</a></dt>
+<dd><p>This runs the submodules to run classifier from fitness data (<cite>data_fit</cite>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data_fit_key</strong> &#8211; in the form &lt;data_fit&gt;/&lt;aas/cds&gt;/&lt;name of file&gt;.</li>
+<li><strong>prj_dh</strong> &#8211; path to project directory.</li>
+<li><strong>data_feats</strong> &#8211; dataframe with features.</li>
+<li><strong>y_coln</strong> &#8211; column name of column with classes (ys).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_ml.data_fit_feats2combo">
+<code class="descclassname">dms2dfe.lib.io_ml.</code><code class="descname">data_fit_feats2combo</code><span class="sig-paren">(</span><em>data_fit</em>, <em>data_feats</em>, <em>y_coln</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_ml.data_fit_feats2combo" title="Permalink to this definition">¶</a></dt>
+<dd><p>This combines data_fit and data_feats to data_all.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data_fit</strong> &#8211; fitness data (pandas dataframe).</li>
+<li><strong>data_feats</strong> &#8211; features wrt length of protein</li>
+<li><strong>y_coln</strong> &#8211; name of column with classes in <cite>data_fit</cite>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns data_all:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><cite>data_fit</cite> and <cite>data_feats</cite> concatenated.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns Xcols:</th><td class="field-body"><p class="first last">list of features.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_ml.denanrows">
+<code class="descclassname">dms2dfe.lib.io_ml.</code><code class="descname">denanrows</code><span class="sig-paren">(</span><em>data_all</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_ml.denanrows" title="Permalink to this definition">¶</a></dt>
+<dd><p>This removes rows with any np.nan value/s.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_all</strong> &#8211; input dataframe.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns data_all:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">output dataframe.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_ml.plot_ROC">
+<code class="descclassname">dms2dfe.lib.io_ml.</code><code class="descname">plot_ROC</code><span class="sig-paren">(</span><em>y_test</em>, <em>y_score</em>, <em>classes</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_ml.plot_ROC" title="Permalink to this definition">¶</a></dt>
+<dd><p>This plots ROC curve.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>y_test</strong> &#8211; test split used for predictions.</li>
+<li><strong>y_score</strong> &#8211; probabilities of predictions.</li>
+<li><strong>classes</strong> &#8211; list with unique classes in y</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_ml.plot_importances">
+<code class="descclassname">dms2dfe.lib.io_ml.</code><code class="descname">plot_importances</code><span class="sig-paren">(</span><em>importances</em>, <em>X_cols</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_ml.plot_importances" title="Permalink to this definition">¶</a></dt>
+<dd><p>This plots relative importances of features.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>importances</strong> &#8211; relative importances of features from <cite>.best_estimator_.feature_importances_</cite></li>
+<li><strong>X_cols</strong> &#8211; list of features in same order as <cite>importances</cite></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns feature_importances:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">dataframe with relative importances of features.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_ml.run_RF">
+<code class="descclassname">dms2dfe.lib.io_ml.</code><code class="descname">run_RF</code><span class="sig-paren">(</span><em>data_all</em>, <em>X_cols</em>, <em>y_coln</em>, <em>plot_fh='test'</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_ml.run_RF" title="Permalink to this definition">¶</a></dt>
+<dd><p>This implements Random Forest classifier.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data_all</strong> &#8211; dataframe with columns with features(Xs) and classes(y).</li>
+<li><strong>X_cols</strong> &#8211; list of column names with features.</li>
+<li><strong>y_coln</strong> &#8211; column name of column with classes.</li>
+<li><strong>plot_fh</strong> &#8211; path to output plot file.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns grid_search:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first">trained classifier object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns y_test:</th><td class="field-body"><p class="first">classes used for testing classifier.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns y_pred:</th><td class="field-body"><p class="first">predicted classes.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Returns y_score:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first">scores of predicted classes used to plot ROC curve.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns feature_importances:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">relative importances of features (dataframe).</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_ml.y2classes">
+<code class="descclassname">dms2dfe.lib.io_ml.</code><code class="descname">y2classes</code><span class="sig-paren">(</span><em>data_combo</em>, <em>y_coln</em>, <em>mx</em>, <em>mn</em>, <em>increment</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_ml.y2classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>This converts y values (if numeric) to classes(bins).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data_combo</strong> &#8211; dataframe with y and all Xs.</li>
+<li><strong>y_coln</strong> &#8211; name of column with classes</li>
+<li><strong>mx</strong> &#8211; maximum value for binning</li>
+<li><strong>mn</strong> &#8211; minimum value for binning</li>
+<li><strong>increment</strong> &#8211; increment for binning</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns data_all:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">dataframe with (y) classes and all Xs.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dms2dfe.lib.io_mut_files"></span><div class="section" id="io-mut-files">
+<h2><code class="docutils literal"><span class="pre">io_mut_files</span></code><a class="headerlink" href="#io-mut-files" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.class_comparison">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">class_comparison</code><span class="sig-paren">(</span><em>data_comparison</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.class_comparison" title="Permalink to this definition">¶</a></dt>
+<dd><p>This classifies differences in fitness i.e. relative fitness into positive, negative or stabilizing fitness. 
+Inputs: (data_comparison)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_comparison</strong> &#8211; dataframe with <cite>data_comparison</cite>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns data_comparison:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">dataframe with <cite>class__comparison</cite> added according to fitness levels in input and selected samples in <cite>data_comparison</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.class_fit">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">class_fit</code><span class="sig-paren">(</span><em>data_fit_df</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.class_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>This classifies the fitness of mutants into beneficial, neutral or, deleterious.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_fit_df</strong> &#8211; dataframe of <cite>data_fit</cite>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns data_fit_df:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">classes of fitness written in &#8216;class-fit&#8217; column based on values in column &#8216;FiA&#8217;.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.collate_cctmr">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">collate_cctmr</code><span class="sig-paren">(</span><em>lbl_mat_cds</em>, <em>cctmr</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.collate_cctmr" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the reference sequence is a concatamer, this function collates the repeating mutation matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lbl_mat_cds</strong> &#8211; codon level mutation matrix.</li>
+<li><strong>cctmr</strong> &#8211; tuple with (1-based) boundaries of concatamers.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns lbl_mat_cds:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">collated codon level mutation matrix.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.data_fit2data_comparison">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">data_fit2data_comparison</code><span class="sig-paren">(</span><em>lbl_ctrl</em>, <em>lbl_test</em>, <em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.data_fit2data_comparison" title="Permalink to this definition">¶</a></dt>
+<dd><p>This converts the Fitness values to Relative fitness among test and control fed as input.</p>
+<div class="highlight-text"><div class="highlight"><pre>class fit:           beneficial, neutral, deleterious
+class comparison:    killed, survived
+class comparison:    positive, stabilizing, negative
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>lbl_ctrl</strong> &#8211; name of control sample.</li>
+<li><strong>lbl_test</strong> &#8211; name of test sample.</li>
+<li><strong>prj_dh</strong> &#8211; path to project directory.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.data_fit2norm_wrt_wild">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">data_fit2norm_wrt_wild</code><span class="sig-paren">(</span><em>unsel_lbl</em>, <em>sel_lbl</em>, <em>type_form</em>, <em>FCA</em>, <em>cctmr</em>, <em>lbls</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.data_fit2norm_wrt_wild" title="Permalink to this definition">¶</a></dt>
+<dd><p>This normalises Fold changes (FC) to normalised fitness values (Fi)</p>
+<p>Gets fhs of sbam files and using pysam, gets the coverage per nt
+bins it into 3 nt bins i.e. codons.
+substract mat mut cd sum,</p>
+<p>get log2 ratio of vectors for both sel to unsel (FCW)</p>
+DMut = (Mut selected /WT selected )/(Mut input /WT input )
+Fi = FC - FCW<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>unsel_lbl</strong> &#8211; name of input sample.</li>
+<li><strong>sel_lbl</strong> &#8211; name of selected sample.</li>
+<li><strong>type_form</strong> &#8211; type of mutations codon (<cite>cds</cite>) or amino acid (<cite>aas</cite>) form.</li>
+<li><strong>FCA</strong> &#8211; Fold change(FC) values of all(A) mutations.</li>
+<li><strong>cctmr</strong> &#8211; tuple with (1-based) boundaries of concatamers.</li>
+<li><strong>lbls</strong> &#8211; dataframe with configuration <cite>lbls</cite>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns FiA:</th><td class="field-body"><p class="first last">normalised fitness values (Fi)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.data_lbl2data_fit">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">data_lbl2data_fit</code><span class="sig-paren">(</span><em>unsel_lbl</em>, <em>sel_lbl</em>, <em>norm_type</em>, <em>prj_dh</em>, <em>cctmr</em>, <em>lbls</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.data_lbl2data_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>This estimates Fitness (data_fit) from mutation data (data_lbl) in selcted and unselected samples.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>unsel_lbl</strong> &#8211; name of input(unselected) sample.</li>
+<li><strong>sel_lbl</strong> &#8211; name of selected sample.</li>
+<li><strong>norm_type</strong> &#8211; default: wrt &#8216;wild&#8217; type [&#8216;wild&#8217;,&#8217;syn&#8217;,&#8217;none&#8217;].</li>
+<li><strong>prj_dh</strong> &#8211; path to project directory.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Lbls:</th><td class="field-body"><p class="first last">dataframe of <cite>lbls</cite> configuration file.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.getNS">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">getNS</code><span class="sig-paren">(</span><em>data_all</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.getNS" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function separates the non-synonymous(N) and synonymous(S) mutations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_all</strong> &#8211; dataframe with frequency of mutations (<cite>data_lbl</cite>).</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns data_NS:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">dataframe with non-synonymous(N) and synonymous(S) mutations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.getusable_comparison_list">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">getusable_comparison_list</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.getusable_comparison_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>This converts the table of tests and controls in configuration file into tuples of test and control.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.getusable_fits_list">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">getusable_fits_list</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.getusable_fits_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>This gets the list of samples that can be processed for fitness estimations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns fits_pairs_list:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">list of tuples with names of input and selected samples.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.getusable_lbls_list">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">getusable_lbls_list</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.getusable_lbls_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>This detects the samples that can be processed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns lbls_list:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">list of names of samples that can be processed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.getwildtypecov">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">getwildtypecov</code><span class="sig-paren">(</span><em>lbl</em>, <em>lbls</em>, <em>cctmr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.getwildtypecov" title="Permalink to this definition">¶</a></dt>
+<dd><p>This gets the codon level coverage of .fastq files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lbl</strong> &#8211; name of sample.</li>
+<li><strong>lbls</strong> &#8211; dataframe with configuration <cite>lbls</cite>.</li>
+<li><strong>cctmr</strong> &#8211; tuple with (1-based) boundaries of concatamers.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns wt:</th><td class="field-body"><p class="first last">dataframe with wild-type coverage.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.makemutids">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">makemutids</code><span class="sig-paren">(</span><em>data_lbl</em>, <em>ref_len</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.makemutids" title="Permalink to this definition">¶</a></dt>
+<dd><p>This makes the mutation ids eg. M001T or A024T from mutation matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data_lbl</strong> &#8211; dataframe with columns of reference (<cite>ref</cite>) and mutation (<cite>mut</cite>).</li>
+<li><strong>ref_len</strong> &#8211; length of reference nucleotide sequence.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns mutids:</th><td class="field-body"><p class="first last">list of mutation ids.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.mat_cds2mat_aas">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">mat_cds2mat_aas</code><span class="sig-paren">(</span><em>mat_cds</em>, <em>host</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.mat_cds2mat_aas" title="Permalink to this definition">¶</a></dt>
+<dd><p>This converts mutation matrix of codon to that of amino acid.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mat_cds</strong> &#8211; codon level mutation matrix.</li>
+<li><strong>host</strong> &#8211; name of host organism for choosing codon table. [coli | yeast | sapiens].</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns mat_aas:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">amino acid level mutation matrix.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.mut_mat_cds2data_lbl">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">mut_mat_cds2data_lbl</code><span class="sig-paren">(</span><em>lbli</em>, <em>lbl_mat_mut_cds_fh</em>, <em>host</em>, <em>prj_dh</em>, <em>fsta_seqlen</em>, <em>cctmr</em>, <em>Ni_cutoff</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.mut_mat_cds2data_lbl" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function converts mutation matrix (produced from .mat) file into data_lbl format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>lbli</strong> &#8211; name of the sample.</li>
+<li><strong>lbl_mat_mut_cds_fh</strong> &#8211; path to codon level mutation matrix (.mat_mut_cds).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>:param host : name of host organism for choosing codon table. (coli | yeast | sapiens).
+:param prj_dh: path to project directory.
+:param fsta_seqlen: nucleotide level length of the reference sequence.
+:param cctmr: tuple with (1-based) boundaries of concatamers.
+:param Ni_cutoff: threshold of depth per codon to be processed further.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.repli2avg">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">repli2avg</code><span class="sig-paren">(</span><em>replis</em>, <em>prj_dh</em>, <em>type_form</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.repli2avg" title="Permalink to this definition">¶</a></dt>
+<dd><p>This averages the mutation data of replicates (data_lbl format).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>replis</strong> &#8211; list of names of replicate samples.</li>
+<li><strong>prj_dh</strong> &#8211; path to project directory.</li>
+<li><strong>type_form</strong> &#8211; type of mutations codon (<cite>cds</cite>) or amino acid (<cite>aas</cite>) form.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns data_avg:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">dataframe with averaged values.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_mut_files.repli2data_lbl_avg">
+<code class="descclassname">dms2dfe.lib.io_mut_files.</code><code class="descname">repli2data_lbl_avg</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_mut_files.repli2data_lbl_avg" title="Permalink to this definition">¶</a></dt>
+<dd><p>This averages frequency data of replicates in data_lbl.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dms2dfe.lib.plot_pdb"></span><div class="section" id="plot-pdb">
+<h2><code class="docutils literal"><span class="pre">plot_pdb</span></code><a class="headerlink" href="#plot-pdb" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dms2dfe.lib.plot_pdb.vector2bfactor">
+<code class="descclassname">dms2dfe.lib.plot_pdb.</code><code class="descname">vector2bfactor</code><span class="sig-paren">(</span><em>vector</em>, <em>pdb_fh</em>, <em>pdb_clrd_fh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.plot_pdb.vector2bfactor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Incorporates vector with values to the B-factor of PDB file.</p>
+<p>: param vector : vector with values
+: param pdb_fh : path of input PDB file
+: param pdb_clrd_fh : path of output PDB file</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dms2dfe.lib.variant_caller"></span><div class="section" id="id6">
+<h2><code class="docutils literal"><span class="pre">io_data_files</span></code><a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dms2dfe.lib.variant_caller.get_mut_cds">
+<code class="descclassname">dms2dfe.lib.variant_caller.</code><code class="descname">get_mut_cds</code><span class="sig-paren">(</span><em>qry_alind</em>, <em>fsta_seq</em>, <em>list_mut_cds_fh</em>, <em>Q_cutoff</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.variant_caller.get_mut_cds" title="Permalink to this definition">¶</a></dt>
+<dd><p>This gets the mutations at codon level.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>qry_alind</strong> &#8211; aligned query sequnce.</li>
+<li><strong>fsta_seq</strong> &#8211; sequence of reference DNA (str).</li>
+<li><strong>list_mut_cds_fh</strong> &#8211; path to file with codon level list of mutations.</li>
+<li><strong>Q_cutoff</strong> &#8211; cut off of average phred score per read.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.variant_caller.getusablesbams_list">
+<code class="descclassname">dms2dfe.lib.variant_caller.</code><code class="descname">getusablesbams_list</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.variant_caller.getusablesbams_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>This detects sorted bam files that can be further processed for variant calling.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.variant_caller.is_qry_alind_useful">
+<code class="descclassname">dms2dfe.lib.variant_caller.</code><code class="descname">is_qry_alind_useful</code><span class="sig-paren">(</span><em>qry_alind</em>, <em>Q_cutoff</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.variant_caller.is_qry_alind_useful" title="Permalink to this definition">¶</a></dt>
+<dd><p>This detects whether a read passes a number of criterias eg. Phred quality score.</p>
+<div class="highlight-text"><div class="highlight"><pre>cigar dode | descr | col index
+M  BAM_CMATCH  0
+I  BAM_CINS    1
+D  BAM_CDEL    2
+N  BAM_CREF_SKIP   3
+S  BAM_CSOFT_CLIP  4
+H  BAM_CHARD_CLIP  5
+P  BAM_CPAD    6
+=  BAM_CEQUAL  7
+X  BAM_CDIFF   8
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>qry_alind</strong> &#8211; aligned query sequnce.</li>
+<li><strong>Q_cutoff</strong> &#8211; cut off of average phred score per read.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.variant_caller.qual_chars2nums">
+<code class="descclassname">dms2dfe.lib.variant_caller.</code><code class="descname">qual_chars2nums</code><span class="sig-paren">(</span><em>qual_chars</em>, <em>qual_format</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.variant_caller.qual_chars2nums" title="Permalink to this definition">¶</a></dt>
+<dd><p>This converts the phred qualities from the ASCII format to numbers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>qual_chars</strong> &#8211; phred score in ASCII format (str).</li>
+<li><strong>qual_format</strong> &#8211; phred score in numbers (list).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.variant_caller.sam2mutmat">
+<code class="descclassname">dms2dfe.lib.variant_caller.</code><code class="descname">sam2mutmat</code><span class="sig-paren">(</span><em>sbam_fh</em>, <em>fsta_id</em>, <em>fsta_seqlen</em>, <em>fsta_seq</em>, <em>cds_ref</em>, <em>Q_cutoff</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.variant_caller.sam2mutmat" title="Permalink to this definition">¶</a></dt>
+<dd><p>This converts sorted .bam file to codon level mutation matrix (.mat_mut_cds)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sbam_fh</strong> &#8211; path to sorted bam file (str).</li>
+<li><strong>fsta_id</strong> &#8211; name of reference (from .fasta file) (str).</li>
+<li><strong>fsta_seqlen</strong> &#8211; length of reference sequnce (int).</li>
+<li><strong>fsta_seq</strong> &#8211; reference sequnce (str).</li>
+<li><strong>cds_ref</strong> &#8211; codons in refernce sequnce (list)</li>
+<li><strong>Q_cutoff</strong> &#8211; cut off of average phred score per codon.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dms2dfe.lib.io_nums"></span><div class="section" id="io-nums">
+<h2><code class="docutils literal"><span class="pre">io_nums</span></code><a class="headerlink" href="#io-nums" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dms2dfe.lib.io_nums.is_numeric">
+<code class="descclassname">dms2dfe.lib.io_nums.</code><code class="descname">is_numeric</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_nums.is_numeric" title="Permalink to this definition">¶</a></dt>
+<dd><p>This detects whether an input object is numeric or not.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.lib.io_nums.str2num">
+<code class="descclassname">dms2dfe.lib.io_nums.</code><code class="descname">str2num</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.lib.io_nums.str2num" title="Permalink to this definition">¶</a></dt>
+<dd><p>This extracts numbers from strings. eg. 114 from M114R.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="_sources/5api.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2016, Rohan Dandage.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

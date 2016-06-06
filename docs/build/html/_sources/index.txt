@@ -1,0 +1,60 @@
+.. dms2dfe documentation master file, created by
+   sphinx-quickstart on Mon Apr  4 12:56:49 2016.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+.. _dms2dfe:
+
+=======================
+**dms2dfe**
+=======================
+
+.. image:: _static/overview.png
+
+Overview
+--------
+
+dms2dfe (**D**\ eep **M**\ utational **S**\ canning (DMS) data to **D**\ istribution of **F**\ itness **E**\ ffects (DFE)) is designed for analyzing Deep Mutational Scaning [1]_ data in terms of Distribution of Fitness Effects.
+In cases where biology do not involve actual fitness, fitness can be regarded as a proxy for preferential enrichment.
+Here 'Fitness' and 'selection' here basically are conceptually similar to 'fold changes' and 'up/down regulations' in case of differential expression estimations respectively.
+
+Basic usage
+-----------
+
+:ref:`Installation`
+
+.. code-block:: text
+
+	git clone https://github.com/rraadd88/dms2dfe.git
+	cd dms2dfe
+	pip install .
+
+:ref:`Usage`
+
+.. code-block:: text
+
+    import dms2dfe
+    dms2dfe.pipeline.main(`path to project directory`)
+
+Citations
+---------
+
+.. [1] Fowler, D.M., and S. Fields. 2014. Deep mutational scanning: a new style of protein science. Nature methods. 11: 801–7.
+
+Pages
+---------
+
+.. toctree:: 
+    :maxdepth: 1
+    
+    1installation
+    2usage
+    3programs
+    4io
+    6test
+    5api
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`search`

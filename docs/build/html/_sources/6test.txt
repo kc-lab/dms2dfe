@@ -1,0 +1,220 @@
+.. _example:
+
+==========================================
+Example
+==========================================
+
+Following are few examples included in the `dms2dfe` package.
+
+Aminoglycoside-3 -phosphotransferase (APH2)
+===========================================
+
+We used a dataset from Melnikov_ et. al., where DMS of aminoglycoside-3 -phosphotransferase-II (APH(3')II), an aminoglycosde resistant gene was carried out. Here we use a subset of data in which mutants were selected for resistance against Kanamicin at 1:4 MIC of wild type (sample KKA2_S1_Kan14_L1) and at 1:1 MIC of wild type (sample KKA2_S1_Kan11_L1).
+In this analysis we start from unaligned .fastq files, find variants, estimate fitness and ultimately compare fitness of mutants in two selections. 
+Additionally a classification model would be generated indicating possible factors responsible for observed changes in Distribution of Fitness Effects.
+
+Downloading dataset
+-------------------
+
+The dataset for this example can be downloaded by a bash script located in `dms2dfe/test_dataset`.
+
+.. code-block:: text
+
+    cd dms2dfe/test_dataset
+    ./get_data_APH2_Melnikov_et_al_2014
+
+The input files (.fastq) would be downloaded in dms2dfe/test_dataset/APH2_Melnikov_et_al_2014
+
+Input configuration
+-------------------
+
+Following is the configuration used for analysis.
+
+.. csv-table:: `APH2_Melnikov_et_al_2014/cfg/info`
+   :file: _static/APH2_Melnikov_et_al_2014/cfg/info
+   :header-rows: 1
+   :stub-columns: 1
+
+.. csv-table:: `APH2_Melnikov_et_al_2014/cfg/lbls`
+   :file: _static/APH2_Melnikov_et_al_2014/cfg/lbls
+   :header-rows: 1
+   :stub-columns: 1
+
+.. csv-table:: `APH2_Melnikov_et_al_2014/cfg/fit`
+   :file: _static/APH2_Melnikov_et_al_2014/cfg/fit
+   :header-rows: 1
+   :stub-columns: 1
+
+.. csv-table:: `APH2_Melnikov_et_al_2014/cfg/comparison`
+   :file: _static/APH2_Melnikov_et_al_2014/cfg/comparison
+   :header-rows: 1
+   :stub-columns: 1
+
+.. csv-table:: `APH2_Melnikov_et_al_2014/cfg/feats`
+   :file: _static/APH2_Melnikov_et_al_2014/cfg/feats
+   :header-rows: 1
+   :stub-columns: 1
+
+Run dms2dfe
+-----------
+
+To run `dms2dfe` on the dataset simply fire following command.
+
+.. code-block:: text
+
+    import dms2dfe
+    dms2dfe.pipeline.main("APH2_Melnikov_et_al_2014")
+
+Visualizations
+--------------
+
+With a successful run of `dms2dfe`, output visualizations for sample `KKA2_S1_Kan11_L1` should look like following.
+
+`Amino acid level Mutation matrix of fitness values`
+
+.. image:: _static/APH2_Melnikov_et_al_2014/plots/aas/fig_heatmap_KKA2_S1_Kan11_L1_WRT_KKA2_Bkg1.png
+   :name: Amino acid level Mutation matrix of fitness values of KKA2_S1_Kan11_L1
+
+In this plot positions with no mutation (eg. A to A) are shown in white.
+
+`Codon level Mutation matrix of fitness values`
+
+.. image:: _static/APH2_Melnikov_et_al_2014/plots/cds/fig_heatmap_KKA2_S1_Kan11_L1_WRT_KKA2_Bkg1.png
+   :name: Codon level Mutation matrix of fitness values KKA2_S1_Kan11_L1
+
+In this plot positions with no mutation (eg. AAA to AAA) are shown in white.
+
+`Distribution of fitness`
+
+.. image:: _static/APH2_Melnikov_et_al_2014/plots/aas/fig_dfe_KKA2_S1_Kan11_L1_WRT_KKA2_Bkg1.png
+   :name: Distribution of fitness KKA2_S1_Kan11_L1
+
+`Fitness values projected on PDB structure`
+
+.. image:: _static/APH2_Melnikov_et_al_2014/plots/aas/fig_pdb_KKA2_S1_Kan11_L1_WRT_KKA2_Bkg1._180.png
+   :name: PDB KKA2_S1_Kan11_L1
+
+`Substitution matrix based on Fitness values`
+
+.. image:: _static/APH2_Melnikov_et_al_2014/plots/aas/fig_sub_matrix_KKA2_S1_Kan11_L1_WRT_KKA2_Bkg1.png
+   :name: submat KKA2_S1_Kan11_L1
+
+`ROC curve of classification model of fitness values`
+
+.. image:: _static/APH2_Melnikov_et_al_2014/plots/aas/fig_ml_roc_top20_data_fit_aas_KKA2_S1_Kan11_L1_WRT_KKA2_Bkg1.png
+   :name: ROC KKA2_S1_Kan11_L1
+
+`Top 20 features high high relative importance in classification model of fitness values`
+
+.. image:: _static/APH2_Melnikov_et_al_2014/plots/aas/fig_ml_relative_importances_top20_data_fit_aas_KKA2_S1_Kan11_L1_WRT_KKA2_Bkg1.png
+   :name: RI KKA2_S1_Kan11_L1
+
+TEM-1 beta-lactamase (TEM1)
+===========================
+We used a dataset from Firnberg_ et. al., where DMS of E. coli TEM-1 beta-lactamase, an ampicilin resistant gene was carried out. Here we use a subset of data in which mutants were selected for resistance against Ampicilin at 256 ug/ml (sample Amp256) and at 512 ug/ml (sample Amp512).
+In this analysis we start from codon level mutation matrix and estimate fitness and ultimately compare fitness of mutants in two selections. 
+Additionally a classification model would be generated indicating possible factors responsible for observed changes in Distribution of Fitness Effects.
+
+Downloading dataset
+-------------------
+
+The dataset for this example can be downloaded by a python script located in `dms2dfe/test_dataset`.
+
+.. code-block:: text
+
+    cd dms2dfe/test_dataset
+    ./get_data_TEM1_Firnberg_et_al_2014.py
+
+Codon level mutation matrices (.mat_cds) would be downloaded in dms2dfe/test_dataset/APH2_TEM1_Firnberg_et_al_2014
+
+Input configuration
+-------------------
+
+Following is the configuration used for analysis.
+
+.. csv-table:: `TEM1_Firnberg_et_al_2014/cfg/info`
+   :file: _static/TEM1_Firnberg_et_al_2014/cfg/info
+   :header-rows: 1
+   :stub-columns: 1
+
+.. csv-table:: `TEM1_Firnberg_et_al_2014/cfg/lbls`
+   :file: _static/TEM1_Firnberg_et_al_2014/cfg/lbls
+   :header-rows: 1
+   :stub-columns: 1
+
+.. csv-table:: `TEM1_Firnberg_et_al_2014/cfg/fit`
+   :file: _static/TEM1_Firnberg_et_al_2014/cfg/fit
+   :header-rows: 1
+   :stub-columns: 1
+
+.. csv-table:: `TEM1_Firnberg_et_al_2014/cfg/comparison`
+   :file: _static/TEM1_Firnberg_et_al_2014/cfg/comparison
+   :header-rows: 1
+   :stub-columns: 1
+
+.. csv-table:: `TEM1_Firnberg_et_al_2014/cfg/feats`
+   :file: _static/TEM1_Firnberg_et_al_2014/cfg/feats
+   :header-rows: 1
+   :stub-columns: 1
+
+Run dms2dfe
+-----------
+
+To run `dms2dfe` on the dataset simply fire following command.
+
+.. code-block:: text
+
+    import dms2dfe
+    dms2dfe.pipeline.main("TEM1_Firnberg_et_al_2014")
+
+Visualizations
+--------------
+
+With a successful run of `dms2dfe`, output visualizations for sample `Amp256` should look like following.
+
+`Amino acid level Mutation matrix of fitness values`
+
+.. image:: _static/TEM1_Firnberg_et_al_2014/plots/aas/fig_heatmap_Amp256_WRT_Amp0.25.png
+   :name: Amino acid level Mutation matrix of fitness values of Amp256
+
+In this plot positions with no mutation (eg. A to A) are shown in white.
+
+.. `Codon level Mutation matrix of fitness values`
+
+.. .. image:: _static/TEM1_Firnberg_et_al_2014/plots/cds/fig_heatmap_Amp256_WRT_Amp0.25.png
+..    :name: Codon level Mutation matrix of fitness values Amp256
+
+.. In this plot positions with no mutation (eg. AAA to AAA) are shown in white.
+
+`Distribution of fitness`
+
+.. image:: _static/TEM1_Firnberg_et_al_2014/plots/aas/fig_dfe_Amp256_WRT_Amp0.25.png
+   :name: Distribution of fitness Amp256
+
+`Fitness values projected on PDB structure`
+
+.. image:: _static/TEM1_Firnberg_et_al_2014/plots/aas/fig_pdb_Amp256_WRT_Amp0.25._180.png
+   :name: PDB Amp256
+
+`Substitution matrix based on Fitness values`
+
+.. image:: _static/TEM1_Firnberg_et_al_2014/plots/aas/fig_sub_matrix_Amp256_WRT_Amp0.25.png
+   :name: submat Amp256
+
+`ROC curve of classification model of fitness values`
+
+.. image:: _static/TEM1_Firnberg_et_al_2014/plots/aas/fig_ml_roc_top20_data_fit_aas_Amp256_WRT_Amp0.25.png
+   :name: ROC Amp256
+
+`Top 20 features high high relative importance in classification model of fitness values`
+
+.. image:: _static/TEM1_Firnberg_et_al_2014/plots/aas/fig_ml_relative_importances_top20_data_fit_aas_Amp256_WRT_Amp0.25.png
+   :name: RI Amp256
+
+    
+Citations
+---------
+
+.. [Melnikov] Melnikov, A., P. Rogov, L. Wang, A. Gnirke, and T.S. Mikkelsen. 2014. Comprehensive mutational scanning of a kinase in vivo reveals substrate-dependent fitness landscapes. Nucleic Acids Research. 42: 1–8.
+
+.. [Firnberg] Firnberg, E., J.W. Labonte, J.J. Gray, and M. Ostermeier. 2014. A comprehensive, high-resolution map of a Gene’s fitness landscape. Molecular Biology and Evolution. 31: 1581–1592.

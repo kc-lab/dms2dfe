@@ -1,0 +1,6 @@
+dms2dfe.ana0_getfeats.main
+==========================
+
+.. currentmodule:: dms2dfe.ana0_getfeats
+
+.. autofunction:: main

@@ -1,0 +1,6 @@
+dms2dfe.ana0_fastq2sbam.main
+============================
+
+.. currentmodule:: dms2dfe.ana0_fastq2sbam
+
+.. autofunction:: main

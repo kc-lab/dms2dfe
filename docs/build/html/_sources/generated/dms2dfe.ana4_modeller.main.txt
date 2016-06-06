@@ -1,0 +1,6 @@
+dms2dfe.ana4_modeller.main
+==========================
+
+.. currentmodule:: dms2dfe.ana4_modeller
+
+.. autofunction:: main

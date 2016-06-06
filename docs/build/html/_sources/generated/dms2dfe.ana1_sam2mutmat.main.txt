@@ -1,0 +1,6 @@
+dms2dfe.ana1_sam2mutmat.main
+============================
+
+.. currentmodule:: dms2dfe.ana1_sam2mutmat
+
+.. autofunction:: main
