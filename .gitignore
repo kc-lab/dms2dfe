@@ -1,5 +1,4 @@
 #junk
-docs/source/
 test/
 test_dataset/
 example/
@@ -59,7 +58,8 @@ coverage.xml
 *.log
 
 # Sphinx documentation
-docs/_build/
+#docs/_build/
+#docs/source/
 
 # PyBuilder
 target/
