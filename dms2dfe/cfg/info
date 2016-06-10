@@ -1,0 +1,15 @@
+varname,description,input,default
+host,Host name for assigning codon table [coli | yeast | sapiens],,
+Ni_cutoff,Cut off for frequency per mutant,,8
+Q_cutoff,Cut off for Phred score quality,,30
+norm_type,Type of normalization across samples [wild: wrt wild type | syn : wrt synonymous mutations | none : fold change serves as fitness],,wild
+alignment_type,Alignment type [loc:local | glob:global],,loc
+cores,Number of cores to be used,,1
+fsta_fh,Optional: Path to reference fasta file,,found in project directory
+pdb_fh,Optional: Path to pdb file,,found in project directory
+active_sites,Optional: residue numbers of active sites (space delimited) eg. 68<SPACE>192,,
+dssp_fh,Optional: path to dssp module (dependencies),,dssp-2.0.4-linux-amd64
+trimmomatic_fh,Optional: path to trimmomatic source (.jar) file (dependencies),,trimmomatic-0.33.jar
+bowtie2_fh,Optional: path to bowtie2 source file,,bowtie2
+samtools_fh,Optional: path to samtools source file,,samtools
+cctmr,Optional: if reference sequence is concatamer (space delimited) eg. 1<SPACE>265<SPACE>268<SPACE>532,,

@@ -1,69 +1,45 @@
-#junk
-test/
-test_dataset/
-example/
-
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-env/
-#build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*,cover
-.hypothesis/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-
-# Sphinx documentation
-#docs/_build/
-#docs/source/
-
-# PyBuilder
-target/
-
-#Ipython Notebook
 *.ipynb
-.ipynb_checkpoints
+*.pyc
+*.ipynb_checkpoints
+
+docs/*.rst
+docs/*.py
+docs/_build
+docs/generated
+docs/_static
+docs/_templates
+docs/Makefile
+
+dms2dfe.egg-info/*
+dist/*
+test/*
+test_dataset/dms2dfe_dependencies/*
+test_dataset/TEM1_Firnberg_et_al_2014/data_comparison/*
+test_dataset/TEM1_Firnberg_et_al_2014/data_feats/*
+test_dataset/TEM1_Firnberg_et_al_2014/data_fit/*
+test_dataset/TEM1_Firnberg_et_al_2014/data_input/*
+test_dataset/TEM1_Firnberg_et_al_2014/data_lbl/*
+test_dataset/TEM1_Firnberg_et_al_2014/data_ml/*
+test_dataset/TEM1_Firnberg_et_al_2014/plots/*
+test_dataset/TEM1_Firnberg_et_al_2014/btem.1.bt2
+test_dataset/TEM1_Firnberg_et_al_2014/btem.2.bt2
+test_dataset/TEM1_Firnberg_et_al_2014/btem.3.bt2
+test_dataset/TEM1_Firnberg_et_al_2014/btem.4.bt2
+test_dataset/TEM1_Firnberg_et_al_2014/btem.logbt2bld
+test_dataset/TEM1_Firnberg_et_al_2014/btem.rev.1.bt2
+test_dataset/TEM1_Firnberg_et_al_2014/btem.rev.2.bt2
+test_dataset/APH2_Melnikov_et_al_2014/data_comparison/*
+test_dataset/APH2_Melnikov_et_al_2014/data_feats/*
+test_dataset/APH2_Melnikov_et_al_2014/data_fit/*
+test_dataset/APH2_Melnikov_et_al_2014/data_input/*
+test_dataset/APH2_Melnikov_et_al_2014/data_lbl/*
+test_dataset/APH2_Melnikov_et_al_2014/data_ml/*
+test_dataset/APH2_Melnikov_et_al_2014/plots/*
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.1.bt2
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.2.bt2
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.3.bt2
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.4.bt2
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.fasta.fai
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.logbt2bld
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.rev.1.bt2
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.rev.2.bt2
