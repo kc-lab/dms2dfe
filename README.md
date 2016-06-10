@@ -3,7 +3,7 @@
 Overview
 --------
 
-dms2dfe (**D**\ eep **M**\ utational **S**\ canning (DMS) data to **D**\ istribution of **F**\ itness **E**\ ffects (DFE)) is designed for analyzing Deep Mutational Scaning [1] data in terms of Distribution of Fitness Effects.
+dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of **F**itness **E**ffects (DFE)) is designed for analyzing Deep Mutational Scaning [1] data in terms of Distribution of Fitness Effects.
 In cases where biology do not involve actual fitness, fitness can be regarded as a proxy for preferential enrichment.
 Here 'Fitness' and 'selection' here basically are conceptually similar to 'fold changes' and 'up/down regulations' in case of differential expression estimations respectively.
 
@@ -12,18 +12,18 @@ Basic usage
 
 ##Installation
 
-	git clone https://github.com/rraadd88/dms2dfe.git
+	git clone https://github.com/kc-lab/dms2dfe.git
 	cd dms2dfe
 	pip install .
 
 ##Usage
 
     import dms2dfe
-    dms2dfe.pipeline.main(`path to project directory`)
+    dms2dfe.pipeline.main(`path/to/project_directory`)
 
 ##Documentation
 
-Documentation of dms2dfe is availabble at https://htmlpreview.github.io/?https://raw.githubusercontent.com/rraadd88/dms2dfe/master/docs/v0.1.0/html .
+Documentation of dms2dfe is availabble at https://htmlpreview.github.io/?https://raw.githubusercontent.com/rraadd88/dms2dfe/master/docs/v0.1.0/html/index.html .
 
 Citations
 ---------

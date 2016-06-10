@@ -1,0 +1,14 @@
+mkdir -p APH2_Melnikov_et_al_2014/data_input
+
+echo "downloading input fastq files into APH2_Melnikov_et_al_2014/data_input"
+
+wget -q ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/fastq/SRA082/SRA082074/SRX547509/SRR1292901_1.fastq.bz2 --directory-prefix=APH2_Melnikov_et_al_2014/data_input
+wget -q ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/fastq/SRA082/SRA082074/SRX547509/SRR1292901_2.fastq.bz2 --directory-prefix=APH2_Melnikov_et_al_2014/data_input
+wget -q ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/fastq/SRA082/SRA082074/SRX547496/SRR1292881_1.fastq.bz2 --directory-prefix=APH2_Melnikov_et_al_2014/data_input
+wget -q ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/fastq/SRA082/SRA082074/SRX547496/SRR1292881_2.fastq.bz2 --directory-prefix=APH2_Melnikov_et_al_2014/data_input
+wget -q ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/fastq/SRA082/SRA082074/SRX547413/SRR1292709_1.fastq.bz2 --directory-prefix=APH2_Melnikov_et_al_2014/data_input
+wget -q ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/fastq/SRA082/SRA082074/SRX547413/SRR1292709_2.fastq.bz2 --directory-prefix=APH2_Melnikov_et_al_2014/data_input
+
+echo "extracting input fastq files in APH2_Melnikov_et_al_2014/data_input"
+
+bzip2 -d APH2_Melnikov_et_al_2014/data_input/*

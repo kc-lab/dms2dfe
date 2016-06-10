@@ -24,7 +24,7 @@ Basic usage
 
 .. code-block:: text
 
-    git clone https://github.com/rraadd88/dms2dfe.git
+    git clone https://github.com/kc-lab/dms2dfe.git
     cd dms2dfe
     pip install .
 
