@@ -1,0 +1,11 @@
+# #latest
+# cd docs
+# make html
+# cd ../
+# rsync -avv docs/_build/html docs/latest
+# #stable archived
+
+
+cd ../kc_lab_dms2dfe
+git fetch upstream
+git rebase upstream/master
