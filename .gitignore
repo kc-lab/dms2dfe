@@ -9,7 +9,8 @@ docs/generated
 docs/_static
 docs/_templates
 docs/Makefile
-make_docs
+
+update_forks
 
 dms2dfe.egg-info/*
 dist/*
