@@ -1,0 +1,6 @@
+dms2dfe.configure.main
+======================
+
+.. currentmodule:: dms2dfe.configure
+
+.. autofunction:: main

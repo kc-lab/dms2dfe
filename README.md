@@ -23,7 +23,7 @@ Basic usage
 
 ##Documentation
 
-Documentation of dms2dfe is availabble at https://htmlpreview.github.io/?https://raw.githubusercontent.com/rraadd88/dms2dfe/master/docs/v0.1.0/html/index.html .
+Documentation of dms2dfe is available at kc-lab.github.io/dms2dfe.
 
 Citations
 ---------

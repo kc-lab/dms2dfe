@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Programs &mdash; dms2dfe 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootswatch-3.3.6/united/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="dms2dfe 0.1.0 documentation" href="index.html" />
+    <link rel="next" title="dms2dfe.configure.main" href="generated/dms2dfe.configure.main.html" />
+    <link rel="prev" title="Usage" href="2usage.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          dms2dfe</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="1installation.html">Installation</a></li>
+                <li><a href="2usage.html">Usage</a></li>
+                <li><a href="#">Programs</a></li>
+                <li><a href="4io.html">I/O</a></li>
+                <li><a href="6test.html">Example</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="1installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4io.html">I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6test.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="5api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="7troubleshoot.html">Troubleshoot</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Programs</a><ul>
+<li><a class="reference internal" href="#front-end-programs-of-dms2dfe">Front-end programs of <cite>dms2dfe</cite></a></li>
+<li><a class="reference internal" href="#ordered-by-steps-in-analysis">Ordered by steps in analysis</a><ul>
+<li><a class="reference internal" href="#extracting-features-of-protein-optional">Extracting features of protein (optional)</a></li>
+<li><a class="reference internal" href="#preprocessing-fastq-files-optional">Preprocessing .fastq files (optional)</a></li>
+<li><a class="reference internal" href="#step-1-variant-caling">Step 1 : Variant caling</a></li>
+<li><a class="reference internal" href="#step-2-fitness-estimations">Step 2 : Fitness estimations</a></li>
+<li><a class="reference internal" href="#step-3-comparisons">Step 3 : Comparisons</a></li>
+<li><a class="reference internal" href="#module-dms2dfe.ana4_plotter">Visualizations</a></li>
+<li><a class="reference internal" href="#module-dms2dfe.ana4_modeller">Classification models</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="programs">
+<span id="id1"></span><h1>Programs<a class="headerlink" href="#programs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="front-end-programs-of-dms2dfe">
+<h2>Front-end programs of <cite>dms2dfe</cite><a class="headerlink" href="#front-end-programs-of-dms2dfe" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/dms2dfe.configure.main.html#dms2dfe.configure.main" title="dms2dfe.configure.main"><code class="xref py py-obj docutils literal"><span class="pre">dms2dfe.configure.main</span></code></a>(prj_dh[,&nbsp;inputs])</td>
+<td>Generates and compiles configurations.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/dms2dfe.pipeline.main.html#dms2dfe.pipeline.main" title="dms2dfe.pipeline.main"><code class="xref py py-obj docutils literal"><span class="pre">dms2dfe.pipeline.main</span></code></a>(prj_dh)</td>
+<td>This runs all analysis steps in tandem.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/dms2dfe.ana0_fastq2dplx.main.html#dms2dfe.ana0_fastq2dplx.main" title="dms2dfe.ana0_fastq2dplx.main"><code class="xref py py-obj docutils literal"><span class="pre">dms2dfe.ana0_fastq2dplx.main</span></code></a>(prj_dh)</td>
+<td>This optional module demultipexes the .fastq files based on barcodes configuration (located at <cite>prj_dh/cfg/barcodes</cite>).</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#dms2dfe.ana0_fastq2sbam.main" title="dms2dfe.ana0_fastq2sbam.main"><code class="xref py py-obj docutils literal"><span class="pre">dms2dfe.ana0_fastq2sbam.main</span></code></a>(prj_dh)</td>
+<td>This optional modules preprocesses unaligned .fastq files.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#dms2dfe.ana0_getfeats.main" title="dms2dfe.ana0_getfeats.main"><code class="xref py py-obj docutils literal"><span class="pre">dms2dfe.ana0_getfeats.main</span></code></a>(prj_dh)</td>
+<td>This optional module extracts following structural features of reference protein.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#dms2dfe.ana1_sam2mutmat.main" title="dms2dfe.ana1_sam2mutmat.main"><code class="xref py py-obj docutils literal"><span class="pre">dms2dfe.ana1_sam2mutmat.main</span></code></a>(prj_dh)</td>
+<td>This module processes alignment (.sam file)  and produces codon level mutation matrix of frequencies of mutations in the respective sample.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#dms2dfe.ana2_mutmat2fit.main" title="dms2dfe.ana2_mutmat2fit.main"><code class="xref py py-obj docutils literal"><span class="pre">dms2dfe.ana2_mutmat2fit.main</span></code></a>(prj_dh)</td>
+<td>This modules converts mutation matrices (.mat files produced in upstream ana1_sam2mutmat module) and calculates the fitness values for samples.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#dms2dfe.ana3_fit2comparison.main" title="dms2dfe.ana3_fit2comparison.main"><code class="xref py py-obj docutils literal"><span class="pre">dms2dfe.ana3_fit2comparison.main</span></code></a>(prj_dh)</td>
+<td>This modules makes the comparison between test (eg.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#dms2dfe.ana4_modeller.main" title="dms2dfe.ana4_modeller.main"><code class="xref py py-obj docutils literal"><span class="pre">dms2dfe.ana4_modeller.main</span></code></a>(prj_dh)</td>
+<td>This modules trains a Random Forest classifier with given data in <cite>data_fit</cite> format.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#dms2dfe.ana4_plotter.main" title="dms2dfe.ana4_plotter.main"><code class="xref py py-obj docutils literal"><span class="pre">dms2dfe.ana4_plotter.main</span></code></a>(prj_dh)</td>
+<td>This module makes vizualization for output of <cite>dms2dfe</cite>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="ordered-by-steps-in-analysis">
+<h2>Ordered by steps in analysis<a class="headerlink" href="#ordered-by-steps-in-analysis" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="extracting-features-of-protein-optional">
+<h3>Extracting features of protein (optional)<a class="headerlink" href="#extracting-features-of-protein-optional" title="Permalink to this headline">¶</a></h3>
+<p>Requires PDB structure of protein.</p>
+<span class="target" id="module-dms2dfe.ana0_getfeats"></span><dl class="function">
+<dt id="dms2dfe.ana0_getfeats.main">
+<code class="descclassname">dms2dfe.ana0_getfeats.</code><code class="descname">main</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana0_getfeats.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>This optional module extracts following structural features of reference protein.</p>
+<p>The out files are created in <cite>prj_dh/data_feats</cite></p>
+<p>The steps and required dependendencies are following.</p>
+<div class="highlight-text"><div class="highlight"><pre>Secondary structure                      : using DSSP.
+Solvent Accessible Surface Area          : using DSSP.  
+Distance of a residue from reference atom: using Bio.PDB
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="preprocessing-fastq-files-optional">
+<h3>Preprocessing .fastq files (optional)<a class="headerlink" href="#preprocessing-fastq-files-optional" title="Permalink to this headline">¶</a></h3>
+<p>This is envoked only when input files are .fastq files.</p>
+<span class="target" id="module-dms2dfe.ana0_fastq2dplx"></span><dl class="function">
+<dt id="dms2dfe.ana0_fastq2dplx.main">
+<code class="descclassname">dms2dfe.ana0_fastq2dplx.</code><code class="descname">main</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana0_fastq2dplx.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>This optional module demultipexes the .fastq files based on barcodes configuration (located at <cite>prj_dh/cfg/barcodes</cite>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-dms2dfe.ana0_fastq2sbam"></span><dl class="function">
+<dt id="dms2dfe.ana0_fastq2sbam.main">
+<code class="descclassname">dms2dfe.ana0_fastq2sbam.</code><code class="descname">main</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana0_fastq2sbam.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>This optional modules preprocesses unaligned .fastq files.</p>
+<p>The steps and required dependendencies are following.</p>
+<div class="highlight-text"><div class="highlight"><pre>Quality filtering        : using Trimmomatic.
+Alignment                : using bowtie2
+.sam to .bam conversion  : using samtools
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.ana0_fastq2sbam.pooled">
+<code class="descclassname">dms2dfe.ana0_fastq2sbam.</code><code class="descname">pooled</code><span class="sig-paren">(</span><em>fastq_fhs_list</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana0_fastq2sbam.pooled" title="Permalink to this definition">¶</a></dt>
+<dd><p>This runs the submodules and used to multi-thread process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fastq_fhs_list</strong> &#8211; R1 read of fastq tuple with R1 and R2 if otherwise paired.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="step-1-variant-caling">
+<h3>Step 1 : Variant caling<a class="headerlink" href="#step-1-variant-caling" title="Permalink to this headline">¶</a></h3>
+<p>This requires aligned sorted bam files.</p>
+<span class="target" id="module-dms2dfe.ana1_sam2mutmat"></span><dl class="function">
+<dt id="dms2dfe.ana1_sam2mutmat.main">
+<code class="descclassname">dms2dfe.ana1_sam2mutmat.</code><code class="descname">main</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana1_sam2mutmat.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>This module processes alignment (.sam file)  and produces codon level mutation matrix of frequencies of mutations in the respective sample.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.ana1_sam2mutmat.pooled">
+<code class="descclassname">dms2dfe.ana1_sam2mutmat.</code><code class="descname">pooled</code><span class="sig-paren">(</span><em>sbam_fh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana1_sam2mutmat.pooled" title="Permalink to this definition">¶</a></dt>
+<dd><p>This module makes use of muti threading to speed up <cite>dms2dfe.lib.variant_caller.sam2mutmat</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sbam_fh</strong> &#8211; path to sorted bam file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="step-2-fitness-estimations">
+<h3>Step 2 : Fitness estimations<a class="headerlink" href="#step-2-fitness-estimations" title="Permalink to this headline">¶</a></h3>
+<p>This step requires mutation matrix of codons (.mut_cds format).</p>
+<span class="target" id="module-dms2dfe.ana2_mutmat2fit"></span><dl class="function">
+<dt id="dms2dfe.ana2_mutmat2fit.main">
+<code class="descclassname">dms2dfe.ana2_mutmat2fit.</code><code class="descname">main</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana2_mutmat2fit.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>This modules converts mutation matrices (.mat files produced in upstream ana1_sam2mutmat module) and calculates the fitness values for samples.
+The output data is saved in <cite>data_fit</cite> format as described in <a class="reference internal" href="4io.html#io"><span>I/O</span></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.ana2_mutmat2fit.pooled_data_lbl2data_fit">
+<code class="descclassname">dms2dfe.ana2_mutmat2fit.</code><code class="descname">pooled_data_lbl2data_fit</code><span class="sig-paren">(</span><em>fits_list</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana2_mutmat2fit.pooled_data_lbl2data_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>This estimates Fitness (data_fit) from mutation data (data_lbl) in selcted and unselected samples.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fits_list</strong> &#8211; tuple with name (lbl) of input and selected samples.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.ana2_mutmat2fit.pooled_mut_mat_cds2data_lbl">
+<code class="descclassname">dms2dfe.ana2_mutmat2fit.</code><code class="descname">pooled_mut_mat_cds2data_lbl</code><span class="sig-paren">(</span><em>lbls_list_tp</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana2_mutmat2fit.pooled_mut_mat_cds2data_lbl" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function converts mutation matrix (produced from .mat) file into data_lbl format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lbls_list_tp</strong> &#8211; tuple with name (lbl) of sample and path to file with codon level mutation matrix (.mat_mut_cds).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p><strong>Estimation of fitness scores</strong></p>
+<p>Since DMS studies are primarily based on competition assays, the preferential enrichment of a particular mutant with respect to other can be best described in terms of relative fitness changes.
+The fitness could be interpreted into the functional importance at molecular level of the RNA and protein which eventually translate into organismal fitness.
+Fitness is calculated as a fold change of frequencies of mutants in selected sample with respect to unselected sample.</p>
+\begin{equation}
+FC = \log_{2}\left [ \frac{N_{i,sel}}{N_{i,unsel}} \right ]
+\end{equation}<p>where FC is fold change score, N<sub>i,sel</sub> and N<sub>i,unsel</sub> are frequencies of mutant i<sup>th</sup> in selected and unselected conditions respectively.</p>
+<p>This fold change value is dependent on the seqencing depths of the two samples.
+So to eliminate this factor, following two strategies are implemented in <cite>dms2dfe</cite>.</p>
+<p><strong>Normalization of fold change values with respect to frequencies of synonymous mutations</strong></p>
+<p>With the conventional methods used for generation of mutation libraries such as using degenerate codon NNK or NNS - alongside non-synonymous mutations, a proportion of synonymous mutations are cloned.
+Synonymous mutations can be considered are fairly invariable in terms of their fold change values since they express into the same (wild-type) sequence hence can be used as a normalizing factor.
+In other words, since their functional importance would be conserved and equal to wild type allele, fold changes of synonymous mutations can be used benchmark wild type fitness.
+From detected synonymous mutations, a maximum likelihood estimate of the gaussian fitted distribution of their fold changes is used as a normalizing factor.
+A Z-score is calculated from the fold changes employing population mean and standard deviation from the normalizing factor as described in Supplementary Material.</p>
+\begin{equation}\label{eq:solve}
+F_i=\frac{FC_{i}-\mu_{syn}}{\sigma_{syn}}
+\end{equation}<p>where F<sub>i</sub> is Z-score normalized fitness of i<sup>th</sup> mutant. mu<sub>syn</sub> and sigma<sub>syn</sub> are a population mean and standard deviation of Gaussian fitted distribution of fold changes of wild type (synonymous) mutants respectively.</p>
+<p><strong>Normalization of fold change values with respect to frequencies of wild type</strong></p>
+<p>Alternatively, normalization can also be carried out with respect to wild type alleles as described by Melnikov et. al. [&#64;Melnikov2014].
+This approach is especially useful in scenarios where synonymous mutants are not generated through the library cloning method used.</p>
+\begin{equation}
+F_{i} = FC_{i} - FC_{i,wild}
+\end{equation}<p>where F<sub>i</sub> and FC<sub>i</sub> are normalized fitness, non-normalized fold change of i<sup>th</sup> mutant.
+FC<sub>i,wild</sub> fold change of wild type amino acids at that position.</p>
+<p>Normalization with respect to synonymous mutations is sensitive to changes in coverage across the length of reference sequence which is especially the case in shot gun sequencing methods eg. tagmentation based library preparations.
+To account for this, the both methods can be used in tandem with synonymous mutation for better normalization.</p>
+<p><strong>Classification of mutants based on fitness values</strong></p>
+<p>Since the fitness values are scaled based on wild type alleles, the mutants can be classified as deleterious (if F<sub>i</sub> &lt; -2), neutral (if -2 =&gt; F<sub>i</sub> =&lt; 2) and beneficial (if F<sub>i</sub> &gt; 2) as follows,</p>
+\begin{equation}
+M_{i} \in \left \{\begin{matrix}
+deleterious  & if \  F_i<-2 \\
+neutral  & if \ -2\geq F_i\leq2 \\
+beneficial  & if \ F_i>2
+\end{matrix}\right.
+\end{equation}<p>where, M<sub>i</sub> is i<sup>th</sup> kind of survived mutant.</p>
+</div>
+<div class="section" id="step-3-comparisons">
+<h3>Step 3 : Comparisons<a class="headerlink" href="#step-3-comparisons" title="Permalink to this headline">¶</a></h3>
+<p><strong>Classification of mutants based on comparison of fitness values (DFEs)</strong></p>
+<p>Based on the categoris of fitness of mutants in test and control experimental conditions, mutants are classified in three categories <cite>positive</cite>, <cite>negative</cite> and <cite>robust</cite>.</p>
+\begin{equation}
+Selection(M_{i,test}) \in \left \{\begin{matrix}
+positive & if \ (M_{i,control} \notin beneficial \ and \ M_{i,test} \in beneficial)\\
+& or\ (M_{i,control} \in deleterious \ and \ M_{i,test} \in neutral))\\
+negative & if \ (M_{i,control} \notin deleterious \ and \ M_{i,test} \in deleterious)\\
+& or\ (M_{i,control} \in beneficial \ and \ M_{i,test} \in neutral))\\
+robust & else
+\end{matrix}\right.
+\end{equation}<p>where M<sub>i,test</sub> and M<sub>i,control</sub> are i<sup>th</sup> kind of survived mutant in test and control libraries respectively.</p>
+<p>This categorization simplifies the data in terms of overall dynamics of DFEs.</p>
+<span class="target" id="module-dms2dfe.ana3_fit2comparison"></span><dl class="function">
+<dt id="dms2dfe.ana3_fit2comparison.main">
+<code class="descclassname">dms2dfe.ana3_fit2comparison.</code><code class="descname">main</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana3_fit2comparison.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>This modules makes the comparison between test (eg. treated) and control (eg. untreated) experiments. 
+The output data is saved in <cite>data_comparison</cite> format as described in <a class="reference internal" href="4io.html#io"><span>I/O</span></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.ana3_fit2comparison.pooled_data_fit2data_comparison">
+<code class="descclassname">dms2dfe.ana3_fit2comparison.</code><code class="descname">pooled_data_fit2data_comparison</code><span class="sig-paren">(</span><em>data_comparison_tp</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana3_fit2comparison.pooled_data_fit2data_comparison" title="Permalink to this definition">¶</a></dt>
+<dd><p>This converts the Fitness values to Relative fitness among test and control fed as input.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_comparison_tp</strong> &#8211; tuple with name (lbl) of control and test samples.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dms2dfe.ana4_plotter">
+<span id="visualizations"></span><h3>Visualizations<a class="headerlink" href="#module-dms2dfe.ana4_plotter" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="dms2dfe.ana4_plotter.main">
+<code class="descclassname">dms2dfe.ana4_plotter.</code><code class="descname">main</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana4_plotter.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>This module makes vizualization for output of <cite>dms2dfe</cite>.</p>
+<ol class="arabic simple">
+<li>Scatter grid plots raw counts in replicates, if present.</li>
+<li>Mutation matrix. of frequencies of mutants (log scaled).</li>
+<li>Scatter plots of raw counts among selected and unselected samples</li>
+<li>Mutation matrix. of Fitness values.</li>
+<li>DFE plot. ie. Distribution of Fitness values for samples.</li>
+<li>Projections on PDB. Average of fitness values per residue are projected onto PDB file.</li>
+</ol>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dms2dfe.ana4_modeller">
+<span id="classification-models"></span><h3>Classification models<a class="headerlink" href="#module-dms2dfe.ana4_modeller" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="dms2dfe.ana4_modeller.main">
+<code class="descclassname">dms2dfe.ana4_modeller.</code><code class="descname">main</code><span class="sig-paren">(</span><em>prj_dh</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana4_modeller.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>This modules trains a Random Forest classifier with given data in <cite>data_fit</cite> format.</p>
+<p>This plots the results in following visualisations.</p>
+<div class="highlight-text"><div class="highlight"><pre>ROC plots
+Relative importances of features
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prj_dh</strong> &#8211; path to project directory.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms2dfe.ana4_modeller.pooled_io_ml">
+<code class="descclassname">dms2dfe.ana4_modeller.</code><code class="descname">pooled_io_ml</code><span class="sig-paren">(</span><em>data_fit_key</em><span class="sig-paren">)</span><a class="headerlink" href="#dms2dfe.ana4_modeller.pooled_io_ml" title="Permalink to this definition">¶</a></dt>
+<dd><p>This module makes use of muti threading to speed up <cite>dms2dfe.lib.io_ml.data_fit2ml</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_fit_key</strong> &#8211; in the form &lt;data_fit&gt;/&lt;aas/cds&gt;/&lt;name of file&gt;.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="_sources/3programs.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2016, Rohan Dandage.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

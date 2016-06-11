@@ -1,0 +1,6 @@
+dms2dfe.ana3_fit2rel_fit.main
+=============================
+
+.. currentmodule:: dms2dfe.ana3_fit2rel_fit
+
+.. autofunction:: main

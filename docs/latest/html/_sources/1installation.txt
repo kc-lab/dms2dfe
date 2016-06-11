@@ -1,0 +1,80 @@
+.. _installation:
+
+==========================================
+Installation
+==========================================
+
+
+Packages requirements
+---------------------
+
+This makes use of efficient libraries such as `pandas` [1]_ to handle data tables `pysam` [2]_ to handle sequence alignment files and `scikit-learn` [3]_ to generate classification models.
+`Anaconda Python Distribution`_ is recommended for installing python packages.
+
+.. _Anaconda Python Distribution: https://repo.continuum.io/archive/Anaconda2-4.0.0-Linux-x86_64.sh
+
+Especially we recommend installing `pysam` by following command before installing `dms2dfe`.
+
+.. code-block:: text
+
+    conda install -c bioconda pysam==0.8.4
+
+Installation of `dms2dfe`
+-------------------------
+
+`dms2dfe` can be installed by following commands.  
+
+.. code-block:: text
+
+    git clone https://github.com/rraadd88/dms2dfe.git
+    cd dms2dfe
+    pip install .
+
+Installation of dependencies
+----------------------------
+
+These can be configured by following command
+
+.. code-block:: text
+    
+    from dms2dfe import configure
+    configure.main("path/to/project_directory","deps")
+
+Source files of the tools would be downloaded in `current_directory/dms2dfe_dependencies` folder, paths of which to the source files of all the tools would be appended to the `"project_directory"/cfg/info`.
+
+Additionally, optionally for projecting Fitness values on PDB structures, `dms2dfe` requires `UCSF-Chimera`_ (tested on 1.10.2).
+
+.. _UCSF-Chimera: https://www.cgl.ucsf.edu/chimera/cgi-bin/secure/chimera-get.py?file=linux_x86_64/chimera-1.10.2-linux_x86_64.bin
+
+Details of dependencies
+-----------------------
+
+Functions of external dependencies and the requirement,
+
+.. code-block:: text
+
+    Feature extraction from PDB structure       : requires DSSP (2.0.4)
+    Quality control .fastq files                : requires Trimmomatic (0.33)
+    Alignining .fastq files                     : requires Bowtie2 (2.2.1)
+    Convert sam to sorted bam                   : requires samtools (0.1.18)
+
+These paths can be permenently appended to default configuration of `dms2dfe` by following command,
+
+.. code-block:: text
+    
+    from dms2dfe import configure
+    configure.main("defaults")
+
+Troubleshoot
+------------
+
+Please refer to :ref:`Troubleshoot` page.
+
+Citations
+---------
+
+.. [1] McKinney, W. & Team, P. D. Pandas - Powerful Python Data Analysis Toolkit. Pandas - Powerful Python Data Anal. Toolkit 1625 (2015).
+
+.. [2] Heger, A. Pysam. github.com (2009). at <https://github.com/pysam-developers/pysam>
+
+.. [3] Pedregosa, F. et al. Scikit-learn: Machine Learning in Python. … Mach. Learn. … 12, 2825–2830 (2012).

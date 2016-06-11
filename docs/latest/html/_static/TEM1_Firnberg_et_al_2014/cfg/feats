@@ -1,0 +1,7 @@
+aasi,Conservation score (ConSurf),Solvent accessibility (PopMusic),Average $\Delta\Delta G$ per sequence position (PopMusic),Sum of negative contributors (PopMusic),Sum of positive contributors (PopMusic)
+,,,,,
+26,-0.523,44.64,0.4,0,7.62
+27,1.027,57.72,0.16,-0.56,3.66
+28,1.393,56.57,0.15,-0.39,3.29
+,,,,,
+290,-0.596,35.48,1.09,0,20.63

@@ -20,9 +20,12 @@ def main(prj_dh):
     This optional modules preprocesses unaligned .fastq files.
 
     The steps and required dependendencies are following. 
-    #. Quality filtering        : using Trimmomatic.
-    #. Alignment                : using bowtie2
-    #. .sam to .bam conversion  : using samtools
+
+    .. code-block:: text
+
+        Quality filtering        : using Trimmomatic.
+        Alignment                : using bowtie2
+        .sam to .bam conversion  : using samtools
 
     :param prj_dh: path to project directory
     """

@@ -9,6 +9,7 @@ docs/generated
 docs/_static
 docs/_templates
 docs/Makefile
+make_docs
 
 dms2dfe.egg-info/*
 dist/*
