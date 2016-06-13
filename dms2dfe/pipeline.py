@@ -48,6 +48,10 @@ def main(prj_dh):
     ana4_modeller.main(prj_dh)
     ana4_plotter.main(prj_dh)    
 
+    logging.info("Location of output comparison data: %s/plots/aas/data_comparison" % (prj_dh))
+    logging.info("Location of molecular features: %s/plots/aas/data_feats" % (prj_dh))
+    logging.info("Location of output visualizations: %s/plots/aas/" % (prj_dh))
+    logging.info("For more information about outputs, please refer to http://kc-lab.github.io/dms2dfe .")
     logging.shutdown()
 
 if __name__ == '__main__':

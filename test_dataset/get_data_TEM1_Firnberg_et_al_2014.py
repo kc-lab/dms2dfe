@@ -10,10 +10,10 @@ fn="Data_S1-S4.xlsx"
 if not exists("TEM1_Firnberg_et_al_2014/data_input"):
     makedirs("TEM1_Firnberg_et_al_2014/data_input")
 if not exists("TEM1_Firnberg_et_al_2014/data_input/Data_S1-S4.xlsx"):
-    logging.info("Downloading supporting data")
+    logging.info("Downloading input data in TEM1_Firnberg_et_al/data_input")
     com="wget -q http://mbe.oxfordjournals.org/content/suppl/2014/02/22/msu081.DC1/"+fn+" --directory-prefix=TEM1_Firnberg_et_al_2014/data_input"
     subprocess.call(com,shell=True)
-logging.info("Generating mutation-matrices (.mut_cds) in TEM1_Firnberg_et_al/data_input")
+# logging.info("Generating mutation-matrices (.mut_cds) in TEM1_Firnberg_et_al/data_input")
 data=pd.read_excel("TEM1_Firnberg_et_al_2014/data_input/"+fn,"S1 Codon fitnesses")
 cols_amp_concs=list(data.iloc[0,:])
 data=data.iloc[1:,:]

@@ -187,19 +187,22 @@ def main(prj_dh):
                     else:
                         logging.info("already processed: %s" % basename(plot_fh))                
 
-    #chimera_dh="~/.local/UCSF-Chimera64-1.10.1/bin"
-    chimera_dh=guess_chimera_path()[0]
-    if chimera_dh:
-        std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
-        if std.stdout.read():
-            if not stat(plot_pdb_chimera_fhs_fh).st_size == 0:
-                subprocess.call("%s/bin/chimera --silent %s/lib/plot_pdb_chimera.py" % (chimera_dh,abspath(dirname(__file__))),shell=True)
+    try:
+        chimera_dh=guess_chimera_path()[0]
+        if chimera_dh:
+            std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
+            if std.stdout.read():
+                if not stat(plot_pdb_chimera_fhs_fh).st_size == 0:
+                    subprocess.call("%s/bin/chimera --silent %s/lib/plot_pdb_chimera.py" % (chimera_dh,abspath(dirname(__file__))),shell=True)
+                else:
+                    logging.info("already processed")  
             else:
-                logging.info("already processed")  
+                logging.error("skipping: pdb vizs: graphics drivers not present/configured.") 
+                logging.info("To configure graphics drivers for UCSF-Chimera please install mesa-utils: sudo apt-get install mesa-utils;sudo apt-get update ")  
         else:
-            logging.error("skipping: pdb images: bcz graphics drivers not configured")  
-    else:
-        logging.info("skipping chimera viz's : chimera_dh not defined")      
+            logging.info("skipping pdb vizs : please install UCSF-Chimera ")      
+    except:
+        logging.info("skipping pdb vizs : please install UCSF-Chimera")      
     logging.shutdown()
 
 if __name__ == '__main__':

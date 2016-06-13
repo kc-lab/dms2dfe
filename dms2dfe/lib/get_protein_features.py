@@ -93,8 +93,13 @@ def pdb2dfromactivesite(pdb_fh,active_sites=[]):
             for residue in chainA:
                 if residue.get_resname() in aas_21_3letter: #only aas 
                     dfromligands.loc[residue.id[1],"ref_pdb"]=residue.get_resname()
-                    dfromligands.loc[residue.id[1],"Distance from Ligand: %s (ATOM: %s)" % (ligand_residue_obj.get_resname(), \
-                    ligand_atom_obj.get_name())]=ligand_residue_obj[ligand_atom_obj.get_name()]-residue["CA"]
+                    if not ligand_residue_obj.get_resname() in aas_21_3letter:
+                        dfromligands.loc[residue.id[1],"Distance from Ligand: %s (ATOM: %s)" % (ligand_residue_obj.get_resname(), \
+                                            ligand_atom_obj.get_name())]=ligand_residue_obj[ligand_atom_obj.get_name()]-residue["CA"]
+                    else:
+                        dfromligands.loc[residue.id[1],"Distance from active site residue: %s (ATOM: %s)" % (ligand_residue_obj.get_resname(), \
+                                            ligand_atom_obj.get_name())]=ligand_residue_obj[ligand_atom_obj.get_name()]-residue["CA"]
+
     dfromligands.index.name="aasi"
     del dfromligands["ref_pdb"]
     return dfromligands
