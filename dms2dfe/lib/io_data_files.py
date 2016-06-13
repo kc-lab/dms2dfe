@@ -57,7 +57,8 @@ def info2src(prj_dh):
         if not pd.isnull(info_path):
             if not exists(info_path):                
                 logging.error('Path to files do not exist %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
-                sys.exit()
+                from dms2dfe import configure
+                configure.main(prj_dh,"deps")
     info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     csv2src(prj_dh+"/cfg/info","%s/../tmp/info.py" % (abspath(dirname(__file__))))
     logging.info("configuration compiled: %s/cfg/info" % prj_dh)

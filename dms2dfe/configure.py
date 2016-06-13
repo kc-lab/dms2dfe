@@ -88,7 +88,8 @@ def main(prj_dh,inputs=None):
         if not exists(samtools_fh):            
             std=subprocess.Popen("cd dms2dfe_dependencies/samtools-0.1.18; make",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             if "fatal error: zlib.h" in std.stderr.read():
-                print "\n###   TROUBLESHOOT   ###\nFor interference issues (with htslib) installation of samtools dependency gave following error,\n.. zlib.h: No such file or directory\nPlease use following command before installing samtools. i.e.\nsudo apt-get install zlib1g-dev libncurses5-dev\nsudo apt-get update\ndms2dfe_dependencies/samtools-0.1.18/make\n\nAfter that rerun this command (configure.main(prj_dh,'deps'))\n"
+                print "\n###   TROUBLESHOOT   ###\nFor interference issues (with htslib) installation of samtools dependency gave following error,\n.. zlib.h: No such file or directory\nPlease use following command before installing samtools. i.e.\n\nsudo apt-get install zlib1g-dev libncurses5-dev;sudo apt-get update\n\ndms2dfe_dependencies/samtools-0.1.18/make\nAfter the successfull installation, please configure dms2dfe by following command.\nfrom dms2dfe import configure\nconfigure.main(prj_dh)\n\n"
+                sys.exit()
             else:
                 subprocess.call("chmod +x %s" % samtools_fh,shell=True)
         #trimmomatic
@@ -102,10 +103,11 @@ def main(prj_dh,inputs=None):
 
         std=subprocess.Popen("which java",shell=True,stdout=subprocess.PIPE)
         if not std.stdout.read():
-            print "\n###   TROUBLESHOOT   ###\njava environment isn't installed on the system.\nIt would be required for running Trimmomatic through fast2qcd module. Please install it by following command,\nsudo apt-get install openjdk-7-jre-headless\nsudo apt-get update\n"
+            print "\n###   TROUBLESHOOT   ###\njava environment isn't installed on the system.\nIt would be required for running Trimmomatic through fast2qcd module. Please install it by following command,\n\nsudo apt-get install openjdk-7-jre-headless;sudo apt-get update\n\nAfter the successfull installation, please configure dms2dfe by following command.\n\nfrom dms2dfe import configure\nconfigure.main(prj_dh)\n\n"
+            sys.exit()
         std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
         if not std.stdout.read():
-            print "\n###   TROUBLESHOOT   ###\nTo generate images from PDB structures using UCSF-Chimera, essential graphics drivers are required.\n In case of the hardware already present on system please install following drivers.\nsudo apt-get install mesa-utils\nsudo apt-get update\n"
+            print "\n###   TROUBLESHOOT   ###\nTo generate images from PDB structures using UCSF-Chimera, essential graphics drivers are required.\nIn case of the hardware already present on system please install following drivers.\n\nsudo apt-get install mesa-utils;sudo apt-get update\n\n"
 
         #add to defaults
         info=pd.read_csv("%s/cfg/info" % (prj_dh))

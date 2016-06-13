@@ -501,7 +501,7 @@ def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
 #                                                 'class_fit_test':data_fit_test.loc[:,"class_fit"]})
                     data_comparison=pd.DataFrame()
                     data_comparison.loc[:,"mutids"]=data_fit_ctrl.loc[:,"mutids"]
-                    data_comparison.loc[:,"mut"]=data_fit_ctrl.loc[:,"ref"]
+                    data_comparison.loc[:,"mut"]=data_fit_ctrl.loc[:,"mut"]
                     data_comparison.loc[:,"ref"]=data_fit_ctrl.loc[:,"ref"]
                     data_comparison.loc[:,"Fi_ctrl"]=data_fit_ctrl.loc[:,"FiA"]
                     data_comparison.loc[:,"class_fit_ctrl"]=data_fit_ctrl.loc[:,"class_fit"]
