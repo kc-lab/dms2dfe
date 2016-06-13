@@ -1,6 +1,0 @@
-dms2dfe.pipeline.main
-=====================
-
-.. currentmodule:: dms2dfe.pipeline
-
-.. autofunction:: main

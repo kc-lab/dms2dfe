@@ -1,6 +1,0 @@
-dms2dfe.ana5_plotter.main
-=========================
-
-.. currentmodule:: dms2dfe.ana5_plotter
-
-.. autofunction:: main

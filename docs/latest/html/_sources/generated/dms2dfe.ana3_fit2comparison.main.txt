@@ -1,6 +1,0 @@
-dms2dfe.ana3_fit2comparison.main
-================================
-
-.. currentmodule:: dms2dfe.ana3_fit2comparison
-
-.. autofunction:: main

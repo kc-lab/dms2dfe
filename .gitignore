@@ -2,13 +2,14 @@
 *.pyc
 *.ipynb_checkpoints
 
-docs/*.rst
-docs/*.py
-docs/_build
-docs/generated
-docs/_static
-docs/_templates
-docs/Makefile
+docs
+#docs/*.rst
+#docs/*.py
+#docs/_build
+#docs/generated
+#docs/_static
+#docs/_templates
+#docs/Makefile
 
 update_forks
 
