@@ -207,6 +207,7 @@ def sam2mutmat(sbam_fh,fsta_id,fsta_seqlen,fsta_seq,cds_ref,Q_cutoff):
         else :
             mut_cds_mat_df.ix[mut_cdi.loc["cdi"],mut_cdi.loc["qry_cd"]]+=1 # row, column    
     mut_cds_mat_df.insert(0,'ref_cd',cds_ref)
+    mut_cds_mat_df.loc[:,"refi"]=range(len(mut_cds_mat_df))+1
     mut_cds_mat_df.to_csv(mat_mut_cds_fh_str)
     
     # logging.info("OTPTS:\t'%s' " % list_mut_cds_fh_str)

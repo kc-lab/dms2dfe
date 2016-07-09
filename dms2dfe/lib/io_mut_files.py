@@ -21,22 +21,22 @@ from dms2dfe.lib.fit_curve import fit_gauss_params
 from dms2dfe.lib.global_vars import aas_21,cds_64,mut_types_form,mut_types_NorS
 from dms2dfe.lib.convert_seq import cds2aas
 
-def makemutids(data_lbl,ref_len):
+def makemutids(data_lbl,refis):
     """
     This makes the mutation ids eg. M001T or A024T from mutation matrix.
     
     :param data_lbl: dataframe with columns of reference (`ref`) and mutation (`mut`).
-    :param ref_len: length of reference nucleotide sequence.
+    :param refis: index of reference amino acids/ codons.
     :returns mutids: list of mutation ids.
     """
     mutids=[]
     data_lbl=data_lbl.reset_index()
-    if (len(data_lbl)/ref_len==21) or (len(data_lbl)/ref_len==64):
-        for muti in range(len(data_lbl)/ref_len):
-            for refi in range(ref_len):
-                mutids.append("%s%03d%s" % (data_lbl.loc[muti*ref_len+refi,'ref'],refi+1,data_lbl.loc[muti*ref_len+refi,'mut']))
-    else:
-        logging.error("len(data_lbl)/ref_len is %d instead of 21 or 64" % (len(data_lbl)/ref_len))
+    ref_len=len(refis)
+    for muti in range(len(data_lbl)/ref_len):
+        refii=0
+        for refi in refis:
+            mutids.append("%s%03d%s" % (data_lbl.loc[muti*ref_len+refii,'ref'],refi,data_lbl.loc[muti*ref_len+refii,'mut']))
+            refii+=1
     if len(data_lbl)!=len(mutids):
         logging.error("len(data_lbl)!=len(mutids) bcz %d != %d" % (len(data_lbl),len(mutids)))
         sys.exit()
@@ -63,8 +63,8 @@ def mat_cds2mat_aas(mat_cds,host) :
             mat_aas.loc[:,'%s' % aai]=mat_aas_tmp.loc[:,'%s' % aai]
     mat_aas.columns.name='mut'
     mat_aas.index.name='ref'
+    # mat_aas.loc[:,'refi']=mat_cds.loc[:,'refi']
     return mat_aas
-        #for rowi,row in mat_cds.iterrows() :
             
 def getNS(data_all) : # data (col): can be cds or aas
     """
@@ -353,24 +353,26 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh,fsta_seqlen,cctmr,N
                 if type_form=="aas":
                     data_lbl=pd.DataFrame(lbl_mat_aas.unstack())
                 elif type_form=="cds":
-                    data_lbl=pd.DataFrame(lbl_mat_cds.unstack())
-#                 global data_lbl 
-                data_lbl.columns=["NiA"]  # rename col Ni  
-                data_lbl['mutids']=makemutids(data_lbl,fsta_seqlen/3) # add mutids
-                data_lbl=pd.concat([data_lbl,getNS(data_lbl)], axis=1)
-                for type_NorS in mut_types_NorS : # N OR S  
-                    data_lbl.loc[:,('Ni%scut' % type_NorS)]=data_lbl.loc[:,'Ni%s' % type_NorS]
-                    data_lbl.loc[data_lbl.loc[:,('Ni%scut' % type_NorS)]<Ni_cutoff,('Ni%scut' % type_NorS)]=np.nan \
-                    #Ni_cutoff=8 varscan default
-                    data_lbl.loc[:,('Ni%scutlog' % type_NorS)]=np.log2(data_lbl.loc[:,('Ni%scut' % type_NorS)].astype('float'))
-                    data_lbl.loc[(data_lbl.loc[:,('Ni%scutlog' % type_NorS)]==-np.inf) \
-                                 | (data_lbl.loc[:,('Ni%scutlog' % type_NorS)]==np.inf),('Ni%scutlog' % type_NorS)]=np.nan
-                if not exists(prj_dh+"/data_lbl/"+type_form):
-                    try:
-                        makedirs(prj_dh+"/data_lbl/"+type_form)
-                    except :
-                        logging.warning("race error data_lbl")
-                data_lbl.reset_index().to_csv('%s/data_lbl/%s/%s' % (prj_dh,type_form,str(lbli)),index=False)
+                    data_lbl=pd.DataFrame(lbl_mat_cds.drop("refi",axis=1).unstack())
+                if (len(data_lbl)/(fsta_seqlen/3)==21) or (len(data_lbl)/(fsta_seqlen/3)==64):
+                    data_lbl.columns=["NiA"]  # rename col Ni  
+                    data_lbl.loc[:,'mutids']=makemutids(data_lbl,lbl_mat_cds.loc[:,"refi"]) # add mutids
+                    data_lbl=pd.concat([data_lbl,getNS(data_lbl)], axis=1)
+                    for type_NorS in mut_types_NorS : # N OR S  
+                        data_lbl.loc[:,('Ni%scut' % type_NorS)]=data_lbl.loc[:,'Ni%s' % type_NorS]
+                        data_lbl.loc[data_lbl.loc[:,('Ni%scut' % type_NorS)]<Ni_cutoff,('Ni%scut' % type_NorS)]=np.nan \
+                        #Ni_cutoff=8 varscan default
+                        data_lbl.loc[:,('Ni%scutlog' % type_NorS)]=np.log2(data_lbl.loc[:,('Ni%scut' % type_NorS)].astype('float'))
+                        data_lbl.loc[(data_lbl.loc[:,('Ni%scutlog' % type_NorS)]==-np.inf) \
+                                     | (data_lbl.loc[:,('Ni%scutlog' % type_NorS)]==np.inf),('Ni%scutlog' % type_NorS)]=np.nan
+                    if not exists(prj_dh+"/data_lbl/"+type_form):
+                        try:
+                            makedirs(prj_dh+"/data_lbl/"+type_form)
+                        except :
+                            logging.warning("race error data_lbl")
+                    data_lbl.reset_index().to_csv('%s/data_lbl/%s/%s' % (prj_dh,type_form,str(lbli)),index=False)
+                else:
+                    logging.error("len(data_lbl)/ref_len is %d instead of 21 or 64" % (len(data_lbl)/(fsta_seqlen/3)))
             else :
                 logging.info("already processed: %s" % (str(lbli)))
     else :
