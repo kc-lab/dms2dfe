@@ -241,33 +241,45 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
     from dms2dfe.lib.global_vars import aas_21,cds_64
 
     data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
+
+    refis=[str2num(i) for i in data_fit_heatmap.columns.tolist()]
+    refrefis=pd.DataFrame(data_fit_heatmap.columns.tolist(),index=refis,columns=["refrefi"])
+
+    data_fit_heatmap2=pd.DataFrame(index=data_fit_heatmap.index)
+    for i in range(1,refis[-1]+1):
+        if i not in refis:
+            data_fit_heatmap2.loc[:,i]=np.nan
+        else :
+            data_fit_heatmap2.loc[:,refrefis.loc[i,"refrefi"]]=data_fit_heatmap.loc[:,refrefis.loc[i,"refrefi"]]
+
     data_syn_locs=data_fit.loc[0:len(data_fit)/21-1,["mutids","ref"]]
     data_syn_locs["refi"]=[str2num(i)-1+0.15 for i in data_syn_locs["mutids"]]
-
-    fig=plt.figure(figsize=(50, 12),dpi=500)      
-    gs = gridspec.GridSpec(3, 1,height_ratios=[1,1,32])
-
     if "aas" in type_form:
         data_syn_locs["muti"]=[20-aas_21.index(i)+0.15 for i in data_syn_locs["ref"]]
     if "cds" in type_form:
         cds_64.sort()
         data_syn_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_syn_locs["ref"]]
-    
+
+
+    fig=plt.figure(figsize=(80, 12),dpi=500)      
+    gs = gridspec.GridSpec(3, 1,height_ratios=[1,1,32])
+
+
     ax_all=plt.subplot(gs[:])
     ax_all.set_axis_off()
-    
+
     ax = plt.subplot(gs[2])
-    result=sns.heatmap(data_fit_heatmap,cmap=cmap,ax=ax)
+    result=sns.heatmap(data_fit_heatmap2,cmap=cmap,ax=ax)
     ax.set_xlabel('Wild type',fontdict={'size': 20})
     ax.set_ylabel('Mutation to',fontdict={'size': 20})
     cbar=ax.figure.colorbar(ax.collections[0])
     cbar.set_label(("$%s$" % col),fontdict={'size': 20})
     if xticklabels=="seq":
-        ax.set_xticklabels(data_fit_heatmap.columns.tolist(),rotation=90)
+        ax.set_xticklabels(data_fit_heatmap2.columns.tolist(),rotation=90)
     else:
-        ax.set_xticks(range(1,len(data_fit_heatmap.columns),20))
-        ax.set_xticklabels(range(1,len(data_fit_heatmap.columns),20),rotation=90)
-    yticklabels=data_fit_heatmap.index.values.tolist()
+        ax.set_xticks(range(1,len(data_fit_heatmap2.columns),1))
+        ax.set_xticklabels(range(1,len(data_fit_heatmap2.columns),1),rotation=90)
+    yticklabels=data_fit_heatmap2.index.values.tolist()
     ax.set_yticklabels(yticklabels[::-1],rotation=0)
 
     for i in data_syn_locs.index.values:
@@ -288,10 +300,6 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
 
         ax_ss=plotss(data_feats,ax_ss)
         ax_acc=plotacc(data_feats,ax_acc)
-#     if "aas" in type_form:
-#         extent = ax_all.get_window_extent().transformed(ax_all.figure.dpi_scale_trans.inverted())
-#         extent.set_points(np.array([[5,0],[36,5]]))    
-#     elif "cds" in type_form:
     extent = ax_all.get_window_extent().transformed(ax_all.figure.dpi_scale_trans.inverted())
     extent.set_points(np.array([[5,0],[36,11]]))    
 

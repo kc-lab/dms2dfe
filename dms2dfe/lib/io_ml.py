@@ -50,7 +50,7 @@ def data_fit_feats2combo(data_fit,data_feats,y_coln):
     data_feats_prt=pd.DataFrame(index=data_fit.index,columns=data_feats.columns)
     rowi=0
     for row in data_feats_prt.iterrows():
-        if row[0] in data_feats_prt.index.values:
+        if (row[0] in data_feats_prt.index.values) and (row[0] in data_feats.index.values):
             data_feats_prt.iloc[rowi,:]=data_feats.loc[row[0],:]
         rowi+=1
     data_feats_prt.columns=["%s" % col for col in data_feats_prt.columns.tolist()]
