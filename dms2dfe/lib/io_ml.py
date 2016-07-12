@@ -24,9 +24,9 @@ warnings.simplefilter(action = "ignore", category = FutureWarning)
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
-def data_fit_feats2combo(data_fit,data_feats,y_coln):
+def data_fit_feats2combo(data_fit,data_feats,y_coln,keep_mutids=False):
     """
-    This combines data_fit and data_feats to data_all.
+    This combines data_fit and data_feats to make data_all.
     
     :param data_fit: fitness data (pandas dataframe).
     :param data_feats: features wrt length of protein 
@@ -45,15 +45,22 @@ def data_fit_feats2combo(data_fit,data_feats,y_coln):
         data_fit.loc[row[0],"aasi"]=int(''.join(ele for ele in mutid if ele.isdigit()))
     data_fit.loc[:,"aasi"]=data_fit.loc[:,"aasi"].astype(int)
     data_fit=data_fit.set_index("aasi",drop=True)
+    
+    if not data_feats.index.name=="aasi":
+        data_feats=data_feats.set_index("aasi",drop=True)
     if np.nan in data_feats.index.values:
         data_feats=data_feats.drop(np.nan,axis=0)
+    # data_feats.to_csv("test_data_feats")
     data_feats_prt=pd.DataFrame(index=data_fit.index,columns=data_feats.columns)
     rowi=0
     for row in data_feats_prt.iterrows():
         if (row[0] in data_feats_prt.index.values) and (row[0] in data_feats.index.values):
             data_feats_prt.iloc[rowi,:]=data_feats.loc[row[0],:]
         rowi+=1
+    # data_feats.to_csv("test_data_feats2")
     data_feats_prt.columns=["%s" % col for col in data_feats_prt.columns.tolist()]
+    # data_feats_prt.to_csv("test_data_feats_prt")
+    
     data_feats_aas_fh='%s/data_feats_aas' % abspath(dirname(__file__))
     data_feats_aas=pd.read_csv(data_feats_aas_fh)
     data_feats_aas=data_feats_aas.set_index("aas",drop=True)
@@ -95,7 +102,10 @@ def data_fit_feats2combo(data_fit,data_feats,y_coln):
     X_cols=np.array(X_cols+data_feats_prt.columns.tolist() \
                     +data_feats_aas_mut.columns.tolist() \
                     +data_feats_aas_ref.columns.tolist())
-    data_all=data_all.loc[:,list(X_cols)+[y_coln]]
+    if not keep_mutids:
+        data_all=data_all.loc[:,[y_coln]+list(X_cols)]
+    elif keep_mutids:
+        data_all=data_all.loc[:,["mutids",y_coln]+list(X_cols)]
     return data_all,X_cols
 
 def y2classes(data_combo,y_coln,mx,mn,increment):
@@ -123,7 +133,7 @@ def y2classes(data_combo,y_coln,mx,mn,increment):
         data_all=data_combo
     return data_all
 
-def X_cols2numeric(data_all,X_cols):
+def X_cols2numeric(data_all,X_cols,keep_cols=[]):
     """
     This converts features in text form (eg. C, H, L, ..) to numeric (eg. 0, 1, 2, ..)
     
@@ -133,9 +143,10 @@ def X_cols2numeric(data_all,X_cols):
     """
     for X_col in X_cols:
         if not data_all.applymap(np.isreal).all(0)[X_col]:
-            le = LabelEncoder()
-            le.fit(data_all.loc[:,X_col])            
-            data_all.loc[:,X_col]=le.transform(data_all.loc[:,X_col])
+            if not X_col in keep_cols:
+                le = LabelEncoder()
+                le.fit(data_all.loc[:,X_col])            
+                data_all.loc[:,X_col]=le.transform(data_all.loc[:,X_col])
     return data_all
 
 def denanrows(data_all):
@@ -146,8 +157,12 @@ def denanrows(data_all):
     :returns data_all: output dataframe.
     """
     keep_rows_bool=[]
-    for rowi in range(len(data_all)):
-        keep_rows_bool.append(all(~pd.isnull(data_all.iloc[rowi,:])))
+    if "mutids" in data_all.columns.tolist():
+        data_all_use=data_all.drop("mutids",axis=1)
+    else:
+        data_all_use=data_all
+    for rowi in range(len(data_all_use)):
+        keep_rows_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
     data_all=data_all.loc[keep_rows_bool,:]
     return data_all
 
@@ -305,7 +320,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,y_coln):
                 try:
                     feature_importances.reset_index().to_csv(data_fh.replace("_ml_","_ml_rel_imp_"),index=False)
                     run_RF(data_all,feature_importances.loc[:,'feature'].head(40).tolist(),\
-                           y_coln,plot_fh.replace("_roc_","_roc_top20_"))
+                           y_coln,plot_fh.replace("_roc_","_roc_top40_"))
                 except:
                     logging.info("exception")
             else:
