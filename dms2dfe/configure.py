@@ -109,6 +109,11 @@ def main(prj_dh,inputs=None):
         if not std.stdout.read():
             print "\n###   TROUBLESHOOT   ###\nTo generate images from PDB structures using UCSF-Chimera, essential graphics drivers are required.\nIn case of the hardware already present on system please install following drivers.\n\nsudo apt-get install mesa-utils;sudo apt-get update\n\n"
 
+            
+            #         wget http://www.clustal.org/omega/clustalo-1.2.2-Ubuntu-x86_64
+                # chmod +x clustalo-1.2.2-Ubuntu-x86_64
+
+        
         #add to defaults
         info=pd.read_csv("%s/cfg/info" % (prj_dh))
         info=info.set_index("varname",drop=True)

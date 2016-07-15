@@ -40,7 +40,7 @@ def revcom(s):
 	"""
 	return cmplmt(s[::-1])
 
-def cds2aas(cds_str,host) :
+def cds2aas(cds_str,host,stop_codon='X') :
     """
     This translates codons to amino acids.
     
@@ -58,4 +58,8 @@ def cds2aas(cds_str,host) :
         aas=str(coding_dna.translate(table=12))
     elif "sapiens" in host :
         aas=str(coding_dna.translate(table=1))
-    return aas.replace("*", "X")
+    if stop_codon!='X':
+        return aas
+    else:
+        return aas.replace("*", "X")
+

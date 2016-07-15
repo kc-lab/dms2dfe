@@ -234,3 +234,34 @@ def qcd2sbam(fastq_fhs_list,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtool
             logging.info("already processed: %s " % basename(fastq_R1_fh))
     else :
         logging.error("can not find: %s " % basename(fastq_R1_fh))
+
+def fasta_nts2prt(fsta_fh,host='coli',fsta_prt_fh=None):
+    from dms2dfe.lib.convert_seq import cds2aas
+    from Bio import SeqIO,Seq,SeqRecord
+    from Bio.Alphabet import IUPAC
+    
+    with open(fsta_fh,'r') as fsta_data:
+        for fsta_record in SeqIO.parse(fsta_data, "fasta") :
+            fsta_id=fsta_record.id
+            fsta_seq=str(fsta_record.seq)
+            break
+    if fsta_prt_fh==None:
+        fsta_prt_fh="%s_prt%s" % (splitext(fsta_fh)[0],splitext(fsta_fh)[1])
+    fsta_prt_f = open(fsta_prt_fh, "w")
+    fsta_seq_prt=cds2aas(fsta_seq,host,stop_codon='*')
+    fsta_data_prt = SeqRecord.SeqRecord(Seq.Seq(fsta_seq_prt,IUPAC.protein), id = splitext(basename(fsta_fh))[0]+'_prt', description='')
+    SeqIO.write(fsta_data_prt, fsta_prt_f, "fasta")
+    fsta_prt_f.close()
+    return fsta_seq_prt
+
+def fasta_writer(otpt_f,read_id,read_seq):
+    """
+    This appends a sequence reads in fastq format. 
+    
+    :param otpt_f: file object of output file.
+    :param read_id: ID of fastq file (str).
+    :param read_seq: sequence (str).
+    :param read_qua: quality scores (str).
+    """  
+    otpt_f.write(">"+read_id+"\n")
+    otpt_f.write(read_seq+"\n")
