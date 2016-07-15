@@ -431,7 +431,14 @@ def data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh,cctmr,lbls):
         else :
             logging.info("already processed: %s" % (fit_lbl))
 
-            
+def rescale_fitnessbysynonymous(data_fit,col_fit="FiA",col_fit_rescaled="FiA rescaled"):
+    for refrefi in data_fit.loc[:,"refrefi"].unique():
+        subset=data_fit.loc[data_fit.loc[:,"refrefi"]==refrefi,:]
+        FiW=float(subset.loc[subset.loc[:,"mut"]==subset.loc[:,"ref"],col_fit])
+        for subseti in subset.index.values:
+            data_fit.loc[subseti,col_fit_rescaled]=data_fit.loc[subseti,col_fit]-FiW
+    return data_fit          
+
 def class_comparison(data_comparison):
     """
     This classifies differences in fitness i.e. relative fitness into positive, negative or robust categories. 

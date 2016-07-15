@@ -103,7 +103,7 @@ def plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff):
     plt.tight_layout()
     return ax
 
-def plot_data_fit_dfe(data_fit,norm_type):
+def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$'):
     """
     This plots histogram of Distribution of Fitness Effects (DFE).
     
@@ -113,20 +113,23 @@ def plot_data_fit_dfe(data_fit,norm_type):
     fig = plt.figure(figsize=(8, 3),dpi=500)
     ax=plt.subplot(111)
     if norm_type=="syn":
-        data_fit[['FiA','FiS']].plot(kind='hist',bins=40,color=['seagreen','darkorange'],\
+        if not 'FiS' in data_fit.columns.tolist():
+                data_fit.loc[:,'FiS']=data_fit.loc[(data_fit_infered.loc[:,'ref']==data_fit.loc[:,'mut']),col_fit]
+        
+        data_fit[[col_fit,'FiS']].plot(kind='hist',bins=40,color=['seagreen','darkorange'],\
                                      ax=ax)
         l2=ax.legend(['Non-synonymous','Synonymous'],loc="upper right")
     else:
-        data_fit['FiA'].plot(kind='hist',bins=40,color='seagreen',ax=ax)
+        data_fit[col_fit].plot(kind='hist',bins=40,color='seagreen',ax=ax)
 
     ax.axvspan(-20, -2, color='blue', alpha=0.10)
     ax.axvspan(-2, 2, color='grey', alpha=0.10)
     ax.axvspan(2, 20, color='red', alpha=0.10)
     # l1=ax.legend(['Deleterious','Neutral','Beneficial'], loc='upper left')
 
-    ax.set_xlabel(r'$F_{i}$')
+    ax.set_xlabel(xlabel)
     ax.set_ylabel('Count')
-    xlim=np.ceil(np.max([data_fit.loc[:,'FiA'].max(),data_fit.loc[:,'FiA'].min()*-1]))
+    xlim=np.ceil(np.max([data_fit.loc[:,col_fit].max(),data_fit.loc[:,col_fit].min()*-1]))
     ax.set_xlim(-xlim,xlim)
     plt.tight_layout()
     return ax

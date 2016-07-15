@@ -16,6 +16,8 @@ from sklearn.preprocessing import LabelEncoder,label_binarize
 from sklearn.metrics import roc_curve, auc
 from sklearn.grid_search import GridSearchCV
 
+from dms2dfe.lib.io_nums import is_numeric
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -142,12 +144,43 @@ def X_cols2numeric(data_all,X_cols,keep_cols=[]):
     :returns data_all: dataframe with all numeric Xs.
     """
     for X_col in X_cols:
-        if not data_all.applymap(np.isreal).all(0)[X_col]:
+        # if not data_all.applymap(np.isreal).all(0)[X_col]:
+        if not is_numeric(data_all.loc[:,X_col]):
             if not X_col in keep_cols:
                 le = LabelEncoder()
                 le.fit(data_all.loc[:,X_col])            
                 data_all.loc[:,X_col]=le.transform(data_all.loc[:,X_col])
     return data_all
+
+def X_cols2binary(data,cols=None):    
+    if cols==None:
+        cols=[]
+        for col in data.columns.tolist():
+            if not is_numeric(data.loc[:,col]):
+                cols.append(col)
+    for col in cols:
+        classes=list(data.loc[:,col].unique())
+        if np.nan in classes:
+            classes.remove(np.nan)
+        for classi in classes:            
+            data.loc[data.loc[:,col]==classi,"%s: %s" % (col,classi)]=1
+            data.loc[~(data.loc[:,col]==classi),"%s: %s" % (col,classi)]=0
+            data.loc[(data.loc[:,col]==np.nan),"%s: %s" % (col,classi)]=np.nan
+        data=data.drop(col,axis=1)
+    return data
+
+def binary2classes(y_pred,classes):
+    y_pred_classes=[]
+    for row in y_pred:
+        for classi in range(len(classes)):
+            if np.sum(row)==1:
+                if row[classi]==1:
+                    y_pred_classes.append(classes[classi])
+                    break
+            else:
+                y_pred_classes.append(np.nan)
+                break
+    return y_pred_classes
 
 def denanrows(data_all):
     """
@@ -235,7 +268,7 @@ def plot_importances(importances,X_cols):
     plt.tight_layout()
     return feature_importances
 
-def run_RF(data_all,X_cols,y_coln,plot_fh="test"):
+def run_RF(data_all,X_cols,y_coln,plot_fh="test",test_size=.5):
     """
     This implements Random Forest classifier.
     
@@ -258,11 +291,11 @@ def run_RF(data_all,X_cols,y_coln,plot_fh="test"):
         # print classes
         y = label_binarize(y, classes=classes)
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5,
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size,
                                                             random_state=0)
 
         model = RandomForestClassifier()
-        param_grid = {"n_estimators": [500],
+        param_grid = {"n_estimators": [1000],
                       "max_features": ['sqrt', 'auto','log2'],
                       "criterion": ["gini", "entropy"]}
 
