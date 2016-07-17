@@ -16,7 +16,7 @@ import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe import configure
 from dms2dfe.lib.io_data_files import convert2h5form
-from dms2dfe.lib.get_protein_features import getdssp_data,pdb2dfromactivesite
+from dms2dfe.lib.get_protein_features import getdssp_data,pdb2dfromactivesite,get_consrv_score,get_residue_depth
 
 def main(prj_dh):
     """
@@ -47,6 +47,11 @@ def main(prj_dh):
     pdb_fh=info.pdb_fh
     dssp_fh=info.dssp_fh
     active_sites=info.active_sites
+    host=info.host
+    clustalo_fh=info.clustalo_fh
+    msms_fh=info.msms_fh
+    rate4site_fh=info.rate4site_fh
+    
     if active_sites!='nan':
         active_sites=[int(i) for i in active_sites.split(" ")]
     else:
@@ -74,10 +79,12 @@ def main(prj_dh):
         if not pd.isnull(pdb_fh):
             dssp_df=getdssp_data(pdb_fh,dssp_fh)
             dfromact_df=pdb2dfromactivesite(pdb_fh,active_sites)
+            consrv_score_df=get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh)
+            depth_df=get_residue_depth(pdb_fh,msms_fh)
             if len(data_feats)!=0:
-                data_feats=pd.concat([data_feats,dssp_df,dfromact_df], axis=1) #combine dssp_df and dfromact
+                data_feats=pd.concat([data_feats,dssp_df,dfromact_df,consrv_score_df,depth_df], axis=1) #combine dssp_df and dfromact
             else:
-                data_feats=pd.concat([dssp_df,dfromact_df], axis=1) #combine dssp_df and dfromact
+                data_feats=pd.concat([dssp_df,dfromact_df,consrv_score_df,depth_df], axis=1) #combine dssp_df and dfromact
             if not exists(prj_dh+"/data_feats"):
                 makedirs(prj_dh+"/data_feats")
             data_feats.reset_index().to_csv("%s/data_feats/feats" % prj_dh,index=False)

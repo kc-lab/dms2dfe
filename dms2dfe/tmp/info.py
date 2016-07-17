@@ -16,3 +16,5 @@ trimmomatic_fh='dms2dfe_dependencies/Trimmomatic-0.33/trimmomatic-0.33.jar' #Opt
 cctmr='nan' #Optional: if reference sequence is concatamer (space delimited) eg. 1<SPACE>265<SPACE>268<SPACE>532" 
 bowtie2_fh='dms2dfe_dependencies/bowtie2-2.2.1/bowtie2' #Optional: path to bowtie2 source file
 samtools_fh='dms2dfe_dependencies/samtools-0.1.18/samtools' #Optional: path to samtools source file
+clustalo_fh='dms2dfe_dependencies/clustalo-1.2.2-Ubuntu-x86_64' #nan
+msms_fh='dms2dfe_dependencies/msms/msms.x86_64Linux2.2.6.1' #nan

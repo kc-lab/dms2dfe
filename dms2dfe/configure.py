@@ -101,6 +101,34 @@ def main(prj_dh,inputs=None):
             subprocess.call(com,shell=True)
             subprocess.call("unzip dms2dfe_dependencies/Trimmomatic-0.33.zip -d dms2dfe_dependencies/",shell=True)
 
+        #clustalo
+        clustalo_fh="dms2dfe_dependencies/clustalo-1.2.2-Ubuntu-x86_64"
+        if not exists(clustalo_fh):
+            logging.info("configuring: clustalo")
+            soft_lnk="http://www.clustal.org/omega/clustalo-1.2.2-Ubuntu-x86_64"
+            com="wget -q %s --directory-prefix=dms2dfe_dependencies" % soft_lnk
+            subprocess.call(com,shell=True)
+            subprocess.call("chmod +x %s" % clustalo_fh,shell=True)
+
+        #msms
+        msms_fh="dms2dfe_dependencies/msms/msms.x86_64Linux2.2.6.1"
+        if not exists(msms_fh):
+            logging.info("configuring: msms")
+            soft_lnk="http://mgltools.scripps.edu/downloads/tars/releases/MSMSRELEASE/REL2.6.1/msms_i86_64Linux2_2.6.1.tar.gz"
+            com="wget -q %s --directory-prefix=dms2dfe_dependencies/msms; tar -xvzf dms2dfe_dependencies/msms/msms_i86_64Linux2_2.6.1.tar.gz -C dms2dfe_dependencies/msms" % soft_lnk
+            subprocess.call(com,shell=True)
+            
+        #rate4site
+        rate4site_fh="dms2dfe_dependencies/rate4site/rate4site-3.0.0/src/rate4site/rate4site"
+        if not exists(rate4site_fh):
+            logging.info("configuring: rate4site")
+            soft_lnk="ftp://rostlab.org/rate4site/rate4site-3.0.0.tar.gz"
+            com="wget -q %s --directory-prefix=dms2dfe_dependencies/rate4site;\
+                tar -xvzf dms2dfe_dependencies/rate4site/rate4site-3.0.0.tar.gz -C dms2dfe_dependencies/rate4site;\
+                cd dms2dfe_dependencies/rate4site/rate4site-3.0.0;\
+                ./configure;make" % soft_lnk
+            subprocess.call(com,shell=True)
+                
         std=subprocess.Popen("which java",shell=True,stdout=subprocess.PIPE)
         if not std.stdout.read():
             print "\n###   TROUBLESHOOT   ###\njava environment isn't installed on the system.\nIt would be required for running Trimmomatic through fast2qcd module. Please install it by following command,\n\nsudo apt-get install openjdk-7-jre-headless;sudo apt-get update\n\nAfter the successfull installation, please configure dms2dfe by following command.\n\nfrom dms2dfe import configure\nconfigure.main(prj_dh)\n\n"
@@ -108,12 +136,7 @@ def main(prj_dh,inputs=None):
         std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
         if not std.stdout.read():
             print "\n###   TROUBLESHOOT   ###\nTo generate images from PDB structures using UCSF-Chimera, essential graphics drivers are required.\nIn case of the hardware already present on system please install following drivers.\n\nsudo apt-get install mesa-utils;sudo apt-get update\n\n"
-
             
-            #         wget http://www.clustal.org/omega/clustalo-1.2.2-Ubuntu-x86_64
-                # chmod +x clustalo-1.2.2-Ubuntu-x86_64
-
-        
         #add to defaults
         info=pd.read_csv("%s/cfg/info" % (prj_dh))
         info=info.set_index("varname",drop=True)
@@ -121,6 +144,9 @@ def main(prj_dh,inputs=None):
         info.loc["dssp_fh","input"]=dssp_fh
         info.loc["bowtie2_fh","input"]=bowtie2_fh
         info.loc["samtools_fh","input"]=samtools_fh
+        info.loc["clustalo_fh","input"]=clustalo_fh
+        info.loc["msms_fh","input"]=msms_fh
+        info.loc["msms_fh","input"]=rate4site_fh
         info.reset_index().to_csv("%s/cfg/info" % (prj_dh), index=False)
         logging.info("dependencies installed!")
     elif not exists(cfg_dh) :
