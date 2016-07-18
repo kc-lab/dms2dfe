@@ -18,3 +18,4 @@ bowtie2_fh='dms2dfe_dependencies/bowtie2-2.2.1/bowtie2' #Optional: path to bowti
 samtools_fh='dms2dfe_dependencies/samtools-0.1.18/samtools' #Optional: path to samtools source file
 clustalo_fh='dms2dfe_dependencies/clustalo-1.2.2-Ubuntu-x86_64' #nan
 msms_fh='dms2dfe_dependencies/msms/msms.x86_64Linux2.2.6.1' #nan
+rate4site_fh='dms2dfe_dependencies/rate4site/rate4site-3.0.0/src/rate4site/rate4site' #nan

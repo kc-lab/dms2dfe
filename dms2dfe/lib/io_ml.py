@@ -346,8 +346,10 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,y_coln):
                 else:
                     data_all=pd.read_csv(data_fh)
                     X_cols=data_all.columns.tolist()
-                    X_cols.remove("class_fit")
-                    X_cols.remove("aasi")
+                    if "class_fit" in X_cols:
+                        X_cols.remove("class_fit")
+                    if "aasi" in X_cols:
+                        X_cols.remove("aasi")
                 logging.info("number of samples(mutants) = %d" % len(data_all))
                 grid_search,y_test,y_pred,y_score,feature_importances=run_RF(data_all,X_cols,y_coln,plot_fh) #
                 try:

@@ -132,7 +132,7 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
 
     for fsta_data in SeqIO.parse(fsta_prt_fh,'fasta'):
         ref_id=fsta_data.id
-        prt_seq=fsta_data.seq
+        prt_seq=str(fsta_data.seq)
         break
 
     blast_fh="%s_blastp.xml" % (splitext(fsta_fh)[0])
@@ -186,23 +186,41 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
                 data_feats_conserv.loc[i,"Conservation score (inverse shannon uncertainty): %s" % (gap_modes_labels[gap_modes.index(gap_mode)])]=positional_conservation[i]
                 aai+=1
     data_feats_conserv=data_feats_conserv.set_index("aasi")
-    
+
+    # rate4site_rates=["-Im","-Ib"]
+    # rate4site_rates_labels=["maximum likelihood rates","empirical Bayes rates"]
+    rate4site_rates=["-Ib"]
+    # rate4site_rates_labels=["maximum likelihood rates","empirical Bayes rates"]
+    rate4site_trees=["-zj","-zn"]
+    rate4site_trees_labels=["Jukes-Cantor distances","maximum likelihood distances"]
+    data_feats_conserv_rate4site=pd.DataFrame()
+    data_feats_conserv_rate4site.index.name="aasi"
     rate4site_out_fh="%s.rate4site" % (splitext(rate4site_fh)[0])
-    rate4site_com="./%s -s %s -o %s -a %s" % (rate4site_fh,msa_fh,rate4site_out_fh,ref_id)
-    subprocess.call(rate4site_com,shell=True)
-    rate4site_out_csv_fh="%s.rate4site.csv" % (splitext(rate4site_out_fh)[0])
-    with open(rate4site_out_fh,"r") as rate4site_out_f:
-        lines = rate4site_out_f.readlines()
-    with open(rate4site_out_csv_fh,'w') as rate4site_out_csv_f:
-        for line in lines:
-            if (12<lines.index(line)<len(lines)-2):
-                rate4site_out_csv_f.write(line[:19]+"\n")
-    data_feats_conserv_rate4site=pd.read_csv(rate4site_out_csv_fh,delim_whitespace=True, header=None,names=["aasi","ref","Conservation score (rate4site)"])
-    data_feats_conserv_rate4site=data_feats_conserv_rate4site.drop("ref",axis=1).set_index("aasi")
+    for rate4site_rate in rate4site_rates:
+        for rate4site_tree in rate4site_trees:
+            rate4site_out_csv_fh="%s/%s.csv%s%s" % (dirname(rate4site_out_fh),ref_id,rate4site_rate,rate4site_tree)
+            if not exists(rate4site_out_csv_fh):
+                rate4site_com="./%s -s %s -o %s -a %s %s %s" % (rate4site_fh,msa_fh,rate4site_out_fh,ref_id,rate4site_rate,rate4site_tree)
+                subprocess.call(rate4site_com,shell=True)
+                with open(rate4site_out_fh,"r") as rate4site_out_f:
+                    lines = rate4site_out_f.readlines()
+                with open(rate4site_out_csv_fh,'w') as rate4site_out_csv_f:
+                    for line in lines:
+                        if (12<lines.index(line)<len(lines)-2):
+                            rate4site_out_csv_f.write(line[:19]+"\n")
+            col_name="Conservation score (%s)" % (\
+    #             rate4site_rates_labels[rate4site_rates.index(rate4site_rate)],\
+                rate4site_trees_labels[rate4site_trees.index(rate4site_tree)])
+            data=pd.read_csv(rate4site_out_csv_fh,delim_whitespace=True, header=None,names=["aasi","ref",col_name])
+            data=data.drop("ref",axis=1).set_index("aasi")
+    #         if not "aasi" in data_feats_conserv_rate4site.columns:
+    #             data_feats_conserv_rate4site.loc[:,"aasi"]=data.loc[:,"aasi"]
+    #         data_feats_conserv_rate4site.loc[:,col_name]=data.loc[:,col_name]
+            data_feats_conserv_rate4site=pd.concat([data,data_feats_conserv_rate4site],axis=1)
+    data_feats_conserv_rate4site=data_feats_conserv_rate4site
     
     data_feats_conserv=pd.concat([data_feats_conserv,data_feats_conserv_rate4site],axis=1)
     return data_feats_conserv
-
 
 def get_residue_depth(pdb_fh,msms_fh):
     from Bio.PDB import Selection,PDBParser

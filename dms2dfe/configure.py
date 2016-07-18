@@ -146,7 +146,7 @@ def main(prj_dh,inputs=None):
         info.loc["samtools_fh","input"]=samtools_fh
         info.loc["clustalo_fh","input"]=clustalo_fh
         info.loc["msms_fh","input"]=msms_fh
-        info.loc["msms_fh","input"]=rate4site_fh
+        info.loc["rate4site_fh","input"]=rate4site_fh
         info.reset_index().to_csv("%s/cfg/info" % (prj_dh), index=False)
         logging.info("dependencies installed!")
     elif not exists(cfg_dh) :
