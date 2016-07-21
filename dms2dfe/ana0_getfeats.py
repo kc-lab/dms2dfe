@@ -5,7 +5,7 @@
 
 import sys
 from os.path import exists,splitext
-from os import makedirs
+from os import makedirs,stat
 import logging
 import numpy as np
 import pandas as pd
@@ -65,7 +65,7 @@ def main(prj_dh):
         aas_len=len(fsta_data)/3
 
     if not exists("%s/data_feats/feats" % prj_dh):
-        if exists("%s/cfg/feats" % prj_dh):
+        if exists("%s/cfg/feats" % prj_dh) and stat("%s/cfg/feats" % prj_dh).st_size !=0:
             data_feats=pd.read_csv('%s/cfg/feats' % prj_dh)
             if len(data_feats)!=0:
                 if "Unnamed: 0" in data_feats.columns:

@@ -15,7 +15,7 @@ import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
 warnings.simplefilter(action = "ignore", category = DeprecationWarning)
 import logging
-logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
+logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe import configure
 from dms2dfe.lib.io_ml import data_fit_feats2combo,y2classes,X_cols2numeric,denanrows,run_RF,data_fit2ml
 from dms2dfe.lib.global_vars import mut_types_form
@@ -54,7 +54,9 @@ def main(prj_dh):
     if "aasi" in data_feats.columns:
         data_feats=data_feats.set_index("aasi",drop=True)
     y_coln='class_fit'
-    data_fit_keys = ["data_fit/%s/%s" % (type_form,basename(fh)) for fh in glob("%s/data_fit/aas/*" % prj_dh)]
+    data_fit_keys = ["data_fit/%s/%s" % (type_form,basename(fh)) \
+                     for fh in glob("%s/data_fit/aas/*" % prj_dh) \
+                     if not "infered" in basename(fh)]
     data_fit_keys = np.unique(data_fit_keys)
     if len(data_fit_keys)!=0:
         for data_fit_key in data_fit_keys:
@@ -83,7 +85,7 @@ def pooled_io_ml(data_fit_key):
     
     :param data_fit_key: in the form <data_fit>/<aas/cds>/<name of file>.
     """
-    data_fit2ml(data_fit_key,prj_dh_global,data_feats,y_coln)
+    data_fit2ml(data_fit_key,prj_dh_global,data_feats)
     
 if __name__ == '__main__':
     main(sys.argv[1])

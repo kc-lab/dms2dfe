@@ -10,7 +10,6 @@
 """
 from os.path import abspath,dirname,exists
 
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import LabelEncoder,label_binarize
 from sklearn.metrics import roc_curve, auc
@@ -24,7 +23,7 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
 import logging
-logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
+logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
 def data_fit_feats2combo(data_fit,data_feats,y_coln,keep_mutids=False):
     """
@@ -288,7 +287,9 @@ def run_RF(data_all,X_cols,y_coln,plot_fh="test",test_size=.5,data_test=None):
     :returns y_pred: predicted classes.
     :returns y_score: scores of predicted classes used to plot ROC curve.
     :returns feature_importances: relative importances of features (dataframe).
-    """    
+    """
+    from sklearn.ensemble import RandomForestClassifier
+
     X=data_all.loc[:,list(X_cols)]
     X.to_csv("test_x")
     X=X.as_matrix()
@@ -314,7 +315,7 @@ def run_RF(data_all,X_cols,y_coln,plot_fh="test",test_size=.5,data_test=None):
             X_test=X_test_df.as_matrix()
             y_test=None
 
-        model = RandomForestClassifier()
+        model = RandomForestClassifier(random_state =88)
         param_grid = {"n_estimators": [1000],
                       "max_features": [None,'sqrt','log2'],
                       "min_samples_leaf":[1,25,50,100],
@@ -360,6 +361,8 @@ def run_RF_regress(data_all,X_cols,y_coln,test_size=0.5,data_test=None,plot_fh="
     :returns y_score: scores of predicted classes used to plot ROC curve.
     :returns feature_importances: relative importances of features (dataframe).
     """    
+    from sklearn.ensemble import RandomForestRegressor
+
     X=data_all.loc[:,list(X_cols)]
     X=X.as_matrix()
     y=data_all.loc[:,y_coln]
@@ -416,6 +419,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
     data_fh="%s/data_ml_%s" % (data_dh,data_fit_key.replace('/','_'))
     y_coln_classi="FCA"
     if not exists(data_fh.replace("data_ml_","data_ml_regress_preds_")):
+        print "%s/%s" % (prj_dh,data_fit_key)
         data_fit=pd.read_csv("%s/%s" % (prj_dh,data_fit_key))
         if np.sum(~data_fit.loc[:,y_coln_classi].isnull())>10:
             if len(data_fit.loc[~data_fit.loc[:,y_coln_classi].isnull(),y_coln_classi].unique())>=3:        
@@ -509,8 +513,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
 
                 grid_search_regress,y_test_regress,y_pred_regress,feature_importances_regress,data_preds_regress\
                 =run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,\
-                                test_size=0,data_test=data_regress_test,plot_fh=plot_fh.replace("fig_ml_","fig_ml_regress_"))
-
+test_size=0,data_test=data_regress_test,plot_fh=plot_fh.replace("fig_ml_","fig_ml_regress_"))
 
                 data_preds_regress.to_csv(data_fh.replace("data_ml_","data_ml_regress_preds_"))
                 data_regress_all=data_preds_regress.append(data_regress_train)
@@ -524,7 +527,9 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
                             (data_fit_key,np.sum(~data_fit.loc[:,y_coln].isnull())))
     else:
         data_regress_all=pd.read_csv(data_fh.replace("data_ml_","data_ml_regress_all_"))
+        data_regress2data_fit(prj_dh,data_fit_key,data_regress_all)
         return data_regress_all
+    
 def rescale_fitnessbysynonymous(data_fit,col_fit="FCA",col_fit_rescaled="FiA"):
     for refrefi in data_fit.loc[:,"refrefi"].unique():
         subset=data_fit.loc[data_fit.loc[:,"refrefi"]==refrefi,:]
@@ -533,12 +538,13 @@ def rescale_fitnessbysynonymous(data_fit,col_fit="FCA",col_fit_rescaled="FiA"):
             data_fit.loc[subseti,col_fit_rescaled]=data_fit.loc[subseti,col_fit]-FiW
     return data_fit
 
-def data_regress2data_fit(prj_dh,data_regress):
+def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all):
     from dms2dfe.lib.io_nums import str2num
-    
-    data_fit_infered=data_regress_all.loc[:,["FCA"]]
-    if "mutids" not in data_fit_infered:
-        data_fit_infered=pd.DataFrame(data_fit_infered).reset_index()
+
+    if "mutids" not in data_regress_all:
+        data_regress_all=pd.DataFrame(data_regress_all).reset_index()
+
+    data_fit_infered=data_regress_all.loc[:,["mutids","FCA"]]
 
     # str2num()
     data_fit_infered.loc[:,'refi']=[str2num(mutid) for mutid in data_fit_infered.loc[:,"mutids"].tolist()]
@@ -549,5 +555,19 @@ def data_regress2data_fit(prj_dh,data_regress):
     data_fit_infered.head()
 
     data_fit_infered=rescale_fitnessbysynonymous(data_fit_infered)
-    data_fit_infered.loc[:,'FiS']=data_fit_infered.loc[(data_fit_infered.loc[:,'ref']==data_fit_infered.loc[:,'mut']),'FiA']
+    data_fit_infered.loc[data_fit_infered.loc[:,'FiA']>0,'class_fit']='beneficial'
+    data_fit_infered.loc[data_fit_infered.loc[:,'FiA']<0,'class_fit']='deleterious'
+    data_fit_infered.loc[data_fit_infered.loc[:,'FiA']==0,'class_fit']='neutral'
+    data_fit_infered.loc[:,'FiS']=\
+    data_fit_infered.loc[(data_fit_infered.loc[:,'ref']==data_fit_infered.loc[:,'mut']),'FiA']
     data_fit_infered.to_csv("%s/%s_infered" % (prj_dh,data_fit_key))
+
+    
+    
+    
+    
+    
+    
+    
+    
+    

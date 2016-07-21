@@ -61,10 +61,10 @@ def getdssp_data(pdb_fh,dssp_fh):
     dssp_data.columns=["junk","aasi","chain","ref_dssp","Secondary structure","Helix formation in helix types 3 4 and 5","bend","Chirality",\
                        "beta bridge labels","First residue of beta bridge","Second residue of beta bridge","Sheet of beta bridge",\
                        "Solvent accessibility",\
-                      "Offset from residue to the partner in N-H-->O H-bond (1)","junk","Energy (kcal/mol) for this N-H-->O H-bond (1)",\
-                      "Offset from residue to the partner in O-->H-N H-bond (1)","junk","Energy (kcal/mol) for this O-->H-N H-bond (1)",\
-                      "Offset from residue to the partner in N-H-->O H-bond (2)","junk","Energy (kcal/mol) for this N-H-->O H-bond (2)",\
-                      "Offset from residue to the partner in O-->H-N H-bond (2)","junk","Energy (kcal/mol) for this O-->H-N H-bond (2)",\
+                      "Offset from residue to the partner in N-H-->O H-bond (1)","junk","Energy (kcal/mol) of N-H-->O H-bond (1)",\
+                      "Offset from residue to the partner in O-->H-N H-bond (1)","junk","Energy (kcal/mol) of O-->H-N H-bond (1)",\
+                      "Offset from residue to the partner in N-H-->O H-bond (2)","junk","Energy (kcal/mol) of N-H-->O H-bond (2)",\
+                      "Offset from residue to the partner in O-->H-N H-bond (2)","junk","Energy (kcal/mol) of O-->H-N H-bond (2)",\
                        "junk","cosine of the angle between C=O of residue and C=O of previous residue",\
                       "kappa bond/bend angle","alpha torsion/dihedral angle",\
                        "phi torsion angle","psi torsion angle",\
@@ -203,8 +203,9 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
         for rate4site_tree in rate4site_trees:
             rate4site_out_csv_fh="%s/%s.csv%s%s" % (dirname(rate4site_out_fh),ref_id,rate4site_rate,rate4site_tree)
             if not exists(rate4site_out_csv_fh):
-                rate4site_com="./%s -s %s -o %s -a %s %s %s" % (rate4site_fh,msa_fh,rate4site_out_fh,ref_id,rate4site_rate,rate4site_tree)
-                subprocess.call(rate4site_com,shell=True)
+                rate4site_com="./%s -s %s -o %s -a %s %s %s" % \
+                (rate4site_fh,msa_fh,rate4site_out_fh,ref_id,rate4site_rate,rate4site_tree)
+                subprocess.call(rate4site_com,shell=True,stdout=FNULL, stderr=subprocess.STDOUT)
                 with open(rate4site_out_fh,"r") as rate4site_out_f:
                     lines = rate4site_out_f.readlines()
                 with open(rate4site_out_csv_fh,'w') as rate4site_out_csv_f:

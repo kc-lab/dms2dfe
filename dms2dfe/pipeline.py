@@ -44,8 +44,8 @@ def main(prj_dh):
     ana0_fastq2sbam.main(prj_dh)
     ana1_sam2mutmat.main(prj_dh)
     ana2_mutmat2fit.main(prj_dh)
-    ana3_fit2comparison.main(prj_dh)
     ana4_modeller.main(prj_dh)
+    ana3_fit2comparison.main(prj_dh)
     ana4_plotter.main(prj_dh)    
 
     logging.info("Location of output data: %s/plots/aas/data_comparison" % (prj_dh))
