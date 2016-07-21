@@ -76,6 +76,8 @@ def main(prj_dh):
                 tmp.index.name="aasi"
                 data_feats=pd.concat([tmp,data_feats],axis=1,join_axes=[tmp.index])
                 logging.info("custom features taken from: cfg/feats")
+            else:
+                data_feats=pd.DataFrame()
         if not pd.isnull(pdb_fh):
             dssp_df=getdssp_data(pdb_fh,dssp_fh)
             dfromact_df=pdb2dfromactivesite(pdb_fh,active_sites)
