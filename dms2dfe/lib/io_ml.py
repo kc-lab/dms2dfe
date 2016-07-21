@@ -110,30 +110,43 @@ def data_fit_feats2combo(data_fit,data_feats,y_coln,keep_mutids=False):
         data_all=data_all.loc[:,["mutids",y_coln]+list(X_cols)]
     return data_all,X_cols
 
-def y2classes(data_combo,y_coln,mx,mn,increment):
-    """
-    This converts y values (if numeric) to classes(bins). 
+# def y2classes(data_combo,y_coln,mx=None,mn=None,increment=None,quantiles=False):
+#     """
+#     This converts y values (if numeric) to classes(bins). 
     
-    :param data_combo: dataframe with y and all Xs.
-    :param y_coln: name of column with classes 
-    :param mx: maximum value for binning
-    :param mn: minimum value for binning
-    :param increment: increment for binning
-    :returns data_all: dataframe with (y) classes and all Xs.
-    """
-    if data_combo.applymap(np.isreal).all(0)[y_coln]:
-        class_bins=zip(np.arange(mn, mx, increment),np.arange(mn+increment, mx+increment, increment))
-        for class_bin in class_bins:
-            class_bool=((data_combo.loc[:,y_coln]>class_bin[0]) & (data_combo.loc[:,y_coln]<=class_bin[1]))
-            if sum(class_bool)>20:
-                data_combo.loc[class_bool, "tmp"]="%.1f < %s <= %.1f" % (class_bin[0],y_coln,class_bin[1])
-            else:
-                data_combo.loc[class_bool, "tmp"]=np.nan                
-        data_all=data_combo
-        data_all.loc[:,y_coln]=data_combo.loc[:,"tmp"]
-    else:
-        data_all=data_combo
-    return data_all
+#     :param data_combo: dataframe with y and all Xs.
+#     :param y_coln: name of column with classes 
+#     :param mx: maximum value for binning
+#     :param mn: minimum value for binning
+#     :param increment: increment for binning
+#     :returns data_all: dataframe with (y) classes and all Xs.
+#     """
+#     if data_combo.applymap(np.isreal).all(0)[y_coln]:
+#         if not quantiles:
+#             class_bins=zip(np.arange(mn, mx, increment),np.arange(mn+increment, mx+increment, increment))
+#         elif quantiles:
+#             boundaries_min=[np.percentile(data_combo.loc[~pd.isnull(data_combo.loc[:,y_coln]),y_coln],0),
+#             np.percentile(data_combo.loc[~pd.isnull(data_combo.loc[:,y_coln]),y_coln],5),
+#             np.percentile(data_combo.loc[~pd.isnull(data_combo.loc[:,y_coln]),y_coln],50)]
+#             boundaries_max=boundaries_min[1:]+\
+#             [np.percentile(data_combo.loc[~pd.isnull(data_combo.loc[:,y_coln]),y_coln],100)]
+#             class_bins=zip(boundaries_min,boundaries_max)
+#         for class_bin in class_bins:
+#             class_bool=((data_combo.loc[:,y_coln]>class_bin[0]) & (data_combo.loc[:,y_coln]<=class_bin[1]))
+#             if sum(class_bool)>100:
+#                 data_combo.loc[class_bool, "tmp"]="%.1f < %s <= %.1f" % (class_bin[0],y_coln,class_bin[1])
+#             else:
+#                 data_combo.loc[class_bool, "tmp"]=np.nan                
+# #         data_all=data_combo
+#         data_combo.loc[:,y_coln]=data_combo.loc[:,"tmp"]
+#     return data_combo
+
+def y2classes(data_combo,y_coln,classes=2):
+    if classes==2:
+        median=data_combo.loc[:,y_coln].median()
+        data_combo.loc[data_combo.loc[:,y_coln]>median,"classes"]="gt median"
+        data_combo.loc[data_combo.loc[:,y_coln]<median,"classes"]="lt median"
+    return data_combo
 
 def X_cols2numeric(data_all,X_cols,keep_cols=[]):
     """
@@ -171,15 +184,25 @@ def X_cols2binary(data,cols=None):
 
 def binary2classes(y_pred,classes):
     y_pred_classes=[]
-    for row in y_pred:
-        for classi in range(len(classes)):
-            if np.sum(row)==1:
-                if row[classi]==1:
+    if len(classes)>2:
+        for row in y_pred:
+            for classi in range(len(classes)):
+                if np.sum(row)==1:
+                    if row[classi]==1:
+                        y_pred_classes.append(classes[classi])
+                        break
+                else:
+                    y_pred_classes.append(np.nan)
+                    break
+    elif len(classes)==2:
+        for row in y_pred:
+            for classi in range(len(classes)):
+                if row==0:
                     y_pred_classes.append(classes[classi])
                     break
-            else:
-                y_pred_classes.append(np.nan)
-                break
+                elif row==1:
+                    y_pred_classes.append(classes[classi])
+                    break
     return y_pred_classes
 
 def denanrows(data_all):
@@ -338,9 +361,16 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,y_coln):
             if len(data_fit.loc[~data_fit.loc[:,y_coln].isnull(),y_coln].unique())>=3:        
                 logging.info("processing: %s" % data_fit_key)
                 if not exists(data_fh):
+                    if not y_coln=="classes":
+                        data_fit=y2classes(data_fit,y_coln)
+                        y_coln="classes"
                     data_combo,X_cols=data_fit_feats2combo(data_fit,data_feats,y_coln)
-                    data_all=y2classes(data_combo,y_coln,8,-8,2)# make classes
-                    data_all=X_cols2numeric(data_all,X_cols)
+                    # data_all=y2classes(data_combo,y_coln,quantiles=True)# make classes
+                    # data_all=y2classes(data_combo,y_coln,\
+                    #                    mx=data_combo.loc[:,y_coln].max(),\
+                    #                    mn=data_combo.loc[:,y_coln].min(),\
+                    #                    increment=data_combo.loc[:,y_coln].median()-data_combo.loc[:,y_coln].min())# make classes
+                    data_all=X_cols2numeric(data_combo,X_cols)
                     data_all=denanrows(data_all)# remove nan rows
                     data_all.reset_index().to_csv(data_fh,index=False)
                 else:
