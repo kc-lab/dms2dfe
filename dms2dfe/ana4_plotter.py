@@ -42,7 +42,7 @@ def main(prj_dh):
     norm_type=info.norm_type
     Ni_cutoff=int(info.Ni_cutoff)
     
-    data_feats=pd.read_csv(prj_dh+"/data_feats/feats")
+    data_feats=pd.read_csv(prj_dh+"/data_feats/aas/feats_all")
 
     #tmp files
     plot_pdb_chimera_fhs_fh='%s/tmp/plot_pdb_chimera_fhs' % abspath(dirname(__file__))
@@ -61,17 +61,18 @@ def main(prj_dh):
                 if not exists("%s/plots/%s" % (prj_dh,type_form)):
                     makedirs("%s/plots/%s" % (prj_dh,type_form))
                 data_lbl_fh = "%s/data_lbl/%s/%s" % (prj_dh,type_form,data_lbli)
-                data_lbl=pd.read_csv(data_lbl_fh)
-                if "Unnamed: 0" in data_lbl.columns:
-                    data_lbl=data_lbl.drop("Unnamed: 0", axis=1)
-                #heatmaps
-                plot_fh="%s/plots/%s/fig_heatmap_%s.png" % (prj_dh,type_form,data_lbli)
-                if not exists(plot_fh):
-                    ax,extent=plot_data_fit_heatmap(data_lbl,type_form,col='NiAcutlog',cmap="Blues",center=None,data_feats=data_feats)
-                    ax.figure.savefig(plot_fh+".pdf",format='pdf', bbox_inches=extent)                        
-                    ax.figure.savefig(plot_fh, bbox_inches=extent);plt.clf();plt.close()
-                else:
-                    logging.info("already processed: %s" % basename(plot_fh))
+                if exists(data_lbl_fh):
+                    data_lbl=pd.read_csv(data_lbl_fh)
+                    if "Unnamed: 0" in data_lbl.columns:
+                        data_lbl=data_lbl.drop("Unnamed: 0", axis=1)
+                    #heatmaps
+                    plot_fh="%s/plots/%s/fig_heatmap_%s.png" % (prj_dh,type_form,data_lbli)
+                    if not exists(plot_fh):
+                        ax,extent=plot_data_fit_heatmap(data_lbl,type_form,col='NiAcutlog',cmap="Blues",center=None,data_feats=data_feats)
+                        ax.figure.savefig(plot_fh+".pdf",format='pdf', bbox_inches=extent)                        
+                        ax.figure.savefig(plot_fh, bbox_inches=extent);plt.clf();plt.close()
+                    else:
+                        logging.info("already processed: %s" % basename(plot_fh))
 
 #plot data_fit
     data_fits=glob("%s/data_fit/aas/*" % prj_dh)+glob("%s/data_fit/cds/*" % prj_dh)

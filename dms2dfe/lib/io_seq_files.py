@@ -254,6 +254,24 @@ def fasta_nts2prt(fsta_fh,host='coli',fsta_prt_fh=None):
     fsta_prt_f.close()
     return fsta_seq_prt
 
+def cctmr_fasta2ref_fasta(fsta_fh,cctmr):
+    from dms2dfe.lib.convert_seq import cds2aas
+    from Bio import SeqIO,Seq,SeqRecord
+    from Bio.Alphabet import IUPAC
+
+    fsta_cctmr1_fh="%s_cctmr1.fasta" % (splitext(fsta_fh)[0])
+    with open(fsta_fh,'r') as fsta_data:
+        for fsta_record in SeqIO.parse(fsta_data, "fasta") :
+            fsta_id=fsta_record.id
+            fsta_seq=str(fsta_record.seq)
+            fsta_cctmr1_seq=fsta_seq[(cctmr[0]-1)*3:(cctmr[1]-1)*3]
+            break
+    fsta_cctmr1_f = open(fsta_cctmr1_fh, "w")
+    fsta_data = SeqRecord.SeqRecord(Seq.Seq(fsta_cctmr1_seq,IUPAC.ExtendedIUPACDNA), id = fsta_id, description='')
+    SeqIO.write(fsta_data, fsta_cctmr1_f, "fasta")
+    fsta_cctmr1_f.close()
+    return fsta_cctmr1_fh
+
 def fasta_writer(otpt_f,read_id,read_seq):
     """
     This appends a sequence reads in fastq format. 

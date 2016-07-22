@@ -72,7 +72,7 @@ def main(prj_dh):
         pool_data_lbl2data_fit=Pool(processes=int(cores)) 
         pool_data_lbl2data_fit.map(pooled_data_lbl2data_fit,fits_pairs_list)
         pool_data_lbl2data_fit.close(); pool_data_lbl2data_fit.join()
-#         pooled_data_lbl2data_fit(fits_pairs_list[0])
+        # pooled_data_lbl2data_fit(fits_pairs_list[0])
     else:
         logging.info("already processed: data_lbl2data_fit")
     logging.shutdown()

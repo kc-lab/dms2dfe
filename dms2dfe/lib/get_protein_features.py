@@ -22,7 +22,6 @@ import numpy as np
 import pandas as pd
 
 from os.path import basename, splitext,exists
-from dms2dfe.lib.io_seq_files import fasta_nts2prt
 
 from Bio import SeqIO,Seq,SeqRecord
 from Bio.Alphabet import IUPAC
@@ -124,7 +123,7 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
     from Bio.Blast import NCBIXML
     from skbio import TabularMSA, Protein
     from Bio.Alphabet import IUPAC
-
+    from dms2dfe.lib.io_seq_files import fasta_nts2prt
     blast_method='blastp'
     blast_db="swissprot"
     
@@ -205,6 +204,7 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
             if not exists(rate4site_out_csv_fh):
                 rate4site_com="./%s -s %s -o %s -a %s %s %s" % \
                 (rate4site_fh,msa_fh,rate4site_out_fh,ref_id,rate4site_rate,rate4site_tree)
+                FNULL = open(rate4site_out_csv_fh+".log",'w')
                 subprocess.call(rate4site_com,shell=True,stdout=FNULL, stderr=subprocess.STDOUT)
                 with open(rate4site_out_fh,"r") as rate4site_out_f:
                     lines = rate4site_out_f.readlines()
@@ -255,13 +255,15 @@ def get_residue_depth(pdb_fh,msms_fh):
         # Get the key
         res_id = residue.get_id()
         chain_id = residue.get_parent().get_id()
-        depth_dict[(chain_id, res_id)] = (rd, ca_rd)
-        depth_list.append((residue, (rd, ca_rd)))
-        depth_keys.append((chain_id, res_id))
-        # Update xtra information
-        residue.xtra['EXP_RD'] = rd
-        residue.xtra['EXP_RD_CA'] = ca_rd
-
+        if chain_id=="A":
+            depth_dict[(chain_id, res_id)] = (rd, ca_rd)
+            depth_list.append((residue, (rd, ca_rd)))
+            depth_keys.append((chain_id, res_id))
+            # Update xtra information
+            residue.xtra['EXP_RD'] = rd
+            residue.xtra['EXP_RD_CA'] = ca_rd
+        else:
+            break
     depth_df=pd.DataFrame(depth_dict).T.reset_index()
     depth_df=depth_df.drop("level_0",axis=1)
     aasi_prev=0

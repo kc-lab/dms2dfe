@@ -391,7 +391,7 @@ def run_RF_regress(data_all,X_cols,y_coln,test_size=0.5,data_test=None,plot_fh="
 
     if test_size!=0:    
         data_preds=None
-        print grid_search.score(X_test, y_test)
+        # print grid_search.score(X_test, y_test)
     else:
         data_preds=data_test.loc[:,list(X_cols)]
         data_preds[y_coln]=y_pred
@@ -419,7 +419,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
     data_fh="%s/data_ml_%s" % (data_dh,data_fit_key.replace('/','_'))
     y_coln_classi="FCA"
     if not exists(data_fh.replace("data_ml_","data_ml_regress_preds_")):
-        print "%s/%s" % (prj_dh,data_fit_key)
+        # print "%s/%s" % (prj_dh,data_fit_key)
         data_fit=pd.read_csv("%s/%s" % (prj_dh,data_fit_key))
         if np.sum(~data_fit.loc[:,y_coln_classi].isnull())>10:
             if len(data_fit.loc[~data_fit.loc[:,y_coln_classi].isnull(),y_coln_classi].unique())>=3:        

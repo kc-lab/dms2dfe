@@ -50,7 +50,7 @@ def main(prj_dh):
     if not exists("%s/data_ml/%s" % (prj_dh,type_form)):
         makedirs("%s/data_ml/%s" % (prj_dh,type_form))
 
-    data_feats=pd.read_csv("%s/data_feats/feats" % (prj_dh))
+    data_feats=pd.read_csv("%s/data_feats/aas/feats_all" % (prj_dh))
     if "aasi" in data_feats.columns:
         data_feats=data_feats.set_index("aasi",drop=True)
     y_coln='class_fit'
@@ -59,12 +59,12 @@ def main(prj_dh):
                      if not "infered" in basename(fh)]
     data_fit_keys = np.unique(data_fit_keys)
     if len(data_fit_keys)!=0:
-        for data_fit_key in data_fit_keys:
-            pooled_io_ml(data_fit_key)
-        pooled_io_ml(data_fit_keys[-1])
-        # pool_io_ml=Pool(processes=int(cores)) 
-        # pool_io_ml.map(pooled_io_ml,data_fit_keys)
-        # pool_io_ml.close(); pool_io_ml.join()
+        # for data_fit_key in data_fit_keys:
+        #     pooled_io_ml(data_fit_key)
+        # pooled_io_ml(data_fit_keys[-1])
+        pool_io_ml=Pool(processes=int(cores)) 
+        pool_io_ml.map(pooled_io_ml,data_fit_keys)
+        pool_io_ml.close(); pool_io_ml.join()
     else:
         logging.info("already processed")
 #     y_coln='class_comparison'
