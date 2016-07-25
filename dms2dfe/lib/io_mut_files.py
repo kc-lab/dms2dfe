@@ -265,31 +265,37 @@ def getusable_fits_list(prj_dh):
     :param prj_dh: path to project directory.
     :returns fits_pairs_list: list of tuples with names of input and selected samples.
     """
-    if not exists('%s/cfg/fit'% (prj_dh)):
-        logging.warning("ana3_mutmat2fit : getusable_fits_list : not fits in cfg/fit")
-        return []
-    else:
+    if exists('%s/cfg/fit'% (prj_dh)):
         fits=pd.read_csv(prj_dh+'/cfg/fit')
+        
         if "Unnamed: 0" in fits.columns:
             fits=fits.drop("Unnamed: 0", axis=1)
         fits=fits.set_index('unsel')
         fits_pairs_list=[]
-        for unsel_lbl,sels in fits.iterrows() :
-            sels=sels[~sels.isnull()]
+        sel_cols=[col for col in fits.columns.tolist() if "sel" in col]
+        for unsel_lbl in fits.index.values :
+            sels=list(fits.loc[unsel_lbl,sel_cols])
             for sel_lbl in sels :
-                fit_lbl=sel_lbl+"_WRT_"+unsel_lbl
-                if (not exists("%s/data_fit/%s/%s" % (prj_dh,'aas',fit_lbl))) \
-                and (not exists("%s/data_fit/%s/%s" % (prj_dh,'cds',fit_lbl))):             
-                    if  ((exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',sel_lbl))) \
-                    and (exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',unsel_lbl)))) or \
-                        ((exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',sel_lbl))) \
-                    and (exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',unsel_lbl)))) : 
-                        fits_pairs_list.append([unsel_lbl,sel_lbl])
+                if not pd.isnull(sel_lbl):
+                    print sel_lbl
+                    print unsel_lbl
+
+                    fit_lbl=sel_lbl+"_WRT_"+unsel_lbl
+                    if (not exists("%s/data_fit/%s/%s" % (prj_dh,'aas',fit_lbl))) \
+                    and (not exists("%s/data_fit/%s/%s" % (prj_dh,'cds',fit_lbl))):             
+                        if  ((exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',sel_lbl))) \
+                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',unsel_lbl)))) or \
+                            ((exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',sel_lbl))) \
+                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',unsel_lbl)))) : 
+                            fits_pairs_list.append([unsel_lbl,sel_lbl])
+                        else :
+                            logging.warning("data_lbl not present : %s or %s" % (sel_lbl,unsel_lbl))
                     else :
-                        logging.warning("data_lbl not present : %s or %s" % (sel_lbl,unsel_lbl))
-                else :
-                    logging.info("already processed: %s" % (fit_lbl))
+                        logging.info("already processed: %s" % (fit_lbl))
         return fits_pairs_list
+    else:    
+        logging.warning("ana3_mutmat2fit : getusable_fits_list : not fits in cfg/fit")
+        return []
 
 
 def repli2data_lbl_avg(prj_dh):    
@@ -425,7 +431,7 @@ def data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh,cctmr,lbls):
                         logging.info("race error /data_fit/")
                 data_fit.reset_index().to_csv('%s/data_fit/%s/%s' % (prj_dh,type_form,fit_lbl),index=False)
             else :
-                logging.warning("data_lbl not present: %s or %s" % (sel_lbl,unsel_lbl))
+                logging.warning("data_lbl not present: %s/%s or %s/%s" % (type_form,sel_lbl,type_form,unsel_lbl))
         else :
             logging.info("already processed: %s" % (fit_lbl))
 

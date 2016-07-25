@@ -154,6 +154,7 @@ def main(prj_dh,inputs=None):
         subprocess.call("cp -r %s/cfg %s"% (abspath(dirname(__file__)),prj_dh) ,shell=True)
         logging.info("new project directory created!: %s " % prj_dh)
         logging.info("modify configurations in %s" % cfg_dh)
+        sys.exit()
     else :
         if is_cfg_ok(cfg_dh,cfgs) :
             info2src(prj_dh)

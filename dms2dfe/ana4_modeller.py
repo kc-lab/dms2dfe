@@ -64,7 +64,7 @@ def main(prj_dh):
         # pooled_io_ml(data_fit_keys[-1])
         pool_io_ml=Pool(processes=int(cores)) 
         pool_io_ml.map(pooled_io_ml,data_fit_keys)
-        pool_io_ml.close(); pool_io_ml.join()
+        # pool_io_ml.close(); pool_io_ml.join()
     else:
         logging.info("already processed")
 #     y_coln='class_comparison'

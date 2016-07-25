@@ -422,40 +422,41 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
         # print "%s/%s" % (prj_dh,data_fit_key)
         data_fit=pd.read_csv("%s/%s" % (prj_dh,data_fit_key))
         if np.sum(~data_fit.loc[:,y_coln_classi].isnull())>10:
-            if len(data_fit.loc[~data_fit.loc[:,y_coln_classi].isnull(),y_coln_classi].unique())>=3:        
-                logging.info("processing: %s" % data_fit_key)
-                if not exists(data_fh.replace("data_ml_","data_ml_classi_feature_importances_")):
-                    if not exists(data_fh.replace("data_ml_","data_ml_classi_train_")):
-                        data_fit=y2classes(data_fit,y_coln_classi)
-                        y_coln_classi="classes"
-                        data_combo,X_cols_classi=data_fit_feats2combo(data_fit,data_feats,y_coln_classi,keep_mutids=True)
-                        data_combo=data_combo.set_index("mutids",drop=True)
-                        data_ml=X_cols2binary(data_combo.drop(y_coln_classi,axis=1))
-                        data_ml.loc[:,y_coln_classi]=data_combo.loc[:,y_coln_classi]
-                        data_ml.to_csv("data_ml")
-                        data_ml=rescalecols(data_ml)
-                        data_classi_train=denanrows(data_ml)                    
+            # if len(data_fit.loc[~data_fit.loc[:,y_coln_classi].isnull(),y_coln_classi].unique())>=3:        
+            logging.info("processing: %s" % data_fit_key)
+            if not exists(data_fh.replace("data_ml_","data_ml_classi_feature_importances_")):
+                if not exists(data_fh.replace("data_ml_","data_ml_classi_train_")):
+                    data_fit=y2classes(data_fit,y_coln_classi)
+                    y_coln_classi="classes"
+                    data_combo,X_cols_classi=data_fit_feats2combo(data_fit,data_feats,y_coln_classi,keep_mutids=True)
+                    data_combo=data_combo.set_index("mutids",drop=True)
+                    data_ml=X_cols2binary(data_combo.drop(y_coln_classi,axis=1))
+                    data_ml.loc[:,y_coln_classi]=data_combo.loc[:,y_coln_classi]
+                    data_ml.to_csv("data_ml")
+                    data_ml=rescalecols(data_ml)
+                    data_classi_train=denanrows(data_ml)                    
 #                         data_classi_train=y2classes(data_classi_train,y_coln_classi)
-                        data_ml_mutids=list(data_ml.index.values)                
-                        data_classi_train_mutids=list(data_classi_train.index.values)
-                        data_classi_test_mutids=[mutid for mutid in data_ml_mutids if not mutid in data_classi_train_mutids]
-                        data_classi_test=data_ml.loc[data_classi_test_mutids,:]
+                    data_ml_mutids=list(data_ml.index.values)                
+                    data_classi_train_mutids=list(data_classi_train.index.values)
+                    data_classi_test_mutids=[mutid for mutid in data_ml_mutids if not mutid in data_classi_train_mutids]
+                    data_classi_test=data_ml.loc[data_classi_test_mutids,:]
 
-                        data_combo.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_combo_"),index=False)
-                        data_ml.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_classi_all_"),index=False)
-                        data_classi_train.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_classi_train_"),index=False)
-                        data_classi_test.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_classi_test_"),index=False)
-                    else:                
-                        data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
-                        data_classi_test=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_test_"))
+                    data_combo.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_combo_"),index=False)
+                    data_ml.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_classi_all_"),index=False)
+                    data_classi_train.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_classi_train_"),index=False)
+                    data_classi_test.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_classi_test_"),index=False)
+                else:                
+                    data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
+                    data_classi_test=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_test_"))
 
-                        data_classi_train  =data_classi_train.set_index("mutids",drop=True)
-                        data_classi_test  =data_classi_test.set_index("mutids",drop=True)
-                        y_coln_classi="classes"
-                    logging.info("number of mutants used for training = %d" % len(data_classi_train))
+                    data_classi_train  =data_classi_train.set_index("mutids",drop=True)
+                    data_classi_test  =data_classi_test.set_index("mutids",drop=True)
+                    y_coln_classi="classes"
+                logging.info("number of mutants used for training = %d" % len(data_classi_train))
+                logging.info("this step would take a 10 to 15min to complete.")
 
-                    X_cols_classi=data_classi_train.columns.tolist()
-                    X_cols_classi.remove(y_coln_classi)
+                X_cols_classi=data_classi_train.columns.tolist()
+                X_cols_classi.remove(y_coln_classi)
 #                     # 0.5 split for check up
 #                     grid_search_classi,y_test_classi,y_pred_classi,y_score_classi,feature_importances_classi1,data_preds_classi\
 #                     =run_RF(data_classi_train,X_cols_classi,y_coln_classi,plot_fh=plot_fh.replace("fig_ml_","fig_ml_classi1_"),\
@@ -468,60 +469,61 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
 
 #                     feature_importances_classi1.to_csv(data_fh.replace("data_ml_","data_ml_classi1_feature_importances_"))
 #                     feature_importances_classi2.to_csv(data_fh.replace("data_ml_","data_ml_classi2_feature_importances_"))
-                    # classi
-                    grid_search_classi,y_test_classi,y_pred_classi,y_score_classi,feature_importances_classi,data_preds_classi\
-                    =run_RF(data_classi_train,X_cols_classi,y_coln_classi,plot_fh=plot_fh.replace("fig_ml_","fig_ml_classi1_"),\
-                        test_size=0.5,data_test=data_classi_test) #
+                # classi
+                grid_search_classi,y_test_classi,y_pred_classi,y_score_classi,feature_importances_classi,data_preds_classi\
+                =run_RF(data_classi_train,X_cols_classi,y_coln_classi,plot_fh=plot_fh.replace("fig_ml_","fig_ml_classi1_"),\
+                    test_size=0.5,data_test=data_classi_test) #
 
-                    feature_importances_classi.to_csv(data_fh.replace("data_ml_","data_ml_classi_feature_importances_"))
+                feature_importances_classi.to_csv(data_fh.replace("data_ml_","data_ml_classi_feature_importances_"))
 #                     data_preds_classi.to_csv(data_fh.replace("data_ml_","data_ml_classi_preds_"))
 #                     data_classi_all=data_classi_train.append(data_preds_classi)
 #                     data_classi_all.to_csv(data_fh.replace("data_ml_","data_ml_classi_all_"))
-                else:
-                    y_coln_classi="classes"
+            else:
+                y_coln_classi="classes"
 #                     feature_importances_classi2=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_feature_importances_"))
-                    feature_importances_classi=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_feature_importances_"))
+                feature_importances_classi=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_feature_importances_"))
 #                     data_regress_test=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_preds_"))
-                    data_classi_test=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_test_"))
-                    data_classi_test  =data_classi_test.set_index("mutids",drop=True)
-                    data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
-                    data_classi_train  =data_classi_train.set_index("mutids",drop=True)
-                #regress
-                y_coln_regress="FCA"
-                data_regress_train=data_classi_train                
-                data_regress_train=X_cols2binary(data_regress_train,[y_coln_classi])
-                data_regress_train.loc[:,y_coln_regress]=data_fit.set_index("mutids").loc[data_classi_train.index.values,y_coln_regress]
-                data_regress_train=denanrows(data_regress_train)
-                data_regress_test=data_classi_test                
-                if y_coln_classi in data_regress_test.columns.tolist(): 
-                    data_regress_test=data_regress_test.drop(y_coln_classi,axis=1)
-                else:
-                    data_regress_test=denanrows(data_regress_test)
-                    data_regress_test=X_cols2binary(data_regress_test,[y_coln_classi])
+                data_classi_test=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_test_"))
+                data_classi_test  =data_classi_test.set_index("mutids",drop=True)
+                data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
+                data_classi_train  =data_classi_train.set_index("mutids",drop=True)
+            #regress
+            y_coln_regress="FCA"
+            data_regress_train=data_classi_train                
+            data_regress_train=X_cols2binary(data_regress_train,[y_coln_classi])
+            data_regress_train.loc[:,y_coln_regress]\
+            =data_fit.set_index("mutids").loc[data_classi_train.index.values,y_coln_regress]
+            data_regress_train=denanrows(data_regress_train)
+            data_regress_test=data_classi_test                
+            if y_coln_classi in data_regress_test.columns.tolist(): 
+                data_regress_test=data_regress_test.drop(y_coln_classi,axis=1)
+            else:
                 data_regress_test=denanrows(data_regress_test)
-                
+                data_regress_test=X_cols2binary(data_regress_test,[y_coln_classi])
+            data_regress_test=denanrows(data_regress_test)
+
 #                 X_cols_regress_class_fit=[col for col in data_regress_train.columns.tolist() if y_coln_classi in col]
-                X_cols_regress_class_fit=[]
+            X_cols_regress_class_fit=[]
 #                 X_cols_regress=[col for col in X_cols_regress_class_fit+list(feature_importances_classi2.loc[:,'feature']) \
 #                                 if col in data_regress_test.columns.tolist()]
-                X_cols_regress=[col for col in X_cols_regress_class_fit+list(feature_importances_classi.loc[feature_importances_classi.loc[:,"importances"]>0.002,'feature']) \
-                                if col in data_regress_test.columns.tolist()]
-                if y_coln_regress in X_cols_regress:
-                    X_cols_regress.remove(y_coln_regress)            
-                data_regress_train.to_csv(data_fh.replace("data_ml_","data_ml_regress_train_"))
-                data_regress_test.to_csv(data_fh.replace("data_ml_","data_ml_regress_test_"))
+            X_cols_regress=[col for col in X_cols_regress_class_fit+list(feature_importances_classi.loc[feature_importances_classi.loc[:,"importances"]>0.002,'feature']) \
+                            if col in data_regress_test.columns.tolist()]
+            if y_coln_regress in X_cols_regress:
+                X_cols_regress.remove(y_coln_regress)            
+            data_regress_train.to_csv(data_fh.replace("data_ml_","data_ml_regress_train_"))
+            data_regress_test.to_csv(data_fh.replace("data_ml_","data_ml_regress_test_"))
 
-                grid_search_regress,y_test_regress,y_pred_regress,feature_importances_regress,data_preds_regress\
-                =run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,\
+            grid_search_regress,y_test_regress,y_pred_regress,feature_importances_regress,data_preds_regress\
+            =run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,\
 test_size=0,data_test=data_regress_test,plot_fh=plot_fh.replace("fig_ml_","fig_ml_regress_"))
 
-                data_preds_regress.to_csv(data_fh.replace("data_ml_","data_ml_regress_preds_"))
-                data_regress_all=data_preds_regress.append(data_regress_train)
-                data_regress_all.to_csv(data_fh.replace("data_ml_","data_ml_regress_all_"))
-                data_regress2data_fit(prj_dh,data_fit_key,data_regress_all)
-                return data_regress_all
-            else:
-                logging.info("skipping: requires more unique classes")
+            data_preds_regress.to_csv(data_fh.replace("data_ml_","data_ml_regress_preds_"))
+            data_regress_all=data_preds_regress.append(data_regress_train)
+            data_regress_all.to_csv(data_fh.replace("data_ml_","data_ml_regress_all_"))
+            data_regress2data_fit(prj_dh,data_fit_key,data_regress_all)
+            return data_regress_all
+            # else:
+            #     logging.info("skipping: %s : requires more unique classes" % basename(data_fit_key))
         else:
             logging.info("skipping %s: requires more samples %d<10" %\
                             (data_fit_key,np.sum(~data_fit.loc[:,y_coln].isnull())))
@@ -553,7 +555,7 @@ def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all):
     data_fit_infered.loc[:,'refrefi']=[("%s%03d" % (mutid[0],str2num(mutid))) for mutid in data_fit_infered.loc[:,"mutids"].tolist()]
     data_fit_infered.loc[:,'FCS']=data_fit_infered.loc[(data_fit_infered.loc[:,'ref']==data_fit_infered.loc[:,'mut']),'FCA']
     data_fit_infered.head()
-
+    data_fit_infered.to_csv("data_fit_infered")
     data_fit_infered=rescale_fitnessbysynonymous(data_fit_infered)
     data_fit_infered.loc[data_fit_infered.loc[:,'FiA']>0,'class_fit']='beneficial'
     data_fit_infered.loc[data_fit_infered.loc[:,'FiA']<0,'class_fit']='deleterious'

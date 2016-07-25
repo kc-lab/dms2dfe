@@ -6,7 +6,7 @@
 import sys
 from os.path import exists,splitext
 import logging
-from dms2dfe import ana0_fastq2dplx,ana0_fastq2sbam,ana0_getfeats,ana1_sam2mutmat,ana2_mutmat2fit,ana3_fit2comparison,ana4_modeller,ana4_plotter
+from dms2dfe import configure, ana0_fastq2dplx,ana0_fastq2sbam,ana0_getfeats,ana1_sam2mutmat,ana2_mutmat2fit,ana3_fit2comparison,ana4_modeller,ana4_plotter
     
 # GET INPTS    
 def main(prj_dh):
@@ -35,9 +35,10 @@ def main(prj_dh):
     """
     logging.info("start")
     if not exists(prj_dh) :
-        logging.error("Could not find '%s'\n" % prj_dh)
-        sys.exit()
-        
+    #     logging.error("Could not find '%s'\n" % prj_dh)
+        configure.main(prj_dh)
+    #     sys.exit()
+          
     # run modules
     ana0_getfeats.main(prj_dh)
     ana0_fastq2dplx.main(prj_dh)
