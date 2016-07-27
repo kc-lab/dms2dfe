@@ -8,6 +8,8 @@ from os.path import splitext, exists,basename
 from Bio import SeqIO
 import pandas as pd
 from multiprocessing import Pool
+import subprocess
+
 from dms2dfe import configure
 from dms2dfe.lib.variant_caller import getusablesbams_list,sam2mutmat #is_qry_alind_useful,qual_chars2nums,get_mut_cds
 import logging
@@ -33,6 +35,7 @@ def main(prj_dh):
     fsta_fh=info.fsta_fh
     Q_cutoff=int(info.Q_cutoff)
     cores=int(info.cores)
+    samtools_fh=info.samtools_fh
 
     with open(fsta_fh,'r') as fsta_data:
         for fsta_record in SeqIO.parse(fsta_data, "fasta") :
@@ -45,11 +48,21 @@ def main(prj_dh):
         cds_ref.append(str(fsta_seq[cdi*3:cdi*3+3]))
 
     sbam_fhs=getusablesbams_list(prj_dh)
+    # check if bams are indexed
+    for sbam_fh in sbam_fhs:
+        sbam_index_fh="%s.bai"
+        log_fh="%s.log" % sbam_index_fh
+        log_f = open(log_fh,'a')
+        if not exists(sbam_index_fh):
+            com= "%s index %s" % (samtools_fh,sbam_fh)
+            subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+            log_f.close()
+            
     if len(sbam_fhs)!=0:
-        # pooled(sbam_fhs[0])
-        pool=Pool(processes=int(cores)) # TODO : get it from xls
-        pool.map(pooled, sbam_fhs)
-        pool.close(); pool.join()                
+        pooled(sbam_fhs[0])
+        # pool=Pool(processes=int(cores)) # TODO : get it from xls
+        # pool.map(pooled, sbam_fhs)
+        # pool.close(); pool.join()                
     else:
         logging.info("already processed")  
     logging.shutdown()

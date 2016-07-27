@@ -42,8 +42,10 @@ def getdssp_data(pdb_fh,dssp_fh):
     """
     dssp_data_fh="%s/../tmp/dssp"% (abspath(dirname(__file__)))
     dssp_com="%s -i %s -o %s" % (dssp_fh,pdb_fh,dssp_data_fh)
-    subprocess.call(dssp_com,shell=True)
-
+    log_fh="%s.log" % dssp_fh
+    log_f = open(log_fh,'a')
+    subprocess.call(dssp_com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+    log_f.close()
     start=False
     dssp_f=open(dssp_data_fh, 'r')
     dssp_fwf_f=open(dssp_data_fh+'.fwf', 'w')
@@ -164,8 +166,10 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
             blast_fasta_f.close()
     # blast fasta to msa : clustaw
         clustalo_com="./%s -i %s -o %s --outfmt=fasta --log=%s.log" % (clustalo_fh,blast_fasta_fh,msa_fh,msa_fh)
-        subprocess.call(clustalo_com,shell=True)
-
+        log_fh="%s.log" % clustalo_fh
+        log_f = open(log_fh,'a')
+        subprocess.call(clustalo_com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+        log_f.close()
     # msa to consrv skbio==0.4.1
     msa = TabularMSA.read(msa_fh, constructor=Protein)
     msa.reassign_index(minter='id')
@@ -204,8 +208,10 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
             if not exists(rate4site_out_csv_fh):
                 rate4site_com="./%s -s %s -o %s -a %s %s %s" % \
                 (rate4site_fh,msa_fh,rate4site_out_fh,ref_id,rate4site_rate,rate4site_tree)
-                FNULL = open(rate4site_out_csv_fh+".log",'w')
-                subprocess.call(rate4site_com,shell=True,stdout=FNULL, stderr=subprocess.STDOUT)
+                log_fh="%s.log" % rate4site_out_csv_fh
+                log_f = open(log_fh,'a')
+                subprocess.call(rate4site_com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+                log_f.close()
                 with open(rate4site_out_fh,"r") as rate4site_out_f:
                     lines = rate4site_out_f.readlines()
                 with open(rate4site_out_csv_fh,'w') as rate4site_out_csv_f:
@@ -236,7 +242,11 @@ def get_residue_depth(pdb_fh,msms_fh):
         xyzr_fh="%s/%s.xyzr" % (dirname(msms_fh),basename(pdb_fh))
         pdb_to_xyzr_com="./%s %s > %s" % (pdb_to_xyzr_fh,pdb_fh,xyzr_fh)
         msms_com="./%s -probe_radius 1.5 -if %s -of %s > %s.log" % (msms_fh,xyzr_fh,splitext(surface_fh)[0],splitext(surface_fh)[0])
-        subprocess.call("%s;%s" % (pdb_to_xyzr_com,msms_com) , shell=True)
+        log_fh="%s.log" % rate4site_out_csv_fh
+        log_f = open(log_fh,'a')
+        subprocess.call("%s;%s" % (pdb_to_xyzr_com,msms_com) , shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+        log_f.close()
+
     surface =_read_vertex_array(surface_fh)
     
     pdb_parser=PDBParser()
