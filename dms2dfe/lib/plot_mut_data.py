@@ -306,11 +306,14 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
     ax.set_ylabel('Mutation to',fontdict={'size': 20})
     cbar=ax.figure.colorbar(ax.collections[0])
     cbar.set_label(("$%s$" % col),fontdict={'size': 20})
+    
+    # print len(data_fit_heatmap2.columns.tolist())
+    # print len(range(1,len(data_fit_heatmap2.columns)+1,1))
     if xticklabels=="seq":
         ax.set_xticklabels(data_fit_heatmap2.columns.tolist(),rotation=90)
     else:
-        ax.set_xticks(range(1,len(data_fit_heatmap2.columns),1))
-        ax.set_xticklabels(range(1,len(data_fit_heatmap2.columns),1),rotation=90)
+        ax.set_xticks(np.arange(1,len(data_fit_heatmap2.columns)+1,1)-0.35)
+        ax.set_xticklabels(range(1,len(data_fit_heatmap2.columns)+1,1),rotation=90)
     yticklabels=data_fit_heatmap2.index.values.tolist()
     ax.set_yticklabels(yticklabels[::-1],rotation=0)
 

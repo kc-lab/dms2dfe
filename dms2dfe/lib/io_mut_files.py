@@ -254,7 +254,14 @@ def getusable_lbls_list(prj_dh):
                 lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
                 lbls_list.append([lbli,lbl_mat_mut_cds_fh])
             else :
-                logging.warning("can not find: %s" % basename(fh_1))
+                fh_1="%s/data_mutmat/%s" % (prj_dh,basename(fh_1))
+                # print fh_1
+                lbl_mat_mut_cds_fh=[fh for fh in glob(fh_1+"*") if '.mat_mut_cds' in fh]
+                if len(lbl_mat_mut_cds_fh)!=0:
+                    lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
+                    lbls_list.append([lbli,lbl_mat_mut_cds_fh])
+                else:    
+                    logging.warning("can not find: %s" % basename(fh_1))
         else:
             logging.info("already processed: %s" % (str(lbli)))
     return lbls_list

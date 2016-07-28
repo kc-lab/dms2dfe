@@ -5,7 +5,7 @@
 host='sapiens' #Host name for assigning codon table [coli | yeast | sapiens]
 Ni_cutoff='8' #Cut off for frequency per mutant
 Q_cutoff='30' #Cut off for Phred score quality
-norm_type='wild' #Type of normalization across samples [wild: wrt wild type | syn : wrt synonymous mutations | none : fold change serves as fitness]
+norm_type='none' #Type of normalization across samples [wild: wrt wild type | syn : wrt synonymous mutations | none : fold change serves as fitness]
 alignment_type='loc' #Alignment type [loc:local | glob:global]
 cores='3' #Number of cores to be used
 fsta_fh='APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.fasta' #Optional: Path to reference fasta file
