@@ -336,7 +336,7 @@ def run_RF(data_all,X_cols,y_coln,plot_fh="test",test_size=.5,data_test=None):
             data_preds=None
             plot_ROC(y_test,y_score,classes)
             plt.savefig(plot_fh+".pdf",format='pdf')
-            plt.savefig(plot_fh);plt.clf();plt.close()
+            # plt.savefig(plot_fh);plt.clf();plt.close()
         else:
             data_preds=X_test_df
 #             np.savetxt("y_pred", y_pred,delimiter=",")
@@ -346,7 +346,7 @@ def run_RF(data_all,X_cols,y_coln,plot_fh="test",test_size=.5,data_test=None):
         importances = grid_search.best_estimator_.feature_importances_
         feature_importances=plot_importances(importances,X_cols)
         plt.savefig(plot_fh.replace("_roc_","_relative_importances_")+".pdf",format='pdf')
-        plt.savefig(plot_fh.replace("_roc_","_relative_importances_"));plt.clf();plt.close()
+        # plt.savefig(plot_fh.replace("_roc_","_relative_importances_"));plt.clf();plt.close()
     return grid_search,y_test,y_pred,y_score,feature_importances,data_preds
 
 def run_RF_regress(data_all,X_cols,y_coln,test_size=0.5,data_test=None,plot_fh="test"):
@@ -402,7 +402,7 @@ def run_RF_regress(data_all,X_cols,y_coln,test_size=0.5,data_test=None,plot_fh="
     importances = grid_search.best_estimator_.feature_importances_
     feature_importances=plot_importances(importances,X_cols)
     plt.savefig(plot_fh.replace("_roc_","_relative_importances_")+".pdf",format='pdf')
-    plt.savefig(plot_fh.replace("_roc_","_relative_importances_"));plt.clf();plt.close()
+    # plt.savefig(plot_fh.replace("_roc_","_relative_importances_"));plt.clf();plt.close()
     return grid_search,y_test,y_pred,feature_importances,data_preds
 
 def data_fit2ml(data_fit_key,prj_dh,data_feats):

@@ -66,7 +66,7 @@ def main(prj_dh):
     lbls=pd.read_csv("%s/cfg/lbls" % prj_dh).set_index("varname",drop=True)
     type_form="aas"
     for lbl in lbls.index.values:
-        plot_fh="%s/plots/%s/fig_%s_%s.png" % (prj_dh,type_form,plot_type,lbl)
+        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,lbl)
         if not exists(plot_fh):
             data_cov=getwildtypecov(lbl,lbls,cctmr)
             data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
@@ -92,7 +92,7 @@ def main(prj_dh):
                     if "Unnamed: 0" in data_lbl.columns:
                         data_lbl=data_lbl.drop("Unnamed: 0", axis=1)
                     #heatmaps
-                    plot_fh="%s/plots/%s/fig_%s_%s.png" % (prj_dh,type_form,plot_type,data_lbli)
+                    plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_lbli)
                     if not exists(plot_fh):
                         ax,extent=plot_data_fit_heatmap(data_lbl,type_form,col='NiAcutlog',cmap="Blues",\
                                                         center=None,data_feats=data_feats,plot_fh=plot_fh)
@@ -120,11 +120,12 @@ def main(prj_dh):
                     if ((len(data_fit.NiAunsel.unique())>10) and \
                         (len(data_fit.NiAsel.unique())>10) and \
                         (len(data_fit.FiA.unique())>10)):
+                        
                         logging.info("processing: %s/%s" % (type_form,data_fiti))
 
                         plot_type="scatter"
                         logging.info("processing: plot type: %s" % plot_type)    
-                        plot_fh="%s/plots/%s/fig_%s_%s.png" % (prj_dh,type_form,plot_type,data_fiti) 
+                        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
                         if not exists(plot_fh):
                             plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=plot_fh)
                         else:
@@ -132,7 +133,7 @@ def main(prj_dh):
 
                         plot_type="dfe"
                         logging.info("processing: plot type: %s" % plot_type)    
-                        plot_fh="%s/plots/%s/fig_%s_%s.png" % (prj_dh,type_form,plot_type,data_fiti) 
+                        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
                         if not exists(plot_fh):
                             plot_data_fit_dfe(data_fit,norm_type,plot_fh=plot_fh)
                         else:
@@ -140,7 +141,7 @@ def main(prj_dh):
                         
                         plot_type="heatmap"
                         logging.info("processing: plot type: %s" % plot_type)    
-                        plot_fh="%s/plots/%s/fig_%s_%s.png" % (prj_dh,type_form,plot_type,data_fiti) 
+                        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
                         if not exists(plot_fh):
                             plot_data_fit_heatmap(data_fit,type_form,col='FiA',data_feats=data_feats,plot_fh=plot_fh)
                         else:
@@ -148,14 +149,14 @@ def main(prj_dh):
                         
                         plot_type="clustermap_rows"
                         logging.info("processing: plot type: %s" % plot_type)    
-                        plot_fh="%s/plots/%s/fig_%s_%s.png" % (prj_dh,type_form,plot_type,data_fiti) 
+                        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
                         if not exists(plot_fh):
                             plot_data_fit_clustermap(data_fit,type_form,col='FiA',plot_fh=plot_fh)
                         else:
                             logging.info("already processed: %s" % basename(plot_fh))
 
                         # plot_type="clustermap_rows_cols"
-                        # plot_fh="%s/plots/%s/fig_%s_%s.png" % (prj_dh,type_form,plot_type,data_fiti) 
+                        # plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
                         # if not exists(plot_fh):
                         #     ax=plot_data_fit_clustermap(data_fit,type_form,col='FiA',col_cluster=True)
                         #     ax.savefig(plot_fh+".pdf",format='pdf')                        
@@ -165,7 +166,7 @@ def main(prj_dh):
 
                         plot_type="sub_matrix"
                         logging.info("processing: plot type: %s" % plot_type)    
-                        plot_fh="%s/plots/%s/fig_%s_%s.png" % (prj_dh,type_form,plot_type,data_fiti) 
+                        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
                         if not exists(plot_fh):
                             ax=plot_sub_matrix(data_fit,type_form,col='FiA',plot_fh=plot_fh)
                         else:
@@ -204,7 +205,7 @@ def main(prj_dh):
                     if "Unnamed: 0" in data_comparison.columns:
                         data_comparison=data_comparison.drop("Unnamed: 0", axis=1)
                     #bar   
-                    plot_fh="%s/plots/%s/fig_bar_%s.png" % (prj_dh,type_form,data_comparisoni) 
+                    plot_fh="%s/plots/%s/fig_bar_%s.pdf" % (prj_dh,type_form,data_comparisoni) 
                     if not exists(plot_fh):
                         ax=plot_data_comparison_bar(data_comparison)
                         ax.figure.savefig(plot_fh+".pdf",format='pdf')

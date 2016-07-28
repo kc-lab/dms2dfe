@@ -26,13 +26,21 @@ from dms2dfe.lib.global_vars import mut_types_form
 
 
 def plot_data_lbl_repli(prj_dh):
-    import seaborn as sns
     """
     This plots scatters of frequecies of replicates.
     
     :param prj_dh: path to project directory.   
     """
-    repli=pd.read_csv('%s/cfg/repli' % prj_dh)
+    import seaborn as sns
+    from dms2dfe.lib.io_ml import denanrows
+    from scipy import stats
+    def corrfunc(x, y, **kws):
+        r, _ = stats.pearsonr(x, y)
+        ax = plt.gca()
+        ax.annotate("r = {:.2f}".format(r),
+                xy=(.1, .9), xycoords=ax.transAxes)
+
+    repli=pd.read_csv('%s/cfg/repli' % prj_dh).set_index("varname",drop=True)
     if "Unnamed: 0" in repli.columns:
         repli=repli.drop("Unnamed: 0", axis=1)
 
@@ -59,12 +67,16 @@ def plot_data_lbl_repli(prj_dh):
                         except:
                             logging.warning("do not exist: %s" % lbl)
                     data_repli=data_repli.loc[:,data_repli_usable]
+                    data_repli=denanrows(data_repli)
                     if len(data_repli.columns)!=0:
-                        ax = sns.pairplot(data_repli, kind="reg")
+                        ax=sns.pairplot(data_repli,diag_kind="kde",kind="reg")
+                        ax.set(xlim=(0,None),ylim=(0,None))
+                        ax.map_lower(corrfunc)
+                        ax.map_upper(corrfunc)
                         plt.tight_layout()
                         ax.savefig(plot_fh,format="pdf")
                         plt.clf();plt.close()
-                        logging.info("output: %s" % basename(plot_fh))
+                        # logging.info("output: %s" % basename(plot_fh))
                     else:
                         logging.warning("skipping data_replii : %s" % (data_lbl_key))
                 else:
@@ -102,7 +114,7 @@ def plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=None):
     ax.legend(loc= "upper right",frameon=True)
     plt.tight_layout()
     if plot_fh!=None:
-        plt.savefig(plot_fh+".pdf",format='pdf')                        
+        plt.savefig(plot_fh,format='pdf')                        
     return ax
 
 def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$',plot_fh=None):
@@ -135,7 +147,7 @@ def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$',plot_fh
     ax.set_xlim(-xlim,xlim)
     plt.tight_layout()
     if plot_fh!=None:
-        plt.savefig(plot_fh+".pdf",format='pdf')                        
+        plt.savefig(plot_fh,format='pdf')                        
     return ax
 
 def data2mut_matrix(data_fit,values_col,index_col,type_form): 
@@ -312,7 +324,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
     extent.set_points(np.array([[5,0],[36,11]]))    
     
     if plot_fh!=None:
-        ax_all.figure.savefig(plot_fh+".pdf",format='pdf', bbox_inches=extent)                        
+        ax_all.figure.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
         # ax_all.figure.savefig(plot_fh, bbox_inches=extent);plt.clf();plt.close()
     return ax_all,extent
 
@@ -360,7 +372,7 @@ def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col
         ax.ax_heatmap.set_xticks(range(1,len(data_fit_heatmap.columns),20))
         ax.ax_heatmap.set_xticklabels(range(1,len(data_fit_heatmap.columns),20),rotation=90)
     if plot_fh!=None:
-        plt.savefig(plot_fh+".pdf",format='pdf')                        
+        plt.savefig(plot_fh,format='pdf')                        
     return ax
 
 def data2sub_matrix(data_fit,values_col,index_col,type_form): 
@@ -399,7 +411,7 @@ def plot_sub_matrix(data_fit,type_form,col,cmap="coolwarm",center=0,plot_fh=None
     ax.set_yticklabels(yticklabels[::-1],rotation=0)
     plt.tight_layout()
     if plot_fh!=None:
-        plt.savefig(plot_fh+".pdf",format='pdf')                        
+        plt.savefig(plot_fh,format='pdf')                        
     return ax
 
 
@@ -421,5 +433,5 @@ def plot_cov(data_cov,data_lbl,plot_fh=None):
         tl.set_color('r')
     plt.tight_layout()
     if plot_fh!=None:
-        plt.savefig(plot_fh+".pdf",format='pdf')                        
+        plt.savefig(plot_fh,format='pdf')                        
     return ax1,ax2
