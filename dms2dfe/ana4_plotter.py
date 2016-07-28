@@ -205,13 +205,19 @@ def main(prj_dh):
                     if "Unnamed: 0" in data_comparison.columns:
                         data_comparison=data_comparison.drop("Unnamed: 0", axis=1)
                     #bar   
-                    plot_fh="%s/plots/%s/fig_bar_%s.pdf" % (prj_dh,type_form,data_comparisoni) 
+                    plot_type="bar"
+                    plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_comparisoni) 
                     if not exists(plot_fh):
-                        ax=plot_data_comparison_bar(data_comparison)
-                        ax.figure.savefig(plot_fh+".pdf",format='pdf')
-                        ax.figure.savefig(plot_fh);plt.clf();plt.close()
+                        ax=plot_data_comparison_bar(data_comparison,plot_fh=plot_fh)
                     else:
-                        logging.info("already processed: %s" % basename(plot_fh))                
+                        logging.info("already processed: %s" % basename(plot_fh))
+                    # data_comparison to vion format
+                    plot_type="violin"
+                    plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_comparisoni) 
+                    if not exists(plot_fh):
+                        ax=plot_data_comparison_violin(data_comparison,plot_fh=plot_fh)
+                    else:
+                        logging.info("already processed: %s" % basename(plot_fh))
 
     try:
         chimera_dh=guess_chimera_path()[0]

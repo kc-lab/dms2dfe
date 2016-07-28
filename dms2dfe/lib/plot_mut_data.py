@@ -329,7 +329,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
     return ax_all,extent
 
 
-def plot_data_comparison_bar(data_comparison):
+def plot_data_comparison_bar(data_comparison,plot_fh=None):
     """
     This plots the proportion of mutants according to type of selection in effect.
     
@@ -351,6 +351,21 @@ def plot_data_comparison_bar(data_comparison):
     ax.set_ylabel('Count')
     ax.legend().set_visible(False)
     plt.tight_layout()
+    if plot_fh!=None:
+        plt.figure.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
+    return ax
+
+def plot_data_comparison_violin(data_comparison,plot_fh=None):
+    import seaborn as sns
+    data_violin=pd.DataFrame(columns=["type of sample","$F_{i}$"],index=range(len(data_comparison)*2))
+    data_violin.loc[:,"$F_{i}$"]=data_comparison.loc[:,"Fi_ctrl"]
+    data_violin.loc[:,"type of sample"]="control"
+    data_violin.loc[len(data_comparison):len(data_comparison)+len(data_comparison),"type of sample"]="test"
+    data_violin.loc[len(data_comparison):len(data_comparison)+len(data_comparison),"$F_{i}$"]\
+    =list(data_comparison.loc[:,"Fi_test"])
+    ax=sns.violinplot(x="type of sample", y="$F_{i}$", data=data_violin,scale="width")
+    if plot_fh!=None:
+        plt.figure.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
     return ax
 
 def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col_cluster=False,row_cluster=True,plot_fh=None):
