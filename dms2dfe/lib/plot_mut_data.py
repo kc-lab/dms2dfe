@@ -13,7 +13,6 @@ from os.path import splitext,exists,basename
 from os import makedirs,stat
 import pandas as pd
 import numpy as np
-import seaborn as sns
 import matplotlib 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -27,6 +26,7 @@ from dms2dfe.lib.global_vars import mut_types_form
 
 
 def plot_data_lbl_repli(prj_dh):
+    import seaborn as sns
     """
     This plots scatters of frequecies of replicates.
     
@@ -43,7 +43,7 @@ def plot_data_lbl_repli(prj_dh):
                 if not exists("%s/plots/%s" % (prj_dh,type_form)):
                     makedirs("%s/plots/%s" % (prj_dh,type_form))
                 data_lbl_key="data_lbl/%s/%s" % (type_form,replii[0])
-                plot_fh="%s/plots/%s/fig_repli_%s.png" % (prj_dh,type_form,data_lbl_key.replace('/','_'))
+                plot_fh="%s/plots/%s/fig_repli_%s.pdf" % (prj_dh,type_form,data_lbl_key.replace('/','_'))
                 if not exists(plot_fh): 
                     data_repli=pd.DataFrame()
                     data_repli_usable=[]
@@ -62,7 +62,7 @@ def plot_data_lbl_repli(prj_dh):
                     if len(data_repli.columns)!=0:
                         ax = sns.pairplot(data_repli, kind="reg")
                         plt.tight_layout()
-                        ax.savefig(plot_fh)
+                        ax.savefig(plot_fh,format="pdf")
                         plt.clf();plt.close()
                         logging.info("output: %s" % basename(plot_fh))
                     else:
@@ -70,7 +70,7 @@ def plot_data_lbl_repli(prj_dh):
                 else:
                     logging.info("already processed: %s" % basename(plot_fh))
 
-def plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff):
+def plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=None):
     """
     This plots scatter plot of frequecies of selected and unselected samples.
     
@@ -101,9 +101,11 @@ def plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff):
     ax.set_ylim([ax_lim_min,ax_lim_max])
     ax.legend(loc= "upper right",frameon=True)
     plt.tight_layout()
+    if plot_fh!=None:
+        plt.savefig(plot_fh+".pdf",format='pdf')                        
     return ax
 
-def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$'):
+def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$',plot_fh=None):
     """
     This plots histogram of Distribution of Fitness Effects (DFE).
     
@@ -132,6 +134,8 @@ def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$'):
     xlim=np.ceil(np.max([data_fit.loc[:,col_fit].max(),data_fit.loc[:,col_fit].min()*-1]))
     ax.set_xlim(-xlim,xlim)
     plt.tight_layout()
+    if plot_fh!=None:
+        plt.savefig(plot_fh+".pdf",format='pdf')                        
     return ax
 
 def data2mut_matrix(data_fit,values_col,index_col,type_form): 
@@ -228,7 +232,7 @@ def plotacc(data_feats,ax):
     ax.text(xlim+1,0,"Solvent accessibility",fontdict={'size': 20})
     return ax    
 
-def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_feats=None,xticklabels=None):
+def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_feats=None,xticklabels=None,plot_fh=None):
     """
     This plots heatmap of fitness values.
     
@@ -242,7 +246,8 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
     """
     from dms2dfe.lib.io_nums import str2num
     from dms2dfe.lib.global_vars import aas_21,cds_64
-
+    import seaborn as sns
+    
     data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
 
     refis=[str2num(i) for i in data_fit_heatmap.columns.tolist()]
@@ -305,7 +310,10 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
         ax_acc=plotacc(data_feats,ax_acc)
     extent = ax_all.get_window_extent().transformed(ax_all.figure.dpi_scale_trans.inverted())
     extent.set_points(np.array([[5,0],[36,11]]))    
-
+    
+    if plot_fh!=None:
+        ax_all.figure.savefig(plot_fh+".pdf",format='pdf', bbox_inches=extent)                        
+        # ax_all.figure.savefig(plot_fh, bbox_inches=extent);plt.clf();plt.close()
     return ax_all,extent
 
 
@@ -333,7 +341,7 @@ def plot_data_comparison_bar(data_comparison):
     plt.tight_layout()
     return ax
 
-def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col_cluster=False,row_cluster=True):
+def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col_cluster=False,row_cluster=True,plot_fh=None):
     """
     This clusters heatmaps.
     
@@ -341,6 +349,7 @@ def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col
     :param type_form: type of mutants ["aas" : amino acid | "cds" : codon level]
     :param col: eg. columns with values. col for data_fit
     """
+    import seaborn as sns
     data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
     plt.figure()
     ax=sns.clustermap(data_fit_heatmap.fillna(0),method='average', metric='euclidean',\
@@ -350,6 +359,8 @@ def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col
     if not col_cluster:
         ax.ax_heatmap.set_xticks(range(1,len(data_fit_heatmap.columns),20))
         ax.ax_heatmap.set_xticklabels(range(1,len(data_fit_heatmap.columns),20),rotation=90)
+    if plot_fh!=None:
+        plt.savefig(plot_fh+".pdf",format='pdf')                        
     return ax
 
 def data2sub_matrix(data_fit,values_col,index_col,type_form): 
@@ -364,7 +375,7 @@ def data2sub_matrix(data_fit,values_col,index_col,type_form):
     sub_matrix=pd.pivot_table(data_fit,values=values_col,index=index_col,columns='ref')
     return sub_matrix
 
-def plot_sub_matrix(data_fit,type_form,col,cmap="coolwarm",center=0):
+def plot_sub_matrix(data_fit,type_form,col,cmap="coolwarm",center=0,plot_fh=None):
     """
     This plots heatmap of fitness values.
     
@@ -376,6 +387,7 @@ def plot_sub_matrix(data_fit,type_form,col,cmap="coolwarm",center=0):
     """
     from dms2dfe.lib.io_nums import str2num
     from dms2dfe.lib.global_vars import aas_21,cds_64
+    import seaborn as sns
     
     sub_matrix  =data2sub_matrix(data_fit,col,'mut',type_form)
     plt.figure(figsize=(5,4),dpi=500)
@@ -386,4 +398,28 @@ def plot_sub_matrix(data_fit,type_form,col,cmap="coolwarm",center=0):
     yticklabels=sub_matrix.index.values.tolist()
     ax.set_yticklabels(yticklabels[::-1],rotation=0)
     plt.tight_layout()
+    if plot_fh!=None:
+        plt.savefig(plot_fh+".pdf",format='pdf')                        
     return ax
+
+
+def plot_cov(data_cov,data_lbl,plot_fh=None):
+    plt.figure(figsize=[6,3],dpi=300)
+    ax1=plt.subplot(111)
+    ax1.plot(data_cov,lw=2,color='b')
+    ax2 = ax1.twinx()
+    ax2.plot(data2mut_matrix(data_lbl,"NiA","mut","aas").sum().tolist(),lw=2,color='r')
+    ax1.set_xlabel("Codon position")
+    ax1.set_ylabel("Coverage (reads per codons)",color='b')
+    ax2.set_ylabel("Mutants per codons",color='r')
+    ax1.set_xlim([data_cov.index.values[0],data_cov.index.values[-1]])
+    ax1.set_yscale('log')
+    ax2.set_yscale('log')
+    for tl in ax1.get_yticklabels():
+        tl.set_color('b')
+    for tl in ax2.get_yticklabels():
+        tl.set_color('r')
+    plt.tight_layout()
+    if plot_fh!=None:
+        plt.savefig(plot_fh+".pdf",format='pdf')                        
+    return ax1,ax2
