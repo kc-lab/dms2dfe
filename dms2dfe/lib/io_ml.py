@@ -239,9 +239,11 @@ def plot_ROC(y_test,y_score,classes):
             mean_tpr /= len(classes_to_plot)
             mean_tpr[-1] = 1.0
             ax_roc.plot(mean_fpr, mean_tpr,'k', lw=4, label="%s (AUC=%.2f)" % ("mean",auc(mean_fpr,mean_tpr)))
+            logging.info("mean AUC = %.2f" % auc(fpr,tpr))
     else:
         fpr, tpr, _ = roc_curve(y_test, y_score[:, 1])
         ax_roc.plot(fpr, tpr, label="%s (AUC=%.2f)" % ("mean",auc(fpr,tpr)))
+        logging.info("mean AUC = %.2f" % auc(fpr,tpr))
 
     ax_roc.plot([0, 1], [0, 1], 'k--')
     ax_roc.set_xlabel("FPR")

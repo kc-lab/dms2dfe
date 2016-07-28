@@ -4,7 +4,8 @@
 # This program is distributed under General Public License v. 3.  
 
 import sys
-from os.path import splitext, exists,basename
+from os.path import splitext, exists,basename,basename
+# from os import makedirs
 from Bio import SeqIO
 import pandas as pd
 from multiprocessing import Pool
@@ -25,8 +26,9 @@ def main(prj_dh):
     logging.info("start")
 
     # SET global variables
-    global fsta_id,fsta_seqlen,fsta_seq,cds_ref,Q_cutoff
-
+    global fsta_id,fsta_seqlen,fsta_seq,cds_ref,Q_cutoff,prj_dh_global
+    
+    prj_dh_global=prj_dh
     if not exists(prj_dh) :
         logging.error("Could not find '%s'\n" % prj_dh)
         sys.exit()
@@ -59,10 +61,10 @@ def main(prj_dh):
             log_f.close()
             
     if len(sbam_fhs)!=0:
-        pooled(sbam_fhs[0])
-        # pool=Pool(processes=int(cores)) # TODO : get it from xls
-        # pool.map(pooled, sbam_fhs)
-        # pool.close(); pool.join()                
+        # pooled(sbam_fhs[1])
+        pool=Pool(processes=int(cores)) # TODO : get it from xls
+        pool.map(pooled, sbam_fhs)
+        pool.close(); pool.join()                
     else:
         logging.info("already processed")  
     logging.shutdown()
@@ -74,7 +76,7 @@ def pooled(sbam_fh):
     :param sbam_fh: path to sorted bam file.
     """
     logging.info("processing: %s" % (basename(sbam_fh)))
-    sam2mutmat(sbam_fh,fsta_id,fsta_seqlen,fsta_seq,cds_ref,Q_cutoff)    
+    sam2mutmat(sbam_fh,fsta_id,fsta_seqlen,fsta_seq,cds_ref,Q_cutoff,prj_dh_global)    
 
 if __name__ == '__main__':
     main(sys.argv[1])

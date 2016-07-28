@@ -41,6 +41,14 @@ def main(prj_dh):
     pdb_fh=info.pdb_fh
     norm_type=info.norm_type
     Ni_cutoff=int(info.Ni_cutoff)
+    cctmr=info.cctmr
+    
+    if cctmr != 'nan':
+        cctmr=[int("%s" % i) for i in cctmr.split(" ")]
+        cctmr=[(cctmr[0],cctmr[1]),(cctmr[2],cctmr[3])]
+    else:
+        cctmr=None
+
     
     data_feats=pd.read_csv(prj_dh+"/data_feats/aas/feats_all")
 
@@ -51,6 +59,11 @@ def main(prj_dh):
     if not exists(prj_dh+"/plots"):
         makedirs(prj_dh+"/plots")
 
+#plot for quality checks
+    # lbls=pd.read_csv("%s/cfg/lbls" % prj_dh).set_index("varname",drop=True)
+    # for lbl in lbls.index.values:
+        
+        
 #plot data_lbl
     plot_data_lbl_repli(prj_dh)
     data_lbls=glob("%s/data_lbl/aas/*" % prj_dh)+glob("%s/data_lbl/cds/*" % prj_dh)

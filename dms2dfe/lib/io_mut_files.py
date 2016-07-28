@@ -97,6 +97,7 @@ def collate_cctmr(lbl_mat_cds,cctmr):
         lbl_mat_cds_cctmr1=lbl_mat_cds.iloc[(cctmr[0][0]-1):(cctmr[0][1]-1),:]
         lbl_mat_cds_cctmr2=lbl_mat_cds.iloc[(cctmr[1][0]-1):(cctmr[1][1]-1),:]
         lbl_mat_cds=lbl_mat_cds_cctmr1.fillna(0)+lbl_mat_cds_cctmr2.fillna(0)
+        lbl_mat_cds.loc[:,"refi"]=lbl_mat_cds_cctmr1.loc[:,"refi"]
     else:
         logging.error("cctmr do not conform %s!=%s or %s!=%s" % (lbl_mat_cds.index.values[(cctmr[0][0]-1)], \
                                                                  lbl_mat_cds.index.values[(cctmr[1][0]-1)], \
@@ -267,19 +268,17 @@ def getusable_fits_list(prj_dh):
     """
     if exists('%s/cfg/fit'% (prj_dh)):
         fits=pd.read_csv(prj_dh+'/cfg/fit')
-        
+
         if "Unnamed: 0" in fits.columns:
             fits=fits.drop("Unnamed: 0", axis=1)
-        fits=fits.set_index('unsel')
         fits_pairs_list=[]
-        sel_cols=[col for col in fits.columns.tolist() if "sel" in col]
-        for unsel_lbl in fits.index.values :
-            sels=list(fits.loc[unsel_lbl,sel_cols])
+        sel_cols=[col for col in fits.columns.tolist() if "sel_" in col]
+        for pairi in fits.index.values :
+            unsel_lbl=fits.loc[pairi,"unsel"]
+            sels=list(fits.loc[pairi,sel_cols])
+            # print sels
             for sel_lbl in sels :
                 if not pd.isnull(sel_lbl):
-                    print sel_lbl
-                    print unsel_lbl
-
                     fit_lbl=sel_lbl+"_WRT_"+unsel_lbl
                     if (not exists("%s/data_fit/%s/%s" % (prj_dh,'aas',fit_lbl))) \
                     and (not exists("%s/data_fit/%s/%s" % (prj_dh,'cds',fit_lbl))):             

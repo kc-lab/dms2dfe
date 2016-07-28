@@ -8,8 +8,8 @@
 ``io_data_files``
 ================================
 """
-from os import stat
-from os.path import splitext, exists,basename
+from os import stat,makedirs
+from os.path import splitext, exists,basename,dirname
 import numpy as np
 import pandas as pd
 import pysam
@@ -158,7 +158,7 @@ def get_mut_cds(qry_alind,fsta_seq,list_mut_cds_fh,Q_cutoff) :
     else :
         logging.error("%s @ if len(ref_seq)==len(qry_seq)" % qry_alind.qname)
         
-def sam2mutmat(sbam_fh,fsta_id,fsta_seqlen,fsta_seq,cds_ref,Q_cutoff):        
+def sam2mutmat(sbam_fh,fsta_id,fsta_seqlen,fsta_seq,cds_ref,Q_cutoff,prj_dh):        
     """
     This converts sorted .bam file to codon level mutation matrix (.mat_mut_cds)
     
@@ -207,9 +207,15 @@ def sam2mutmat(sbam_fh,fsta_id,fsta_seqlen,fsta_seq,cds_ref,Q_cutoff):
         else :
             mut_cds_mat_df.ix[mut_cdi.loc["cdi"],mut_cdi.loc["qry_cd"]]+=1 # row, column    
     mut_cds_mat_df.insert(0,'ref_cd',cds_ref)
-    mut_cds_mat_df.loc[:,"refi"]=range(len(mut_cds_mat_df))+1
-    mut_cds_mat_df.to_csv(mat_mut_cds_fh_str)
-    
+    mut_cds_mat_df.loc[:,"refi"]=range(1,len(mut_cds_mat_df)+1)
+    mut_cds_mat_df.to_csv(mat_mut_cds_fh_str)  
+    mut_cds_mat_fh="%s/data_mutmut/%s" % (prj_dh,basename(mat_mut_cds_fh_str))
+    if not exists(dirname(mut_cds_mat_fh)):
+        try:
+            makedirs(dirname(mut_cds_mat_fh))
+        except :
+            a=1
+    mut_cds_mat_df.to_csv(mut_cds_mat_fh)
     # logging.info("OTPTS:\t'%s' " % list_mut_cds_fh_str)
     logging.info("output: %s" % basename(mat_mut_cds_fh_str))
         
