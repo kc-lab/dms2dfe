@@ -25,21 +25,13 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(
 from dms2dfe.lib.global_vars import mut_types_form
 
 
-def plot_data_lbl_repli(prj_dh):
+def plot_data_lbl_repli(prj_dh,lim_min=0):
     """
     This plots scatters of frequecies of replicates.
     
     :param prj_dh: path to project directory.   
-    """
-    import seaborn as sns
-    from dms2dfe.lib.io_ml import denanrows
-    from scipy import stats
-    def corrfunc(x, y, **kws):
-        r, _ = stats.pearsonr(x, y)
-        ax = plt.gca()
-        ax.annotate("r = {:.2f}".format(r),
-                xy=(.1, .9), xycoords=ax.transAxes)
-
+    """    
+    
     repli=pd.read_csv('%s/cfg/repli' % prj_dh).set_index("varname",drop=True)
     if "Unnamed: 0" in repli.columns:
         repli=repli.drop("Unnamed: 0", axis=1)
@@ -59,7 +51,7 @@ def plot_data_lbl_repli(prj_dh):
                         data_lbl_fh= "%s/data_lbl/%s/%s" % (prj_dh,type_form,lbl)
                         try:
                             data_lbl=pd.read_csv(data_lbl_fh)
-                            data_repli[lbl]=data_lbl['NiAcutlog'].fillna(0)
+                            data_repli[lbl]=data_lbl['NiAcutlog']#.fillna(0)
                             if len(data_repli.loc[:,lbl].unique())>10:
                                 data_repli_usable.append(True)
                             else:
@@ -67,20 +59,33 @@ def plot_data_lbl_repli(prj_dh):
                         except:
                             logging.warning("do not exist: %s" % lbl)
                     data_repli=data_repli.loc[:,data_repli_usable]
-                    data_repli=denanrows(data_repli)
-                    if len(data_repli.columns)!=0:
-                        ax=sns.pairplot(data_repli,diag_kind="kde",kind="reg")
-                        ax.set(xlim=(0,None),ylim=(0,None))
-                        ax.map_lower(corrfunc)
-                        ax.map_upper(corrfunc)
-                        plt.tight_layout()
-                        ax.savefig(plot_fh,format="pdf")
-                        plt.clf();plt.close()
-                        # logging.info("output: %s" % basename(plot_fh))
-                    else:
-                        logging.warning("skipping data_replii : %s" % (data_lbl_key))
+                    plot_corr_mat(data_repli,plot_fh,xlim=(lim_min,None),ylim=(lim_min,None))
                 else:
                     logging.info("already processed: %s" % basename(plot_fh))
+
+def plot_corr_mat(data_repli,plot_fh=None,xlim=(0,None),ylim=(0,None)):
+    import seaborn as sns
+    from dms2dfe.lib.io_ml import denanrows
+    from scipy import stats
+    def corrfunc(x, y, **kws):
+        r, _ = stats.pearsonr(x, y)
+        ax = plt.gca()
+        ax.annotate("r = {:.2f}".format(r),
+                xy=(.1, .9), xycoords=ax.transAxes)
+
+    # data_repli=data_repli.loc[:,data_repli_usable]
+    data_repli=denanrows(data_repli)
+    if len(data_repli.columns)!=0:
+        ax=sns.pairplot(data_repli,diag_kind="kde",kind="reg")
+        ax.set(xlim=xlim,ylim=ylim)
+        ax.map_lower(corrfunc)
+        ax.map_upper(corrfunc)
+        plt.tight_layout()
+        if plot_fh!=None:
+            plt.savefig(plot_fh,format='pdf')                        
+        return ax
+    else:
+        logging.warning("skipping data_replii : %s" % (data_lbl_key))
 
 def plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=None):
     """
@@ -117,7 +122,7 @@ def plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=None):
         plt.savefig(plot_fh,format='pdf')                        
     return ax
 
-def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$',plot_fh=None):
+def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$',axvspan_min=-2,axvspan_max=2,plot_fh=None):
     """
     This plots histogram of Distribution of Fitness Effects (DFE).
     
@@ -136,14 +141,14 @@ def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$',plot_fh
     else:
         data_fit[col_fit].plot(kind='hist',bins=40,color='seagreen',ax=ax)
 
-    ax.axvspan(-20, -2, color='blue', alpha=0.10)
-    ax.axvspan(-2, 2, color='grey', alpha=0.10)
-    ax.axvspan(2, 20, color='red', alpha=0.10)
+    xlim=np.ceil(np.max([data_fit.loc[:,col_fit].max(),data_fit.loc[:,col_fit].min()*-1]))
+    ax.axvspan(-xlim, axvspan_min, color='blue', alpha=0.10)
+    ax.axvspan(axvspan_min, axvspan_max, color='grey', alpha=0.10)
+    ax.axvspan(axvspan_max, xlim, color='red', alpha=0.10)
     # l1=ax.legend(['Deleterious','Neutral','Beneficial'], loc='upper left')
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel('Count')
-    xlim=np.ceil(np.max([data_fit.loc[:,col_fit].max(),data_fit.loc[:,col_fit].min()*-1]))
     ax.set_xlim(-xlim,xlim)
     plt.tight_layout()
     if plot_fh!=None:
@@ -259,7 +264,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
     from dms2dfe.lib.io_nums import str2num
     from dms2dfe.lib.global_vars import aas_21,cds_64
     import seaborn as sns
-    
+
     data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
 
     refis=[str2num(i) for i in data_fit_heatmap.columns.tolist()]
@@ -274,12 +279,19 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
 
     data_syn_locs=data_fit.loc[0:len(data_fit)/21-1,["mutids","ref"]]
     data_syn_locs["refi"]=[str2num(i)-1+0.15 for i in data_syn_locs["mutids"]]
+
+    data_nan_locs=data_fit.loc[pd.isnull(data_fit.loc[:,col]),["mutids","ref","mut"]]
+    data_nan_locs["refi"]=[str2num(i)-1+0.15 for i in data_nan_locs["mutids"]]
+
+
     if "aas" in type_form:
         data_syn_locs["muti"]=[20-aas_21.index(i)+0.15 for i in data_syn_locs["ref"]]
+        data_nan_locs["muti"]=[20-aas_21.index(i)+0.15 for i in data_nan_locs["mut"]]
+
     if "cds" in type_form:
         cds_64.sort()
         data_syn_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_syn_locs["ref"]]
-
+        data_nan_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_nan_locs["mut"]]
 
     fig=plt.figure(figsize=(80, 12),dpi=500)      
     gs = gridspec.GridSpec(3, 1,height_ratios=[1,1,32])
@@ -302,8 +314,13 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
     yticklabels=data_fit_heatmap2.index.values.tolist()
     ax.set_yticklabels(yticklabels[::-1],rotation=0)
 
-    for i in data_syn_locs.index.values:
-        ax.text(data_syn_locs.loc[i,"refi"],data_syn_locs.loc[i,"muti"],"s")
+    data_syn_locs=data_syn_locs.reset_index(drop=True)
+    for i in data_syn_locs.reset_index().index.values:
+        ax.text(data_syn_locs.loc[i,"refi"],data_syn_locs.loc[i,"muti"],"s",color='g')
+
+    data_nan_locs=data_nan_locs.reset_index(drop=True)
+    for i in data_nan_locs.index.values:
+        ax.text(data_nan_locs.loc[i,"refi"],data_nan_locs.loc[i,"muti"],"n",color='gray')
 
     if not data_feats is None: 
         ax_ss = plt.subplot(gs[0])
@@ -322,9 +339,12 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
         ax_acc=plotacc(data_feats,ax_acc)
     extent = ax_all.get_window_extent().transformed(ax_all.figure.dpi_scale_trans.inverted())
     extent.set_points(np.array([[5,0],[36,11]]))    
-    
+    # extent.set_points(np.array([[5,0],[36,11]]))    
+
     if plot_fh!=None:
-        ax_all.figure.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
+        # ax_all.figure.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
+        # plt.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
+        plt.savefig(plot_fh,format='pdf')                        
         # ax_all.figure.savefig(plot_fh, bbox_inches=extent);plt.clf();plt.close()
     return ax_all,extent
 
@@ -352,7 +372,7 @@ def plot_data_comparison_bar(data_comparison,plot_fh=None):
     ax.legend().set_visible(False)
     plt.tight_layout()
     if plot_fh!=None:
-        plt.figure.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
+        plt.savefig(plot_fh,format='pdf')                        
     return ax
 
 def plot_data_comparison_violin(data_comparison,plot_fh=None):
@@ -365,7 +385,7 @@ def plot_data_comparison_violin(data_comparison,plot_fh=None):
     =list(data_comparison.loc[:,"Fi_test"])
     ax=sns.violinplot(x="type of sample", y="$F_{i}$", data=data_violin,scale="width")
     if plot_fh!=None:
-        plt.figure.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
+        plt.savefig(plot_fh,format='pdf')                        
     return ax
 
 def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col_cluster=False,row_cluster=True,plot_fh=None):

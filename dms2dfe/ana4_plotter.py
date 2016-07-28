@@ -10,12 +10,14 @@ import pandas as pd
 import numpy as np
 import subprocess
 from glob import glob
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from pychimera.pychimera import guess_chimera_path
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe import configure
-from dms2dfe.lib.plot_mut_data import plot_data_lbl_repli,plot_data_fit_scatter,plot_data_fit_dfe,plot_data_fit_heatmap,data2mut_matrix,plot_data_comparison_bar,plot_data_fit_clustermap,plot_sub_matrix,plot_cov
+from dms2dfe.lib.plot_mut_data import plot_data_lbl_repli,plot_data_fit_scatter,plot_data_fit_dfe,plot_data_fit_heatmap,data2mut_matrix,plot_data_comparison_bar,plot_data_fit_clustermap,plot_sub_matrix,plot_cov,plot_data_comparison_violin
 from dms2dfe.lib.io_mut_files import getwildtypecov
 from dms2dfe.lib.plot_pdb import vector2bfactor
 from dms2dfe.lib.global_vars import mut_types_form
@@ -75,7 +77,7 @@ def main(prj_dh):
 #plot data_lbl
     plot_type="repli"
     logging.info("processing: plot type: %s" % plot_type)
-    plot_data_lbl_repli(prj_dh)
+    plot_data_lbl_repli(prj_dh,lim_min=np.log2(Ni_cutoff))
     
     plot_type="heatmap"
     logging.info("processing: plot type: %s" % plot_type)    
@@ -117,25 +119,26 @@ def main(prj_dh):
                     if "Unnamed: 0" in data_fit.columns:
                         data_fit=data_fit.drop("Unnamed: 0", axis=1)
 
-                    if ((len(data_fit.NiAunsel.unique())>10) and \
-                        (len(data_fit.NiAsel.unique())>10) and \
-                        (len(data_fit.FiA.unique())>10)):
-                        
-                        logging.info("processing: %s/%s" % (type_form,data_fiti))
+                    if len(data_fit.loc[:,"FiA"].unique())>10:
+                        if  ("NiAunsel" in data_fit.columns.tolist()) and \
+                            (len(data_fit.loc[:,"NiAunsel"].unique())>10) and \
+                            (len(data_fit.loc[:,"NiAsel"].unique())>10):
 
-                        plot_type="scatter"
-                        logging.info("processing: plot type: %s" % plot_type)    
-                        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
-                        if not exists(plot_fh):
-                            plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=plot_fh)
-                        else:
-                            logging.info("already processed: %s" % basename(plot_fh))
+                            logging.info("processing: %s/%s" % (type_form,data_fiti))
+
+                            plot_type="scatter"
+                            logging.info("processing: plot type: %s" % plot_type)    
+                            plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
+                            if not exists(plot_fh):
+                                plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=plot_fh)
+                            else:
+                                logging.info("already processed: %s" % basename(plot_fh))
 
                         plot_type="dfe"
                         logging.info("processing: plot type: %s" % plot_type)    
                         plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
                         if not exists(plot_fh):
-                            plot_data_fit_dfe(data_fit,norm_type,plot_fh=plot_fh)
+                            plot_data_fit_dfe(data_fit,norm_type,axvspan_min=0,axvspan_max=0,plot_fh=plot_fh)
                         else:
                             logging.info("already processed: %s" % basename(plot_fh))
                         
