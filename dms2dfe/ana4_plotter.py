@@ -221,7 +221,9 @@ def main(prj_dh):
                     plot_type="violin"
                     plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_comparisoni) 
                     if not exists(plot_fh):
-                        ax=plot_data_comparison_violin(data_comparison,plot_fh=plot_fh)
+                        data_comparison.to_csv("test_data_comparison")
+                        print plot_fh
+                        plot_data_comparison_violin(data_comparison,plot_fh=plot_fh)
                     else:
                         logging.info("already processed: %s" % basename(plot_fh))
 

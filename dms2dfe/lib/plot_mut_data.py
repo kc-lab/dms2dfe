@@ -278,10 +278,10 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
             data_fit_heatmap2.loc[:,refrefis.loc[i,"refrefi"]]=data_fit_heatmap.loc[:,refrefis.loc[i,"refrefi"]]
 
     data_syn_locs=data_fit.loc[0:len(data_fit)/21-1,["mutids","ref"]]
-    data_syn_locs["refi"]=[str2num(i)-1+0.15 for i in data_syn_locs["mutids"]]
+    data_syn_locs["refi"]=[str2num(i)-1+0.05 for i in data_syn_locs["mutids"]]
 
     data_nan_locs=data_fit.loc[pd.isnull(data_fit.loc[:,col]),["mutids","ref","mut"]]
-    data_nan_locs["refi"]=[str2num(i)-1+0.15 for i in data_nan_locs["mutids"]]
+    data_nan_locs["refi"]=[str2num(i)-1+0.05 for i in data_nan_locs["mutids"]]
 
 
     if "aas" in type_form:
@@ -293,7 +293,8 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
         data_syn_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_syn_locs["ref"]]
         data_nan_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_nan_locs["mut"]]
 
-    fig=plt.figure(figsize=(80, 12),dpi=500)      
+    fig=plt.figure(figsize=(80, 12),dpi=300)      
+    # fig=plt.figure(figsize=(40, 6),dpi=500)      
     gs = gridspec.GridSpec(3, 1,height_ratios=[1,1,32])
 
 
@@ -319,11 +320,11 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
 
     data_syn_locs=data_syn_locs.reset_index(drop=True)
     for i in data_syn_locs.reset_index().index.values:
-        ax.text(data_syn_locs.loc[i,"refi"],data_syn_locs.loc[i,"muti"],r"$\plus$",color='g')
+        ax.text(data_syn_locs.loc[i,"refi"],data_syn_locs.loc[i,"muti"],r"$\plus$")#,color='g')
 
     data_nan_locs=data_nan_locs.reset_index(drop=True)
     for i in data_nan_locs.index.values:
-        ax.text(data_nan_locs.loc[i,"refi"],data_nan_locs.loc[i,"muti"],r"$\otimes$",color='gray')
+        ax.text(data_nan_locs.loc[i,"refi"],data_nan_locs.loc[i,"muti"],r"$\otimes$")#,color='gray')
 
     if not data_feats is None: 
         ax_ss = plt.subplot(gs[0])
@@ -340,16 +341,17 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
 
         ax_ss=plotss(data_feats,ax_ss)
         ax_acc=plotacc(data_feats,ax_acc)
-    extent = ax_all.get_window_extent().transformed(ax_all.figure.dpi_scale_trans.inverted())
-    extent.set_points(np.array([[5,0],[36,11]]))    
+    # extent = ax_all.get_window_extent().transformed(ax_all.figure.dpi_scale_trans.inverted())
     # extent.set_points(np.array([[5,0],[36,11]]))    
-
+    # extent.set_points(np.array([[5,0],[36,11]]))    
+    plt.figtext(0.125, .02, "%s: Wild type allele \n%s: Mutations for which data is not not available" % (r"$\plus$",r"$\otimes$"),\
+                fontdict={'size': 20})
     if plot_fh!=None:
         # ax_all.figure.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
         # plt.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
         plt.savefig(plot_fh,format='pdf')                        
         # ax_all.figure.savefig(plot_fh, bbox_inches=extent);plt.clf();plt.close()
-    return ax_all,extent
+    return ax_all
 
 
 def plot_data_comparison_bar(data_comparison,plot_fh=None):
@@ -386,7 +388,9 @@ def plot_data_comparison_violin(data_comparison,plot_fh=None):
     data_violin.loc[len(data_comparison):len(data_comparison)+len(data_comparison),"type of sample"]="test"
     data_violin.loc[len(data_comparison):len(data_comparison)+len(data_comparison),"$F_{i}$"]\
     =list(data_comparison.loc[:,"Fi_test"])
-    ax=sns.violinplot(x="type of sample", y="$F_{i}$", data=data_violin,scale="width")
+    plt.figure(figsize=(3,3),dpi=300)
+    ax=plt.subplot(111)
+    sns.violinplot(x="type of sample", y="$F_{i}$", data=data_violin,scale="width",ax=ax)
     if plot_fh!=None:
         plt.savefig(plot_fh,format='pdf')                        
     return ax
