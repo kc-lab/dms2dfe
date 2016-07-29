@@ -53,6 +53,6 @@ def main(prj_dh):
     logging.info("Location of output visualizations: %s/plots/aas/" % (prj_dh))
     logging.info("For more information about outputs, please refer to http://kc-lab.github.io/dms2dfe .")
     logging.shutdown()
-
+    sys.exit()
 if __name__ == '__main__':
     main(sys.argv[1])

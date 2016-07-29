@@ -319,11 +319,11 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
 
     data_syn_locs=data_syn_locs.reset_index(drop=True)
     for i in data_syn_locs.reset_index().index.values:
-        ax.text(data_syn_locs.loc[i,"refi"],data_syn_locs.loc[i,"muti"],"s",color='g')
+        ax.text(data_syn_locs.loc[i,"refi"],data_syn_locs.loc[i,"muti"],r"$\plus$",color='g')
 
     data_nan_locs=data_nan_locs.reset_index(drop=True)
     for i in data_nan_locs.index.values:
-        ax.text(data_nan_locs.loc[i,"refi"],data_nan_locs.loc[i,"muti"],"n",color='gray')
+        ax.text(data_nan_locs.loc[i,"refi"],data_nan_locs.loc[i,"muti"],r"$\otimes$",color='gray')
 
     if not data_feats is None: 
         ax_ss = plt.subplot(gs[0])

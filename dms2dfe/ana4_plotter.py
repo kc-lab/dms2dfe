@@ -70,10 +70,13 @@ def main(prj_dh):
     for lbl in lbls.index.values:
         plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,lbl)
         if not exists(plot_fh):
-            data_cov=getwildtypecov(lbl,lbls,cctmr)
-            data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
-            plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
-        
+            try:
+                data_cov=getwildtypecov(lbl,lbls,cctmr)
+                data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
+                plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
+            except:
+                logging.warning("can not find required files")
+
 #plot data_lbl
     plot_type="repli"
     logging.info("processing: plot type: %s" % plot_type)
@@ -96,7 +99,7 @@ def main(prj_dh):
                     #heatmaps
                     plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_lbli)
                     if not exists(plot_fh):
-                        ax,extent=plot_data_fit_heatmap(data_lbl,type_form,col='NiAcutlog',cmap="Blues",\
+                        plot_data_fit_heatmap(data_lbl,type_form,col='NiAcutlog',cmap="Blues",\
                                                         center=None,data_feats=data_feats,plot_fh=plot_fh)
                     else:
                         logging.info("already processed: %s" % basename(plot_fh))
