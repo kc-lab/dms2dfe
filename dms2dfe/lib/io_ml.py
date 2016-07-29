@@ -556,15 +556,15 @@ def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all):
     data_fit_infered.loc[:,'mut']=[mutid[-1] for mutid in data_fit_infered.loc[:,"mutids"].tolist()]
     data_fit_infered.loc[:,'refrefi']=[("%s%03d" % (mutid[0],str2num(mutid))) for mutid in data_fit_infered.loc[:,"mutids"].tolist()]
     data_fit_infered.loc[:,'FCS']=data_fit_infered.loc[(data_fit_infered.loc[:,'ref']==data_fit_infered.loc[:,'mut']),'FCA']
-    data_fit_infered.head()
-    data_fit_infered.to_csv("data_fit_infered")
+    # data_fit_infered.head()
+    # data_fit_infered.to_csv("data_fit_infered")
     data_fit_infered=rescale_fitnessbysynonymous(data_fit_infered)
     data_fit_infered.loc[data_fit_infered.loc[:,'FiA']>0,'class_fit']='beneficial'
     data_fit_infered.loc[data_fit_infered.loc[:,'FiA']<0,'class_fit']='deleterious'
     data_fit_infered.loc[data_fit_infered.loc[:,'FiA']==0,'class_fit']='neutral'
     data_fit_infered.loc[:,'FiS']=\
     data_fit_infered.loc[(data_fit_infered.loc[:,'ref']==data_fit_infered.loc[:,'mut']),'FiA']
-    data_fit_infered.to_csv("%s/%s_infered" % (prj_dh,data_fit_key))
+    data_fit_infered.to_csv("%s/%s_inferred" % (prj_dh,data_fit_key))
 
     
     

@@ -249,7 +249,8 @@ def plotacc(data_feats,ax):
     ax.text(xlim+1,0,"Solvent accessibility",fontdict={'size': 20})
     return ax    
 
-def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_feats=None,xticklabels=None,plot_fh=None):
+def plot_data_fit_heatmap(data_fit,type_form,col,\
+                          cmap="coolwarm",center=0,data_feats=None,xticklabels=None,plot_fh=None,cbar_label=None):
     """
     This plots heatmap of fitness values.
     
@@ -268,6 +269,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
     data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
 
     refis=[str2num(i) for i in data_fit_heatmap.columns.tolist()]
+    refis=np.sort(refis)
     refrefis=pd.DataFrame(data_fit_heatmap.columns.tolist(),index=refis,columns=["refrefi"])
 
     data_fit_heatmap2=pd.DataFrame(index=data_fit_heatmap.index)
@@ -306,8 +308,10 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
     ax.set_xlabel('Wild type',fontdict={'size': 20})
     ax.set_ylabel('Mutation to',fontdict={'size': 20})
     cbar=ax.figure.colorbar(ax.collections[0])
-    cbar.set_label(("$%s$" % col),fontdict={'size': 20})
-    
+    if cbar_label==None:
+        cbar.set_label(("$%s$" % col),fontdict={'size': 20})
+    else:
+        cbar.set_label(("%s" % cbar_label),fontdict={'size': 20})
     # print len(data_fit_heatmap2.columns.tolist())
     # print len(range(1,len(data_fit_heatmap2.columns)+1,1))
     if xticklabels=="seq":
@@ -344,7 +348,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,cmap="coolwarm",center=0,data_f
     # extent = ax_all.get_window_extent().transformed(ax_all.figure.dpi_scale_trans.inverted())
     # extent.set_points(np.array([[5,0],[36,11]]))    
     # extent.set_points(np.array([[5,0],[36,11]]))    
-    plt.figtext(0.125, .02, "%s: Wild type allele \n%s: Mutations for which data is not not available" % (r"$\plus$",r"$\otimes$"),\
+    plt.figtext(0.125, .02, "%s: Wild type allele \n%s: Mutations for which data is not available" % (r"$\plus$",r"$\otimes$"),\
                 fontdict={'size': 20})
     if plot_fh!=None:
         # ax_all.figure.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
@@ -391,6 +395,7 @@ def plot_data_comparison_violin(data_comparison,plot_fh=None):
     plt.figure(figsize=(3,3),dpi=300)
     ax=plt.subplot(111)
     sns.violinplot(x="type of sample", y="$F_{i}$", data=data_violin,scale="width",ax=ax)
+    ax.set_xlabel("")
     if plot_fh!=None:
         plt.savefig(plot_fh,format='pdf')                        
     return ax

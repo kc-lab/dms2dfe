@@ -83,6 +83,7 @@ def main(prj_dh):
     plot_data_lbl_repli(prj_dh,lim_min=np.log2(Ni_cutoff))
     
     plot_type="heatmap"
+    cbar_label="Frequency ($N_{i}$)"
     logging.info("processing: plot type: %s" % plot_type)    
     data_lbls=glob("%s/data_lbl/aas/*" % prj_dh)+glob("%s/data_lbl/cds/*" % prj_dh)
     data_lbls= [basename(fh) for fh in data_lbls]
@@ -100,7 +101,7 @@ def main(prj_dh):
                     plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_lbli)
                     if not exists(plot_fh):
                         plot_data_fit_heatmap(data_lbl,type_form,col='NiAcutlog',cmap="Blues",\
-                                                        center=None,data_feats=data_feats,plot_fh=plot_fh)
+                                                        center=None,data_feats=data_feats,plot_fh=plot_fh,cbar_label=cbar_label)
                     else:
                         logging.info("already processed: %s" % basename(plot_fh))
 
@@ -149,7 +150,12 @@ def main(prj_dh):
                         logging.info("processing: plot type: %s" % plot_type)    
                         plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
                         if not exists(plot_fh):
-                            plot_data_fit_heatmap(data_fit,type_form,col='FiA',data_feats=data_feats,plot_fh=plot_fh)
+                            if "_inferred" in basename(plot_fh):
+                                cbar_label="Fitness scores ($F_{i}$)"
+                            else:
+                                cbar_label="Log fold change ($FC_{i}$)"
+                            plot_data_fit_heatmap(data_fit,type_form,col='FiA',data_feats=data_feats,\
+                                                  plot_fh=plot_fh,cbar_label=cbar_label)
                         else:
                             logging.info("already processed: %s" % basename(plot_fh))
                         
