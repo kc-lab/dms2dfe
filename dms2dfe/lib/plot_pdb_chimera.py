@@ -41,9 +41,9 @@ if not len(file_names)==0:
             rc("open " + fn)
             rc("windowsize 700 600; align ligand ~ligand;rangecol bfactor -2 blue 0 white 2 red :.A;preset apply publication 2; ~disp :.A,:.B;setattr m stickScale 2; delete :.B; delete solvent; delete :SPD; disp ligand; color gray,s; light mode ambient;color green ligand;\
                 colorkey 0.85,0.3 0.88,0.7 2 red 0 white -2 blue; 2dlabels create c%d text 'Fitness' xpos 0.81 ypos 0.25 color black;\
-                labelopt resinfo 'N terminus'; rlabel protein & @n & @/idatmType=N3+;\
-                labelopt resinfo 'C terminus'; rlabel protein & @c &  @/idatmType=Cac;" % file_names.index(fn))
-            rc("scale 0.75")
+                labelopt resinfo 'N-term'; rlabel protein & @n & @/idatmType=N3+;\
+                labelopt resinfo 'C-term'; rlabel protein & @c &  @/idatmType=Cac; color black,l" % file_names.index(fn))
+            rc("scale 2.0")
             # rc("windowsize 600 600; preset apply publication 1; color white; ~ribbon; ~disp :.A,:.B;setattr m stickScale 2; delete :.B; delete solvent; delete :SPD; disp ligand; surface probeRadius 1.4; color gray,s; light mode ambient; rangecol bfactor -2 blue 0 white 2 red :.A; color green ligand;")
             # rc("turn y 210; turn x 20; turn z 20;") #focus :.A;  scale 1; scale 1.4;center :.A; 
             png_name = fn[:-3] + "png"

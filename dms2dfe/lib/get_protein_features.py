@@ -206,8 +206,9 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
         for rate4site_tree in rate4site_trees:
             rate4site_out_csv_fh="%s/%s.csv%s%s" % (dirname(rate4site_out_fh),ref_id,rate4site_rate,rate4site_tree)
             if not exists(rate4site_out_csv_fh):
-                rate4site_com="./%s -s %s -o %s -a %s %s %s" % \
-                (rate4site_fh,msa_fh,rate4site_out_fh,ref_id,rate4site_rate,rate4site_tree)
+                rate4site_com="./%s -s %s -o %s -x %s_x -y %s_y -a %s %s %s;rm r4s.res" % \
+                (rate4site_fh,msa_fh,rate4site_out_fh,rate4site_out_fh,rate4site_out_fh,ref_id,rate4site_rate,rate4site_tree)
+                # print rate4site_com
                 log_fh="%s.log" % rate4site_out_csv_fh
                 log_f = open(log_fh,'a')
                 subprocess.call(rate4site_com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
@@ -242,7 +243,7 @@ def get_residue_depth(pdb_fh,msms_fh):
         xyzr_fh="%s/%s.xyzr" % (dirname(msms_fh),basename(pdb_fh))
         pdb_to_xyzr_com="./%s %s > %s" % (pdb_to_xyzr_fh,pdb_fh,xyzr_fh)
         msms_com="./%s -probe_radius 1.5 -if %s -of %s > %s.log" % (msms_fh,xyzr_fh,splitext(surface_fh)[0],splitext(surface_fh)[0])
-        log_fh="%s.log" % rate4site_out_csv_fh
+        log_fh="%s.log" % msms_fh
         log_f = open(log_fh,'a')
         subprocess.call("%s;%s" % (pdb_to_xyzr_com,msms_com) , shell=True,stdout=log_f, stderr=subprocess.STDOUT)
         log_f.close()

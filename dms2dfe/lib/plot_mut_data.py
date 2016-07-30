@@ -82,7 +82,8 @@ def plot_corr_mat(data_repli,plot_fh=None,xlim=(0,None),ylim=(0,None)):
         ax.map_upper(corrfunc)
         plt.tight_layout()
         if plot_fh!=None:
-            plt.savefig(plot_fh,format='pdf')                        
+            plt.savefig(plot_fh,format='pdf')  
+            plt.clf();plt.close()
         return ax
     else:
         logging.warning("skipping data_replii : %s" % (data_lbl_key))
@@ -119,7 +120,8 @@ def plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=None):
     ax.legend(loc= "upper right",frameon=True)
     plt.tight_layout()
     if plot_fh!=None:
-        plt.savefig(plot_fh,format='pdf')                        
+        plt.savefig(plot_fh,format='pdf')
+        plt.clf();plt.close()
     return ax
 
 def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$',axvspan_min=-2,axvspan_max=2,plot_fh=None):
@@ -152,7 +154,8 @@ def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$',axvspan
     ax.set_xlim(-xlim,xlim)
     plt.tight_layout()
     if plot_fh!=None:
-        plt.savefig(plot_fh,format='pdf')                        
+        plt.savefig(plot_fh,format='pdf')
+        plt.clf();plt.close()
     return ax
 
 def data2mut_matrix(data_fit,values_col,index_col,type_form): 
@@ -351,14 +354,12 @@ def plot_data_fit_heatmap(data_fit,type_form,col,\
     plt.figtext(0.125, .02, "%s: Wild type allele \n%s: Mutations for which data is not available" % (r"$\plus$",r"$\otimes$"),\
                 fontdict={'size': 20})
     if plot_fh!=None:
-        # ax_all.figure.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
-        # plt.savefig(plot_fh,format='pdf', bbox_inches=extent)                        
-        plt.savefig(plot_fh,format='pdf')                        
-        # ax_all.figure.savefig(plot_fh, bbox_inches=extent);plt.clf();plt.close()
+        plt.savefig(plot_fh,format='pdf') 
+        plt.clf();plt.close()
     return ax_all
 
 
-def plot_data_comparison_bar(data_comparison,plot_fh=None):
+def plot_data_comparison_bar(data_comparison,plot_fh=None,index=[]):
     """
     This plots the proportion of mutants according to type of selection in effect.
     
@@ -366,9 +367,10 @@ def plot_data_comparison_bar(data_comparison,plot_fh=None):
     """
     fig = plt.figure(figsize=(3, 3))
     ax=plt.subplot(111)
-
-    index=["positive","negative","robust"]
-
+    
+    if len(index)==0:
+        index=["positive","negative","robust"]
+    
     plot_data=pd.DataFrame(index=index,columns=["count"])
     group_data=pd.DataFrame(data_comparison.groupby("class_comparison").count().loc[:,"mutids"])
     for i in index:
@@ -376,12 +378,13 @@ def plot_data_comparison_bar(data_comparison,plot_fh=None):
             plot_data.loc[i,"count"]=group_data.loc[i,"mutids"]
 
     plot_data.plot(kind="bar",ax=ax)
-    ax.set_xlabel('Classes of comparison')
+    # ax.set_xlabel('Classes of comparison')
     ax.set_ylabel('Count')
     ax.legend().set_visible(False)
     plt.tight_layout()
     if plot_fh!=None:
         plt.savefig(plot_fh,format='pdf')                        
+        plt.clf();plt.close()
     return ax
 
 def plot_data_comparison_violin(data_comparison,plot_fh=None):
@@ -397,7 +400,8 @@ def plot_data_comparison_violin(data_comparison,plot_fh=None):
     sns.violinplot(x="type of sample", y="$F_{i}$", data=data_violin,scale="width",ax=ax)
     ax.set_xlabel("")
     if plot_fh!=None:
-        plt.savefig(plot_fh,format='pdf')                        
+        plt.savefig(plot_fh,format='pdf')
+        plt.clf();plt.close()
     return ax
 
 def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col_cluster=False,row_cluster=True,plot_fh=None):
@@ -419,7 +423,8 @@ def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col
         ax.ax_heatmap.set_xticks(range(1,len(data_fit_heatmap.columns),20))
         ax.ax_heatmap.set_xticklabels(range(1,len(data_fit_heatmap.columns),20),rotation=90)
     if plot_fh!=None:
-        plt.savefig(plot_fh,format='pdf')                        
+        plt.savefig(plot_fh,format='pdf')
+        plt.clf();plt.close()
     return ax
 
 def data2sub_matrix(data_fit,values_col,index_col,type_form): 
@@ -458,7 +463,8 @@ def plot_sub_matrix(data_fit,type_form,col,cmap="coolwarm",center=0,plot_fh=None
     ax.set_yticklabels(yticklabels[::-1],rotation=0)
     plt.tight_layout()
     if plot_fh!=None:
-        plt.savefig(plot_fh,format='pdf')                        
+        plt.savefig(plot_fh,format='pdf')
+        plt.clf();plt.close()
     return ax
 
 
@@ -480,5 +486,6 @@ def plot_cov(data_cov,data_lbl,plot_fh=None):
         tl.set_color('r')
     plt.tight_layout()
     if plot_fh!=None:
-        plt.savefig(plot_fh,format='pdf')                        
+        plt.savefig(plot_fh,format='pdf')
+        plt.clf();plt.close()
     return ax1,ax2

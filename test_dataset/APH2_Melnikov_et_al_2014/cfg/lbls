@@ -1,4 +1,9 @@
-,varname,fhs_1,fhs_2
-0,KKA2_Bkg1,APH2_Melnikov_et_al_2014/data_input/SRR1292901_1.fastq,APH2_Melnikov_et_al_2014/data_input/SRR1292901_2.fastq
-1,KKA2_S1_Kan14_L1,APH2_Melnikov_et_al_2014/data_input/SRR1292881_1.fastq,APH2_Melnikov_et_al_2014/data_input/SRR1292881_2.fastq
-2,KKA2_S1_Kan11_L1,APH2_Melnikov_et_al_2014/data_input/SRR1292709_1.fastq,APH2_Melnikov_et_al_2014/data_input/SRR1292709_2.fastq
+varname,fhs_1,fhs_2
+KKA2_S1_Kan11_L1,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1292709_1.fastq,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1292709_2.fastq
+KKA2_S1_Kan14_L1,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1292881_1.fastq,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1292881_2.fastq
+KKA2_Bkg1,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1292901_1.fastq,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1292901_2.fastq
+KKA2_S2_Kan11_L2,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1292902_1.fastq,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1292902_2.fastq
+KKA2_S2_Kan14_L2,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1292907_1.fastq,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1292907_2.fastq
+KKA2_Bkg2,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1293147_1.fastq,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1293147_2.fastq
+KKA2_S3_Kan11_L1,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1293148_1.fastq,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1293148_2.fastq
+KKA2_S3_Kan14_L1,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1293150_1.fastq,/media/DATAPART1/backup/rohan/documents/data_ngs_sra/ngs_sra/nar_1406/raw/SRR1293150_2.fastq

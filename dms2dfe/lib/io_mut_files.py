@@ -21,6 +21,91 @@ from dms2dfe.lib.fit_curve import fit_gauss_params
 from dms2dfe.lib.global_vars import aas_21,cds_64,mut_types_form,mut_types_NorS
 from dms2dfe.lib.convert_seq import cds2aas
 
+def getusable_lbls_list(prj_dh):
+    """
+    This detects the samples that can be processed.
+    
+    :param prj_dh: path to project directory.
+    :returns lbls_list: list of names of samples that can be processed.
+    """
+    lbls=pd.read_csv(prj_dh+'/cfg/lbls')
+    lbls=lbls.set_index('varname')
+    lbls_list=[]
+    #data_lbl cols: NiA mutids NiS NiN NiNcut NiNcutlog NiScut NiScutlog NiAcut NiAcutlog    
+    for lbli,lbl in lbls.iterrows() :
+        if (not exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',str(lbli)))) \
+        and (not exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',str(lbli)))):
+            fh_1=str(lbl['fhs_1'])
+            # print fh_1
+            lbl_mat_mut_cds_fh=[fh for fh in glob(fh_1+"*") if '.mat_mut_cds' in fh]
+            if len(lbl_mat_mut_cds_fh)!=0:
+                lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
+                lbls_list.append([lbli,lbl_mat_mut_cds_fh])
+            else :
+                fh_1="%s/data_mutmat/%s" % (prj_dh,basename(fh_1))
+                # print fh_1
+                lbl_mat_mut_cds_fh=[fh for fh in glob(fh_1+"*") if '.mat_mut_cds' in fh]
+                if len(lbl_mat_mut_cds_fh)!=0:
+                    lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
+                    lbls_list.append([lbli,lbl_mat_mut_cds_fh])
+                else:    
+                    logging.warning("can not find: %s" % basename(fh_1))
+        else:
+            logging.info("already processed: %s" % (str(lbli)))
+    return lbls_list
+
+def getusable_fits_list(prj_dh):
+    """
+    This gets the list of samples that can be processed for fitness estimations.
+    
+    :param prj_dh: path to project directory.
+    :returns fits_pairs_list: list of tuples with names of input and selected samples.
+    """
+    if exists('%s/cfg/fit'% (prj_dh)):
+        fits=pd.read_csv(prj_dh+'/cfg/fit')
+
+        if "Unnamed: 0" in fits.columns:
+            fits=fits.drop("Unnamed: 0", axis=1)
+        fits_pairs_list=[]
+        sel_cols=[col for col in fits.columns.tolist() if "sel_" in col]
+        for pairi in fits.index.values :
+            unsel_lbl=fits.loc[pairi,"unsel"]
+            sels=list(fits.loc[pairi,sel_cols])
+            # print sels
+            for sel_lbl in sels :
+                if not pd.isnull(sel_lbl):
+                    fit_lbl=sel_lbl+"_WRT_"+unsel_lbl
+                    if (not exists("%s/data_fit/%s/%s" % (prj_dh,'aas',fit_lbl))) \
+                    and (not exists("%s/data_fit/%s/%s" % (prj_dh,'cds',fit_lbl))):             
+                        if  ((exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',sel_lbl))) \
+                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',unsel_lbl)))) or \
+                            ((exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',sel_lbl))) \
+                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',unsel_lbl)))) : 
+                            fits_pairs_list.append([unsel_lbl,sel_lbl])
+                        else :
+                            logging.warning("data_lbl not present : %s or %s" % (sel_lbl,unsel_lbl))
+                    else :
+                        logging.info("already processed: %s" % (fit_lbl))
+        return fits_pairs_list
+    else:    
+        logging.warning("ana3_mutmat2fit : getusable_fits_list : not fits in cfg/fit")
+        return []
+
+def getusable_comparison_list(prj_dh):
+    """
+    This converts the table of tests and controls in configuration file into tuples of test and control.
+    
+    :param prj_dh: path to project directory.
+    """
+    comparisons=pd.read_csv(prj_dh+'/cfg/comparison')
+    comparisons=comparisons.set_index('ctrl')
+    comparison_list=[]
+    for ctrl,row in comparisons.iterrows() :
+        row=row[~row.isnull()]
+        for test in row[0:] :
+            comparison_list.append([ctrl,test])
+    return  comparison_list  
+
 def makemutids(data_lbl,refis):
     """
     This makes the mutation ids eg. M001T or A024T from mutation matrix.
@@ -220,92 +305,8 @@ def data_fit2norm_wrt_wild(unsel_lbl,sel_lbl,type_form,FCA,cctmr,lbls):
         logging.error("len(FCA)/len(FCW) is %d instead of %d" % (len(FCA)/len(FCW),iterations))
     if len(FiA)!=len(FCA):
         logging.error("len(FiA) is %d instead of %d" % (len(FiA),len(FCA)))
-    return FiA,FCW    
-    
-def class_fit(data_fit_df): #column of the data_fit
-    """
-    This classifies the fitness of mutants into beneficial, neutral or, deleterious.
-    
-    :param data_fit_df: dataframe of `data_fit`.
-    :returns data_fit_df: classes of fitness written in 'class-fit' column based on values in column 'FiA'. 
-    """
-    data_fit_df.loc[data_fit_df.loc[:,'FiA']>=+2,    'class_fit']="beneficial"
-    data_fit_df.loc[((data_fit_df.loc[:,'FiA']>-2) & (data_fit_df.loc[:,'FiA']<+2)),'class_fit']="neutral"
-    data_fit_df.loc[data_fit_df.loc[:,'FiA']<=-2,    'class_fit']="deleterious"
-    return data_fit_df
-                                    
-
+    return FiA,FCW                                      
                 
-def getusable_lbls_list(prj_dh):
-    """
-    This detects the samples that can be processed.
-    
-    :param prj_dh: path to project directory.
-    :returns lbls_list: list of names of samples that can be processed.
-    """
-    lbls=pd.read_csv(prj_dh+'/cfg/lbls')
-    lbls=lbls.set_index('varname')
-    lbls_list=[]
-    #data_lbl cols: NiA mutids NiS NiN NiNcut NiNcutlog NiScut NiScutlog NiAcut NiAcutlog    
-    for lbli,lbl in lbls.iterrows() :
-        if (not exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',str(lbli)))) \
-        and (not exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',str(lbli)))):
-            fh_1=str(lbl['fhs_1'])
-            # print fh_1
-            lbl_mat_mut_cds_fh=[fh for fh in glob(fh_1+"*") if '.mat_mut_cds' in fh]
-            if len(lbl_mat_mut_cds_fh)!=0:
-                lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
-                lbls_list.append([lbli,lbl_mat_mut_cds_fh])
-            else :
-                fh_1="%s/data_mutmat/%s" % (prj_dh,basename(fh_1))
-                # print fh_1
-                lbl_mat_mut_cds_fh=[fh for fh in glob(fh_1+"*") if '.mat_mut_cds' in fh]
-                if len(lbl_mat_mut_cds_fh)!=0:
-                    lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
-                    lbls_list.append([lbli,lbl_mat_mut_cds_fh])
-                else:    
-                    logging.warning("can not find: %s" % basename(fh_1))
-        else:
-            logging.info("already processed: %s" % (str(lbli)))
-    return lbls_list
-
-def getusable_fits_list(prj_dh):
-    """
-    This gets the list of samples that can be processed for fitness estimations.
-    
-    :param prj_dh: path to project directory.
-    :returns fits_pairs_list: list of tuples with names of input and selected samples.
-    """
-    if exists('%s/cfg/fit'% (prj_dh)):
-        fits=pd.read_csv(prj_dh+'/cfg/fit')
-
-        if "Unnamed: 0" in fits.columns:
-            fits=fits.drop("Unnamed: 0", axis=1)
-        fits_pairs_list=[]
-        sel_cols=[col for col in fits.columns.tolist() if "sel_" in col]
-        for pairi in fits.index.values :
-            unsel_lbl=fits.loc[pairi,"unsel"]
-            sels=list(fits.loc[pairi,sel_cols])
-            # print sels
-            for sel_lbl in sels :
-                if not pd.isnull(sel_lbl):
-                    fit_lbl=sel_lbl+"_WRT_"+unsel_lbl
-                    if (not exists("%s/data_fit/%s/%s" % (prj_dh,'aas',fit_lbl))) \
-                    and (not exists("%s/data_fit/%s/%s" % (prj_dh,'cds',fit_lbl))):             
-                        if  ((exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',sel_lbl))) \
-                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',unsel_lbl)))) or \
-                            ((exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',sel_lbl))) \
-                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',unsel_lbl)))) : 
-                            fits_pairs_list.append([unsel_lbl,sel_lbl])
-                        else :
-                            logging.warning("data_lbl not present : %s or %s" % (sel_lbl,unsel_lbl))
-                    else :
-                        logging.info("already processed: %s" % (fit_lbl))
-        return fits_pairs_list
-    else:    
-        logging.warning("ana3_mutmat2fit : getusable_fits_list : not fits in cfg/fit")
-        return []
-
 
 def repli2data_lbl_avg(prj_dh):    
     """
@@ -432,6 +433,7 @@ def data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh,cctmr,lbls):
                 elif norm_type == 'none':
                     data_fit.loc[:,'FiA']=data_fit.loc[:,'FCA']
                 data_fit.loc[:,'FiS']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FiA']
+                data_fit=rescale_fitnessbysynonymous(data_fit)
                 data_fit=class_fit(data_fit)
                 if not exists(prj_dh+"/data_fit/"+type_form):
                     try:
@@ -444,13 +446,40 @@ def data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh,cctmr,lbls):
         else :
             logging.info("already processed: %s" % (fit_lbl))
 
-def rescale_fitnessbysynonymous(data_fit,col_fit="FiA",col_fit_rescaled="FiA rescaled"):
+def class_fit(data_fit_df,zscore=False): #column of the data_fit
+    """
+    This classifies the fitness of mutants into beneficial, neutral or, deleterious.
+    
+    :param data_fit_df: dataframe of `data_fit`.
+    :returns data_fit_df: classes of fitness written in 'class-fit' column based on values in column 'FiA'. 
+    """
+    if not zscore:
+        data_fit_df.loc[data_fit_df.loc[:,'FiA']>0,'class_fit']='beneficial'
+        data_fit_df.loc[data_fit_df.loc[:,'FiA']<0,'class_fit']='deleterious'
+        data_fit_df.loc[data_fit_df.loc[:,'FiA']==0,'class_fit']='neutral'
+    else:
+        data_fit_df.loc[data_fit_df.loc[:,'FiA']>=+2,    'class_fit']="beneficial"
+        data_fit_df.loc[((data_fit_df.loc[:,'FiA']>-2) & (data_fit_df.loc[:,'FiA']<+2)),'class_fit']="neutral"
+        data_fit_df.loc[data_fit_df.loc[:,'FiA']<=-2,    'class_fit']="deleterious"
+    return data_fit_df
+
+def rescale_fitnessbysynonymous(data_fit,col_fit="FCA",col_fit_rescaled="FiA"):
+    if col_fit_rescaled in data_fit.columns:
+        col_fit_rescaled_ori=col_fit_rescaled
+        col_fit_rescaled    ="tmp"
+    if not "refrefi" in data_fit.columns:
+        from dms2dfe.lib.io_nums import str2num
+        data_fit.loc[:,'refrefi']=\
+        [("%s%03d" % (mutid[0],str2num(mutid))) for mutid in data_fit.loc[:,"mutids"].tolist()]        
     for refrefi in data_fit.loc[:,"refrefi"].unique():
         subset=data_fit.loc[data_fit.loc[:,"refrefi"]==refrefi,:]
         FiW=float(subset.loc[subset.loc[:,"mut"]==subset.loc[:,"ref"],col_fit])
         for subseti in subset.index.values:
             data_fit.loc[subseti,col_fit_rescaled]=data_fit.loc[subseti,col_fit]-FiW
-    return data_fit          
+    if "tmp" in data_fit.columns:
+        data_fit.loc[:,col_fit_rescaled_ori]=data_fit.loc[:,"tmp"]
+        data_fit=data_fit.drop("tmp",axis=1)
+    return data_fit
 
 def class_comparison(data_comparison):
     """
@@ -461,33 +490,10 @@ def class_comparison(data_comparison):
     """
     if not (all(pd.isnull(data_comparison.loc[:,"class_fit_test"]))\
     or all(pd.isnull(data_comparison.loc[:,"class_fit_test"]))):
-        data_comparison.loc[ ((data_comparison.loc[:,"class_fit_test"]=='beneficial')   & ~(data_comparison.loc[:,"class_fit_ctrl"]=='beneficial')) | \
-                             ((data_comparison.loc[:,"class_fit_test"]=='neutral')      & (data_comparison.loc[:,"class_fit_ctrl"]=='deleterious')), 'class_comparison']="positive"
-        data_comparison.loc[ ((data_comparison.loc[:,"class_fit_test"]=='deleterious')  & ~(data_comparison.loc[:,"class_fit_ctrl"]=='deleterious')) | \
-                             ((data_comparison.loc[:,"class_fit_test"]=='neutral')      & (data_comparison.loc[:,"class_fit_ctrl"]=='beneficial')), 'class_comparison']="negative"
+        data_comparison.loc[ ((data_comparison.loc[:,"class_fit_test"]=='beneficial')   & (data_comparison.loc[:,"class_fit_ctrl"]=='deleterious')), 'class_comparison']="positive"
+        data_comparison.loc[ ((data_comparison.loc[:,"class_fit_test"]=='deleterious')  & (data_comparison.loc[:,"class_fit_ctrl"]=='beneficial')), 'class_comparison']="negative"
         data_comparison.loc[ (data_comparison.loc[:,"class_fit_test"]==data_comparison.loc[:,"class_fit_ctrl"]) , 'class_comparison']="robust"
-
-        data_comparison.loc[(                  data_comparison.loc[:,"class_fit_ctrl"].isnull() & \
-                            np.logical_not(data_comparison.loc[:,"class_fit_test"].isnull())), 'class_comparison']="survived"
-        data_comparison.loc[(np.logical_not(data_comparison.loc[:,"class_fit_ctrl"].isnull()) & \
-                                            data_comparison.loc[:,"class_fit_test"].isnull()), 'class_comparison']="killed"
-        data_comparison.loc[(data_comparison.loc[:,"class_fit_ctrl"].isnull() & data_comparison.loc[:,"class_fit_test"].isnull()), 'class_comparison']=np.nan
     return data_comparison
-
-def getusable_comparison_list(prj_dh):
-    """
-    This converts the table of tests and controls in configuration file into tuples of test and control.
-    
-    :param prj_dh: path to project directory.
-    """
-    comparisons=pd.read_csv(prj_dh+'/cfg/comparison')
-    comparisons=comparisons.set_index('ctrl')
-    comparison_list=[]
-    for ctrl,row in comparisons.iterrows() :
-        row=row[~row.isnull()]
-        for test in row[0:] :
-            comparison_list.append([ctrl,test])
-    return  comparison_list  
 
 def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
     """

@@ -1,15 +1,18 @@
 varname,description,input,default
-host,Host name for assigning codon table [coli | yeast | sapiens],sapiens,
+host,Host name for assigning codon table [coli | yeast | sapiens],sapiens,coli
 Ni_cutoff,Cut off for frequency per mutant,,8
 Q_cutoff,Cut off for Phred score quality,,30
-norm_type,Type of normalization across samples [wild: wrt wild type | syn : wrt synonymous mutations | none : fold change serves as fitness],,wild
+norm_type,Type of normalization across samples [wild: wrt wild type | syn : wrt synonymous mutations | none : fold change serves as fitness],,none
 alignment_type,Alignment type [loc:local | glob:global],,loc
-cores,Number of cores to be used,3,8
-fsta_fh,Optional: Path to reference fasta file,APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.fasta,found in project directory
-pdb_fh,Optional: Path to pdb file,APH2_Melnikov_et_al_2014/1ND4.pdb,found in project directory
-active_sites,Optional: residue numbers of active sites (space delimited) eg. 68<SPACE>192,,
-dssp_fh,Optional: path to dssp module (dependencies),dms2dfe_dependencies/dssp-2.0.4-linux-amd64,
-trimmomatic_fh,Optional: path to trimmomatic source (.jar) file (dependencies),dms2dfe_dependencies/Trimmomatic-0.33/trimmomatic-0.33.jar,
-bowtie2_fh,Optional: path to bowtie2 source file,dms2dfe_dependencies/bowtie2-2.2.1/bowtie2,
-samtools_fh,Optional: path to samtools source file,dms2dfe_dependencies/samtools-0.1.18/samtools,
+cores,Number of cores to be used,3,1
+fsta_fh,Optional: Path to reference fasta file,,found in project directory
+pdb_fh,Optional: Path to pdb file,,found in project directory
+active_sites,Optional: residue numbers of active sites (space delimited) eg. 68<SPACE>192,190 195 208,
 cctmr,Optional: if reference sequence is concatamer (space delimited) eg. 1<SPACE>265<SPACE>268<SPACE>532,1 265 268 532,
+dssp_fh,Optional: path to dssp module (dependencies),,appended by running 'python dms2dfe.py configure project_directory deps'
+trimmomatic_fh,Optional: path to trimmomatic source (.jar) file (dependencies),,appended by running 'python dms2dfe.py configure project_directory deps'
+bowtie2_fh,Optional: path to bowtie2 source file,,appended by running 'python dms2dfe.py configure project_directory deps'
+samtools_fh,Optional: path to samtools source file,,appended by running 'python dms2dfe.py configure project_directory deps'
+clustalo_fh,Optional: path to clustal omega source file,,appended by running 'python dms2dfe.py configure project_directory deps'
+msms_fh,Optional: path to MSMS source file (for calculation of residue depths),,appended by running 'python dms2dfe.py configure project_directory deps'
+rate4site_fh,Optional: path to rate4site source file (for calculation of conservation scores),,appended by running 'python dms2dfe.py configure project_directory deps'

@@ -25,6 +25,7 @@ warnings.simplefilter(action = "ignore", category = FutureWarning)
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
+
 def data_fit_feats2combo(data_fit,data_feats,y_coln,keep_mutids=False):
     """
     This combines data_fit and data_feats to make data_all.
@@ -293,11 +294,9 @@ def run_RF(data_all,X_cols,y_coln,plot_fh="test",test_size=.5,data_test=None):
     from sklearn.ensemble import RandomForestClassifier
 
     X=data_all.loc[:,list(X_cols)]
-    X.to_csv("test_x")
     X=X.as_matrix()
 
     y=data_all.loc[:,y_coln]
-    y.to_csv("test_y")
     classes=y.unique()
     y=y.as_matrix()
     y = label_binarize(y, classes=classes)
@@ -434,7 +433,6 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
                     data_combo=data_combo.set_index("mutids",drop=True)
                     data_ml=X_cols2binary(data_combo.drop(y_coln_classi,axis=1))
                     data_ml.loc[:,y_coln_classi]=data_combo.loc[:,y_coln_classi]
-                    data_ml.to_csv("data_ml")
                     data_ml=rescalecols(data_ml)
                     data_classi_train=denanrows(data_ml)                    
 #                         data_classi_train=y2classes(data_classi_train,y_coln_classi)
@@ -534,16 +532,9 @@ test_size=0,data_test=data_regress_test,plot_fh=plot_fh.replace("fig_ml_","fig_m
         data_regress2data_fit(prj_dh,data_fit_key,data_regress_all)
         return data_regress_all
     
-def rescale_fitnessbysynonymous(data_fit,col_fit="FCA",col_fit_rescaled="FiA"):
-    for refrefi in data_fit.loc[:,"refrefi"].unique():
-        subset=data_fit.loc[data_fit.loc[:,"refrefi"]==refrefi,:]
-        FiW=float(subset.loc[subset.loc[:,"mut"]==subset.loc[:,"ref"],col_fit])
-        for subseti in subset.index.values:
-            data_fit.loc[subseti,col_fit_rescaled]=data_fit.loc[subseti,col_fit]-FiW
-    return data_fit
-
 def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all):
     from dms2dfe.lib.io_nums import str2num
+    from dms2dfe.lib.io_mut_files import rescale_fitnessbysynonymous,class_fit
 
     if "mutids" not in data_regress_all:
         data_regress_all=pd.DataFrame(data_regress_all).reset_index()
@@ -559,19 +550,7 @@ def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all):
     # data_fit_infered.head()
     # data_fit_infered.to_csv("data_fit_infered")
     data_fit_infered=rescale_fitnessbysynonymous(data_fit_infered)
-    data_fit_infered.loc[data_fit_infered.loc[:,'FiA']>0,'class_fit']='beneficial'
-    data_fit_infered.loc[data_fit_infered.loc[:,'FiA']<0,'class_fit']='deleterious'
-    data_fit_infered.loc[data_fit_infered.loc[:,'FiA']==0,'class_fit']='neutral'
+    data_fit_infered=class_fit(data_fit_infered)
     data_fit_infered.loc[:,'FiS']=\
     data_fit_infered.loc[(data_fit_infered.loc[:,'ref']==data_fit_infered.loc[:,'mut']),'FiA']
     data_fit_infered.to_csv("%s/%s_inferred" % (prj_dh,data_fit_key))
-
-    
-    
-    
-    
-    
-    
-    
-    
-    

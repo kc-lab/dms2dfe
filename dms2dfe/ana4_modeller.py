@@ -56,7 +56,7 @@ def main(prj_dh):
     y_coln='class_fit'
     data_fit_keys = ["data_fit/%s/%s" % (type_form,basename(fh)) \
                      for fh in glob("%s/data_fit/aas/*" % prj_dh) \
-                     if not "infered" in basename(fh)]
+                     if not "inferred" in basename(fh)]
     data_fit_keys = np.unique(data_fit_keys)
     if len(data_fit_keys)!=0:
         # for data_fit_key in data_fit_keys:
