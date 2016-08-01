@@ -59,12 +59,10 @@ def main(prj_dh):
                      if not "inferred" in basename(fh)]
     data_fit_keys = np.unique(data_fit_keys)
     if len(data_fit_keys)!=0:
-        # for data_fit_key in data_fit_keys:
-        #     pooled_io_ml(data_fit_key)
-        # pooled_io_ml(data_fit_keys[-1])
+        # pooled_io_ml(data_fit_keys[0])
         pool_io_ml=Pool(processes=int(cores)) 
         pool_io_ml.map(pooled_io_ml,data_fit_keys)
-        # pool_io_ml.close(); pool_io_ml.join()
+        pool_io_ml.close(); pool_io_ml.join()
     else:
         logging.info("already processed")
 #     y_coln='class_comparison'

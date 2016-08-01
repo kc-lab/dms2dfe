@@ -218,7 +218,7 @@ def main(prj_dh):
                         data_comparison=data_comparison.drop("Unnamed: 0", axis=1)
                     #bar   
                     plot_type="bar"
-                    classes=["positive","negative"]
+                    classes=["negative","robust","positive"]
                     plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_comparisoni) 
                     if not exists(plot_fh):
                         ax=plot_data_comparison_bar(data_comparison,plot_fh=plot_fh,index=classes)

@@ -167,12 +167,25 @@ def data2mut_matrix(data_fit,values_col,index_col,type_form):
     :param index_col: column name with index (str).
     :param type_form: type of values ["aas" : amino acid | "cds" : codons].
     """
+    from dms2dfe.lib.io_nums import str2num
+    # data_fit.to_csv("data_fit1")
+    if (not 'refi' in data_fit) or (any(pd.isnull(data_fit.loc[:,'refi']))) :
+        data_fit.loc[:,'refi']=[str2num(mutid) for mutid in data_fit.loc[:,"mutids"].tolist()]
+    data_fit=data_fit.sort_values(by="refi",axis=0)
+    
     if 'aas' in type_form:   
-        data_fit.loc[:,'refrefi']=(data_fit.mutids.astype(str).str[0:4])                                    
-    elif 'cds' in type_form:                
-        data_fit.loc[:,'refrefi']=(data_fit.mutids.astype(str).str[0:6])                    
+        data_fit.loc[:,'refrefi']\
+        =[("%s%03d" % (mutid[0],str2num(mutid))) for mutid in data_fit.loc[:,"mutids"].tolist()]
+    elif 'cds' in type_form:
+        data_fit.loc[:,'refrefi']\
+        =[("%s%03d" % (mutid[:2],str2num(mutid))) for mutid in data_fit.loc[:,"mutids"].tolist()]
+
     data_fit_heatmap=pd.pivot_table(data_fit,values=values_col,index=index_col,columns='refrefi')
     data_fit_heatmap=data_fit_heatmap.reindex_axis(data_fit.loc[:,'refrefi'].unique(),axis='columns')
+
+    # data_fit.to_csv("data_fit2")
+    # data_fit_heatmap.to_csv("data_fit_heatmap")
+
     return data_fit_heatmap
 
 def plotsspatches(ssi,ssi_ini,aai,aai_ini,patches,patches_colors,ax):
@@ -268,9 +281,8 @@ def plot_data_fit_heatmap(data_fit,type_form,col,\
     from dms2dfe.lib.io_nums import str2num
     from dms2dfe.lib.global_vars import aas_21,cds_64
     import seaborn as sns
-
+    
     data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
-
     refis=[str2num(i) for i in data_fit_heatmap.columns.tolist()]
     refis=np.sort(refis)
     refrefis=pd.DataFrame(data_fit_heatmap.columns.tolist(),index=refis,columns=["refrefi"])
@@ -282,7 +294,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,\
         else :
             data_fit_heatmap2.loc[:,refrefis.loc[i,"refrefi"]]=data_fit_heatmap.loc[:,refrefis.loc[i,"refrefi"]]
 
-    data_syn_locs=data_fit.loc[0:len(data_fit)/21-1,["mutids","ref"]]
+    data_syn_locs=data_fit.loc[(data_fit.loc[:,"ref"]==data_fit.loc[:,"mut"]),["mutids","ref"]]
     data_syn_locs["refi"]=[str2num(i)-1+0.05 for i in data_syn_locs["mutids"]]
 
     data_nan_locs=data_fit.loc[pd.isnull(data_fit.loc[:,col]),["mutids","ref","mut"]]
