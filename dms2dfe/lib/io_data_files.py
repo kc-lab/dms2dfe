@@ -13,6 +13,7 @@ import pandas as pd
 from os.path import exists,basename,abspath,dirname
 import logging
 from glob import glob  
+import numpy as np
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
 ## DEFS
@@ -32,12 +33,7 @@ def is_cfg_ok(cfg_dh,cfgs) :
             break
     return True
 
-def info2src(prj_dh):
-    """
-    This converts `.csv` configuration file to `.py` source file saved in `/tmp/`.
-    
-    :param prj_dh: path to project directory
-    """        
+def auto_find_missing_paths(prj_dh):
     info=pd.read_csv(prj_dh+"/cfg/info")
     info_path_vars=[varn for varn in info['varname'] if ("_fh" in varn) or ("_dh" in varn)]
     info=info.set_index("varname")
@@ -53,12 +49,36 @@ def info2src(prj_dh):
         except:
             logging.error("could not find .fasta file")     
     info_paths=[info.loc[info_path_var,"input"] for info_path_var in info_path_vars]
+
+    # if any(pd.isnull(info_paths)):
+    if np.nan in info_paths:
+        from dms2dfe import configure
+        configure.main(prj_dh,"deps")            
+
+def info2src(prj_dh):
+    """
+    This converts `.csv` configuration file to `.py` source file saved in `/tmp/`.
+    
+    :param prj_dh: path to project directory
+    """        
+    auto_find_missing_paths(prj_dh)
+    info=pd.read_csv(prj_dh+"/cfg/info")
+    info_path_vars=[varn for varn in info['varname'] if ("_fh" in varn) or ("_dh" in varn)]
+    info=info.set_index("varname")
+
+    # find still missing paths ones
+    info_paths=[info.loc[info_path_var,"input"] for info_path_var in info_path_vars]
     for info_path in info_paths:
         if not pd.isnull(info_path):
             if not exists(info_path):                
-                logging.error('Path to files do not exist %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
-                from dms2dfe import configure
-                configure.main(prj_dh,"deps")
+                logging.error('Path to files do not exist. Include correct path in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
+                # from dms2dfe import configure
+                # configure.main(prj_dh,"deps")
+                sys.exit()
+        else:
+            logging.error('Path to file is missing. Check in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
+            sys.exit()
+
     info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     csv2src(prj_dh+"/cfg/info","%s/../tmp/info.py" % (abspath(dirname(__file__))))
     logging.info("configuration compiled: %s/cfg/info" % prj_dh)

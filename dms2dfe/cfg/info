@@ -9,10 +9,10 @@ fsta_fh,Optional: Path to reference fasta file,,found in project directory
 pdb_fh,Optional: Path to pdb file,,found in project directory
 active_sites,Optional: residue numbers of active sites (space delimited) eg. 68<SPACE>192,,
 cctmr,Optional: if reference sequence is concatamer (space delimited) eg. 1<SPACE>265<SPACE>268<SPACE>532,,
-dssp_fh,Optional: path to dssp module (dependencies),,appended by running 'python dms2dfe.py configure project_directory deps'
-trimmomatic_fh,Optional: path to trimmomatic source (.jar) file (dependencies),,appended by running 'python dms2dfe.py configure project_directory deps'
-bowtie2_fh,Optional: path to bowtie2 source file,,appended by running 'python dms2dfe.py configure project_directory deps'
-samtools_fh,Optional: path to samtools source file,,appended by running 'python dms2dfe.py configure project_directory deps'
-clustalo_fh,Optional: path to clustal omega source file,,appended by running 'python dms2dfe.py configure project_directory deps'
-msms_fh,Optional: path to MSMS source file (for calculation of residue depths),,appended by running 'python dms2dfe.py configure project_directory deps'
-rate4site_fh,Optional: path to rate4site source file (for calculation of conservation scores),,appended by running 'python dms2dfe.py configure project_directory deps'
+dssp_fh,Optional: path to dssp module (dependencies),,
+trimmomatic_fh,Optional: path to trimmomatic source (.jar) file (dependencies),,
+bowtie2_fh,Optional: path to bowtie2 source file,,
+samtools_fh,Optional: path to samtools source file,,
+clustalo_fh,Optional: path to clustal omega source file,,
+msms_fh,Optional: path to MSMS source file (for calculation of residue depths),,
+rate4site_fh,Optional: path to rate4site source file (for calculation of conservation scores),,

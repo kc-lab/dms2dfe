@@ -167,15 +167,19 @@ def fastq2qcd(fastq_fhs_list,trimmomatic_fh): #[fastq_R1_fh,fastq_R2_fh]
     if not ".qcd.fastq" in fastq_R1_fh:
         if exists(fastq_R1_fh) and (not exists(fastq_R1_fh+".qcd.fastq")):
             if trimmomatic_fh!='nan':
+                log_fh="%s.fastq2qcd.log" % fastq_R1_fh
+                log_f = open(log_fh,'a')
+
                 if fastq_R2_fh and exists(fastq_R2_fh): #PE
                     bashCommand = "java -jar %s PE -threads 1 -phred33 -trimlog %s.qcd.fastq.log %s %s %s.qcd.fastq %s.qcd.unpaired %s.qcd.fastq %s.qcd.unpaired LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36" \
                     % (trimmomatic_fh,fastq_R1_fh,fastq_R1_fh,fastq_R2_fh,fastq_R1_fh,fastq_R1_fh,fastq_R2_fh,fastq_R2_fh)
-                    subprocess.call(bashCommand.split())
+                    subprocess.call(bashCommand.split(),shell=True,stdout=log_f, stderr=subprocess.STDOUT)
                 else:                
                     bashCommand = "java -jar %s SE -threads 1 -phred33 -trimlog %s.qcd.fastq.log %s %s.qcd.fastq LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36" \
                     % (trimmomatic_fh,fastq_R1_fh,fastq_R1_fh,fastq_R1_fh)
                     # print bashCommand
-                    subprocess.call(bashCommand.split())
+                    subprocess.call(bashCommand.split(),shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+                log_f.close()
             else:
                 sys.exit()
                 logging.error("trimmomatic_fh not defined")     
@@ -217,19 +221,24 @@ def qcd2sbam(fastq_fhs_list,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtool
             else:
                 logging.error("can not find : %s or %s" % (basename(fastq_R1_fh),basename(fastq_R2_fh)))
             logging.info("processing: %s " % basename(fastq_R1_fh))
+
+            log_fh="%s.qcd2sbam.log" % fastq_R1_fh
+            log_f = open(log_fh,'a')
+
             if not exists(fastq_R1_fh+".sam"):
-                subprocess.call(bashCommand.split())
+                subprocess.call(bashCommand.split(),shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             else :
                 logging.info("qcd2sbam : sam already done")
             if not exists(fastq_R1_fh+".sam.bam"): 
                 bashCommand= "%s view -bS -T %s %s.sam -o %s.sam.bam" % (samtools_fh,fsta_fh,fastq_R1_fh,fastq_R1_fh)
-                subprocess.call(bashCommand.split())
+                subprocess.call(bashCommand.split(),shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             else :
                 logging.info("qcd2sbam : bam already done")
             bashCommand= "%s sort %s.sam.bam %s.sam.s" % (samtools_fh,fastq_R1_fh,fastq_R1_fh)
-            subprocess.call(bashCommand.split())
+            subprocess.call(bashCommand.split(),shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             bashCommand= "%s index %s.sam.s.bam" % (samtools_fh,fastq_R1_fh)
-            subprocess.call(bashCommand.split())    
+            subprocess.call(bashCommand.split(),shell=True,stdout=log_f, stderr=subprocess.STDOUT) 
+            log_f.close()
         else :  
             logging.info("already processed: %s " % basename(fastq_R1_fh))
     else :
