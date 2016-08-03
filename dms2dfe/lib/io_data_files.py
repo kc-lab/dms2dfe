@@ -49,11 +49,12 @@ def auto_find_missing_paths(prj_dh):
         except:
             logging.error("could not find .fasta file")     
     info_paths=[info.loc[info_path_var,"input"] for info_path_var in info_path_vars]
-
+    info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     # if any(pd.isnull(info_paths)):
     if np.nan in info_paths:
         from dms2dfe import configure
-        configure.main(prj_dh,"deps")            
+        configure.main(prj_dh,"deps")  
+    # return 
 
 def info2src(prj_dh):
     """
@@ -63,6 +64,7 @@ def info2src(prj_dh):
     """        
     auto_find_missing_paths(prj_dh)
     info=pd.read_csv(prj_dh+"/cfg/info")
+    # info=auto_find_missing_paths(prj_dh)
     info_path_vars=[varn for varn in info['varname'] if ("_fh" in varn) or ("_dh" in varn)]
     info=info.set_index("varname")
 

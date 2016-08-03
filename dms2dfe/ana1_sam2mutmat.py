@@ -52,7 +52,7 @@ def main(prj_dh):
     sbam_fhs=getusablesbams_list(prj_dh)
     # check if bams are indexed
     for sbam_fh in sbam_fhs:
-        sbam_index_fh="%s.bai"
+        sbam_index_fh="%s.bai" % sbam_fh
         log_fh="%s.log" % sbam_index_fh
         log_f = open(log_fh,'a')
         if not exists(sbam_index_fh):

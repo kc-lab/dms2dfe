@@ -1,7 +1,3 @@
-,Unnamed: 0,Unnamed: 0.1,unsel,sel_1
-0,0,0,Amp0.5,Amp256
-1,,,Amp0.5_random_sampling_1_train,Amp256_random_sampling_1_train
-2,,,Amp0.5_random_sampling_2_train,Amp256_random_sampling_2_train
-3,,,Amp0.5_random_sampling_3_train,Amp256_random_sampling_3_train
-4,,,Amp0.5_random_sampling_4_train,Amp256_random_sampling_4_train
-5,,,Amp0.5_random_sampling_5_train,Amp256_random_sampling_5_train
+,unsel,sel_1
+0,Amp0.5,Amp256
+,Amp0.5,Amp512

@@ -536,25 +536,13 @@ def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all):
     from dms2dfe.lib.io_nums import str2num
     from dms2dfe.lib.io_mut_files import rescale_fitnessbysynonymous,class_fit
 
-    # print data_fit_key
-    # if "mutids" in data_regress_all:
-    #     data_regress_all=data_regress_all.set_index("mutids",drop=True)
-    # if "mutids" not in data_regress_all:
-        # data_regress_all=pd.DataFrame(data_regress_all).reset_index()
-
-    # data_fit_infered=data_regress_all.loc[:,["mutids","FCA"]]
-
-    # data_fit_infered=pd.DataFrame(data_regress_all.loc[:,"FCA"])
-    # if "mutids" in data_fit_infered:
-    #     data_fit_infered=data_fit_infered.set_index("mutids",drop=True)
-
     data_fit=pd.read_csv("%s/%s" % (prj_dh,data_fit_key))
     data_fit=data_fit.loc[:,["mutids","FCA"]].set_index("mutids",drop=True)
-    data_fit_infered=data_regress_all.loc[:,["mutids","FCA"]].set_index("mutids",drop=True)
+    data_fit_infered=data_regress_all.reset_index().loc[:,["mutids","FCA"]].set_index("mutids",drop=True)
     for mutid in data_fit.index.values:
         if not mutid in data_fit_infered.index.values:
             data_fit_infered.loc[mutid,"FCA"]=data_fit.loc[mutid,"FCA"]
-
+    
     data_fit_infered=pd.DataFrame(data_fit_infered.reset_index())
     # print data_fit_infered.columns
     # str2num()
