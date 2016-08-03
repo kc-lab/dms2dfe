@@ -3,7 +3,7 @@
 # source file for dms2dfe's configuration 
 
 host='sapiens' #Host name for assigning codon table [coli | yeast | sapiens]
-Ni_cutoff='0' #Cut off for frequency per mutant
+Ni_cutoff='8' #Cut off for frequency per mutant
 Q_cutoff='30' #Cut off for Phred score quality
 norm_type='none' #Type of normalization across samples [wild: wrt wild type | syn : wrt synonymous mutations | none : fold change serves as fitness]
 alignment_type='loc' #Alignment type [loc:local | glob:global]

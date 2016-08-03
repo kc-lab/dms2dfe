@@ -75,7 +75,7 @@ def main(prj_dh):
                 data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
                 plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
             except:
-                logging.warning("can not find required files")
+                logging.info("coverage not be plotted plot: sequencing data not provided.")
 
 #plot data_lbl
     plot_type="repli"
@@ -224,12 +224,9 @@ def main(prj_dh):
                         ax=plot_data_comparison_bar(data_comparison,plot_fh=plot_fh,index=classes)
                     else:
                         logging.info("already processed: %s" % basename(plot_fh))
-                    # data_comparison to vion format
                     plot_type="violin"
                     plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_comparisoni) 
                     if not exists(plot_fh):
-                        data_comparison.to_csv("test_data_comparison")
-                        print plot_fh
                         plot_data_comparison_violin(data_comparison,plot_fh=plot_fh)
                     else:
                         logging.info("already processed: %s" % basename(plot_fh))

@@ -399,7 +399,7 @@ def plot_data_comparison_bar(data_comparison,plot_fh=None,index=[]):
         plt.clf();plt.close()
     return ax
 
-def plot_data_comparison_violin(data_comparison,plot_fh=None):
+def plot_data_comparison_violin(data_comparison,plot_fh=None,stars=True):
     import seaborn as sns
     data_violin=pd.DataFrame(columns=["type of sample","$F_{i}$"],index=range(len(data_comparison)*2))
     data_violin.loc[:,"$F_{i}$"]=data_comparison.loc[:,"Fi_ctrl"]
@@ -411,11 +411,33 @@ def plot_data_comparison_violin(data_comparison,plot_fh=None):
     ax=plt.subplot(111)
     sns.violinplot(x="type of sample", y="$F_{i}$", data=data_violin,scale="width",ax=ax)
     ax.set_xlabel("")
+
+    if stars:
+        from scipy.stats import mannwhitneyu
+        def pval2stars(pval):
+            if pval < 0.0001:
+                return "****"
+            elif (pval < 0.001):
+                return "***"
+            elif (pval < 0.01):
+                return "**"
+            elif (pval < 0.05):
+                return "*"
+            else:
+                return "ns"
+
+        y_max=np.max([data_comparison.loc[:,"Fi_test"].max(),data_comparison.loc[:,"Fi_ctrl"].max()])+1
+        y_min=np.min([data_comparison.loc[:,"Fi_test"].min(),data_comparison.loc[:,"Fi_ctrl"].min()])+1
+        z, pval = mannwhitneyu(data_comparison.loc[:,"Fi_test"],data_comparison.loc[:,"Fi_ctrl"],alternative='two-sided')
+
+        ax.annotate("", xy=(0, y_max), xycoords='data', xytext=(1, y_max), textcoords='data',
+                    arrowprops=dict(arrowstyle="-", ec='k',connectionstyle="bar,fraction=0.2",alpha=1))
+        ax.text(0.5, y_max+3, pval2stars(pval),horizontalalignment='center',verticalalignment='center')
+
     if plot_fh!=None:
         plt.savefig(plot_fh,format='pdf')
         plt.clf();plt.close()
     return ax
-
 def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col_cluster=False,row_cluster=True,plot_fh=None):
     """
     This clusters heatmaps.

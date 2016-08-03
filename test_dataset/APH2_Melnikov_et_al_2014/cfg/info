@@ -1,6 +1,6 @@
 varname,description,input,default
 host,Host name for assigning codon table [coli | yeast | sapiens],sapiens,coli
-Ni_cutoff,Cut off for frequency per mutant,0,8
+Ni_cutoff,Cut off for frequency per mutant,,8
 Q_cutoff,Cut off for Phred score quality,,30
 norm_type,Type of normalization across samples [wild: wrt wild type | syn : wrt synonymous mutations | none : fold change serves as fitness],,none
 alignment_type,Alignment type [loc:local | glob:global],,loc

@@ -517,32 +517,26 @@ def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
         data_fit_test_keys=[basename(fh) for fh in data_fit_test_fhs]
         if (data_fit_ctrl_keys and data_fit_test_keys):
             for ctrli in data_fit_ctrl_keys :
-                for testi in data_fit_test_keys :                    
-                    data_fit_ctrl=pd.read_csv("%s/data_fit/%s/%s" % (prj_dh,type_form,ctrli))
-                    data_fit_test=pd.read_csv("%s/data_fit/%s/%s" % (prj_dh,type_form,testi))                    
-#                     data_fit_ctrl.to_csv("test_ctrl")
-#                     data_fit_test.to_csv("test_test")
-#                     data_comparison=pd.DataFrame({'mutids':data_fit_ctrl.loc[:,"mutids"], \
-#                                                 'Fi_ctrl':data_fit_ctrl.loc[:,"FiA"],\
-#                                                 'class_fit_ctrl':data_fit_ctrl.loc[:,"class_fit"], \
-#                                                 'Fi_test':data_fit_test.loc[:,"FiA"],\
-#                                                 'class_fit_test':data_fit_test.loc[:,"class_fit"]})
-                    data_comparison=pd.DataFrame()
-                    data_comparison.loc[:,"mutids"]=data_fit_ctrl.loc[:,"mutids"]
-                    data_comparison.loc[:,"mut"]=data_fit_ctrl.loc[:,"mut"]
-                    data_comparison.loc[:,"ref"]=data_fit_ctrl.loc[:,"ref"]
-                    data_comparison.loc[:,"Fi_ctrl"]=data_fit_ctrl.loc[:,"FiA"]
-                    data_comparison.loc[:,"class_fit_ctrl"]=data_fit_ctrl.loc[:,"class_fit"]
-                    data_comparison.loc[:,"Fi_test"]=data_fit_test.loc[:,"FiA"]
-                    data_comparison.loc[:,"class_fit_test"]=data_fit_test.loc[:,"class_fit"]
-#                     data_comparison.to_csv("test_comparison")
-                    data_comparison=class_comparison(data_comparison) # get class fit rel
+                for testi in data_fit_test_keys :       
                     data_comparison_fh='%s/data_comparison/%s/%s_VERSUS_%s' % (prj_dh,type_form,testi,ctrli)
-                    if not exists('%s/data_comparison/%s' % (prj_dh,type_form)):
-                        try:
-                            makedirs('%s/data_comparison/%s' % (prj_dh,type_form))
-                        except:
-                            logging.info("race error data_comparison")
-                    data_comparison.reset_index().to_csv(data_comparison_fh,index=False) # store                    
+                    if data_comparison_fh.count("inferred")!=1:
+                        data_fit_ctrl=pd.read_csv("%s/data_fit/%s/%s" % (prj_dh,type_form,ctrli))
+                        data_fit_test=pd.read_csv("%s/data_fit/%s/%s" % (prj_dh,type_form,testi))                    
+                        data_comparison=pd.DataFrame()
+                        data_comparison.loc[:,"mutids"]=data_fit_ctrl.loc[:,"mutids"]
+                        data_comparison.loc[:,"mut"]=data_fit_ctrl.loc[:,"mut"]
+                        data_comparison.loc[:,"ref"]=data_fit_ctrl.loc[:,"ref"]
+                        data_comparison.loc[:,"Fi_ctrl"]=data_fit_ctrl.loc[:,"FiA"]
+                        data_comparison.loc[:,"class_fit_ctrl"]=data_fit_ctrl.loc[:,"class_fit"]
+                        data_comparison.loc[:,"Fi_test"]=data_fit_test.loc[:,"FiA"]
+                        data_comparison.loc[:,"class_fit_test"]=data_fit_test.loc[:,"class_fit"]
+    #                     data_comparison.to_csv("test_comparison")
+                        data_comparison=class_comparison(data_comparison) # get class fit rel
+                        if not exists('%s/data_comparison/%s' % (prj_dh,type_form)):
+                            try:
+                                makedirs('%s/data_comparison/%s' % (prj_dh,type_form))
+                            except:
+                                logging.info("race error data_comparison")
+                        data_comparison.reset_index().to_csv(data_comparison_fh,index=False) # store                    
         else:
             logging.warning("do not exist: data_fit/%s/%s & data_fit/%s/%s" % (type_form,lbl_ctrl,type_form,lbl_test))
