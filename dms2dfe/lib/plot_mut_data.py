@@ -63,23 +63,23 @@ def plot_data_lbl_repli(prj_dh,lim_min=0):
                 else:
                     logging.info("already processed: %s" % basename(plot_fh))
 
+def annotate_pearsonr(x, y, **kws):
+    from scipy import stats
+    r, _ = stats.pearsonr(x, y)
+    ax = plt.gca()
+    ax.annotate("r = {:.2f}".format(r),
+            xy=(.1, .9), xycoords=ax.transAxes)
+                    
 def plot_corr_mat(data_repli,plot_fh=None,xlim=(0,None),ylim=(0,None)):
     import seaborn as sns
     from dms2dfe.lib.io_ml import denanrows
-    from scipy import stats
-    def corrfunc(x, y, **kws):
-        r, _ = stats.pearsonr(x, y)
-        ax = plt.gca()
-        ax.annotate("r = {:.2f}".format(r),
-                xy=(.1, .9), xycoords=ax.transAxes)
-
     # data_repli=data_repli.loc[:,data_repli_usable]
     data_repli=denanrows(data_repli)
     if len(data_repli.columns)!=0:
         ax=sns.pairplot(data_repli,diag_kind="kde",kind="reg")
         ax.set(xlim=xlim,ylim=ylim)
-        ax.map_lower(corrfunc)
-        ax.map_upper(corrfunc)
+        ax.map_lower(annotate_pearsonr)
+        ax.map_upper(annotate_pearsonr)
         plt.tight_layout()
         if plot_fh!=None:
             plt.savefig(plot_fh,format='pdf')  
@@ -426,14 +426,13 @@ def plot_data_comparison_violin(data_comparison,plot_fh=None,stars=True):
             else:
                 return "ns"
 
-        y_max=np.max([data_comparison.loc[:,"Fi_test"].max(),data_comparison.loc[:,"Fi_ctrl"].max()])+1
-        y_min=np.min([data_comparison.loc[:,"Fi_test"].min(),data_comparison.loc[:,"Fi_ctrl"].min()])+1
+        y_max=np.max([data_comparison.loc[:,"Fi_test"].max(),data_comparison.loc[:,"Fi_ctrl"].max()])
+        y_min=np.min([data_comparison.loc[:,"Fi_test"].min(),data_comparison.loc[:,"Fi_ctrl"].min()])
         z, pval = mannwhitneyu(data_comparison.loc[:,"Fi_test"],data_comparison.loc[:,"Fi_ctrl"],alternative='two-sided')
-
-        ax.annotate("", xy=(0, y_max), xycoords='data', xytext=(1, y_max), textcoords='data',
+        ax.annotate("", xy=(0, y_max+1), xycoords='data', xytext=(1, y_max+1), textcoords='data',
                     arrowprops=dict(arrowstyle="-", ec='k',connectionstyle="bar,fraction=0.2",alpha=1))
-        ax.text(0.5, y_max+3, pval2stars(pval),horizontalalignment='center',verticalalignment='center')
-
+        ax.text(0.5, y_max+4, pval2stars(pval),horizontalalignment='center',verticalalignment='center')
+        ax.set_ylim([y_min-1,y_max+5])
     if plot_fh!=None:
         plt.savefig(plot_fh,format='pdf')
         plt.clf();plt.close()

@@ -76,10 +76,11 @@ def info2src(prj_dh):
                 logging.error('Path to files do not exist. Include correct path in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
                 # from dms2dfe import configure
                 # configure.main(prj_dh,"deps")
-                sys.exit()
+                # sys.exit()
+                return None
         else:
             logging.error('Path to file is missing. Check in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
-            sys.exit()
+            return None
 
     info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     csv2src(prj_dh+"/cfg/info","%s/../tmp/info.py" % (abspath(dirname(__file__))))

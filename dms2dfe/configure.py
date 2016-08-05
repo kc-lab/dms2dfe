@@ -94,7 +94,7 @@ def main(prj_dh,inputs=None):
             log_f.close();log_f=open(log_fh,'r');log_lines=log_f.readlines();log_f.close();log_f = open(log_fh,'a')
             if len([l for l in log_lines if "fatal error: zlib.h" in l])>0:
                 print "\n###   TROUBLESHOOT   ###\nFor interference issues (with htslib) installation of samtools dependency gave following error,\n.. zlib.h: No such file or directory\nPlease use following command before installing samtools. i.e.\n\nsudo apt-get install zlib1g-dev libncurses5-dev;sudo apt-get update\n\ndms2dfe_dependencies/samtools-0.1.18/make\nAfter the successfull installation, please configure dms2dfe by following command.\nfrom dms2dfe import configure\nconfigure.main(prj_dh)\n\n"
-                sys.exit()
+                # sys.exit()
             else:
                 subprocess.call("chmod +x %s" % samtools_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
         #trimmomatic
@@ -148,7 +148,7 @@ def main(prj_dh,inputs=None):
         log_f.close();log_f=open(log_fh,'r');log_lines=log_f.readlines();log_f.close();log_f = open(log_fh,'a')
         if len([l for l in log_lines if "/usr/bin" in l])==0:
             print "\n###   TROUBLESHOOT   ###\njava environment isn't installed on the system.\nIt would be required for running Trimmomatic through fast2qcd module. Please install it by following command,\n\nsudo apt-get install openjdk-7-jre-headless;sudo apt-get update\n\nAfter the successfull installation, please configure dms2dfe by following command.\n\nfrom dms2dfe import configure\nconfigure.main(prj_dh)\n\n"
-            sys.exit()
+            # sys.exit()
         std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
         if not std.stdout.read():
             print "\n###   TROUBLESHOOT   ###\nTo generate images from PDB structures using UCSF-Chimera, essential graphics drivers are required.\nIn case of the hardware already present on system please install following drivers.\n\nsudo apt-get install mesa-utils;sudo apt-get update\n\n"
@@ -171,13 +171,13 @@ def main(prj_dh,inputs=None):
         subprocess.call("cp -r %s/cfg %s"% (abspath(dirname(__file__)),prj_dh) ,shell=True)
         logging.info("new project directory created!: %s " % prj_dh)
         logging.info("modify configurations in %s" % cfg_dh)
-        sys.exit()
+        # sys.exit()
     else :
         if is_cfg_ok(cfg_dh,cfgs) :
             info2src(prj_dh)
         else:
             logging.info("check the configuration again.")
-            sys.exit()
+            # sys.exit()
     logging.shutdown()
                         
 if __name__ == '__main__':

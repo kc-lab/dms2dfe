@@ -189,11 +189,12 @@ def binary2classes(y_pred,classes):
                     break
     return y_pred_classes
 
-def denanrows(data_all):
+def denanrows(data_all,condi="any"):
     """
     This removes rows with any np.nan value/s.  
     
     :param data_all: input dataframe.
+    :param condi: conditions for deletion of rows ["any": if any element is nan ,default | "all" : if all elements are nan] 
     :returns data_all: output dataframe.
     """
     keep_rows_bool=[]
@@ -202,7 +203,10 @@ def denanrows(data_all):
     else:
         data_all_use=data_all
     for rowi in range(len(data_all_use)):
-        keep_rows_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
+        if condi=="any":
+            keep_rows_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
+        if condi=="all":
+            keep_rows_bool.append(any(~pd.isnull(data_all_use.iloc[rowi,:])))
     data_all=data_all.loc[keep_rows_bool,:]
     return data_all
 
