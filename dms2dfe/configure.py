@@ -30,7 +30,7 @@ def main(prj_dh,inputs=None):
 
     Input parameters can be fed manually in csv file located here `project_directory/cfg/info`.
     
-    Optionally they can be entered using command prompt,
+    Optionally input parameters can also be entered using command prompt,
 
     .. code-block:: text
 

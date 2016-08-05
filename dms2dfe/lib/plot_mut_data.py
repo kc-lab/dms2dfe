@@ -433,6 +433,7 @@ def plot_data_comparison_violin(data_comparison,plot_fh=None,stars=True):
                     arrowprops=dict(arrowstyle="-", ec='k',connectionstyle="bar,fraction=0.2",alpha=1))
         ax.text(0.5, y_max+4, pval2stars(pval),horizontalalignment='center',verticalalignment='center')
         ax.set_ylim([y_min-1,y_max+5])
+    plt.tight_layout()
     if plot_fh!=None:
         plt.savefig(plot_fh,format='pdf')
         plt.clf();plt.close()
