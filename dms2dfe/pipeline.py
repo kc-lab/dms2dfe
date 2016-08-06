@@ -13,16 +13,18 @@ def main(prj_dh):
     """
     This runs all analysis steps in tandem.
 
+    From python environment,
+
     .. code-block:: text
 
-        ana0_getfeats.main("path/to/project_directory")
-        ana0_fastq2dplx.main("path/to/project_directory")
-        ana0_fastq2sbam.main("path/to/project_directory")
-        ana1_sam2mutmat.main("path/to/project_directory")
-        ana2_mutmat2fit.main("path/to/project_directory")
-        ana3_fit2comparison.main("path/to/project_directory")
-        ana4_plotter.main("path/to/project_directory")    
-        ana4_modeller.main("path/to/project_directory")
+        from dms2dfe import pipeline 
+        pipeline.main("path/to/project_directory")
+
+    From bash command line,
+
+    .. code-block:: text
+
+        python path/to/dms2dfe/pipeline.py path/to/project_directory
         
     :param prj_dh: path to project directory.
     

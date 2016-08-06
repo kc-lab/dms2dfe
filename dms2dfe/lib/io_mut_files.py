@@ -260,7 +260,7 @@ def getwildtypecov(lbl,lbls,cctmr=None):
         wt=cov_per_cds - cov_mut 
         return wt
     else:
-        logging.warning("can not find required files")
+        logging.warning("can not find sequencing data to get coverage")
 
 def data_fit2norm_wrt_wild(unsel_lbl,sel_lbl,type_form,FCA,cctmr,lbls):
     """
