@@ -45,7 +45,8 @@ def main(prj_dh):
                             barcode_R1s=[str(s) for s in list(fastq_R1_fh_barcodes.loc[:,'barcode_R1'])]
                             barcode_R2s=[str(s) for s in list(fastq_R1_fh_barcodes.loc[:,'barcode_R2'])]        
                             fastq_fns    =[str(s) for s in list(fastq_R1_fh_barcodes.loc[:,'fastq_fn'])]        
-                            fastq2dplx(fastq_R1_fh+".qcd.fastq",fastq_R2_fh+".qcd.fastq",barcode_R1s,barcode_R2s,fastq_fns)
+                            fastq2dplx(fastq_R1_fh+".qcd.fastq",fastq_R2_fh+".qcd.fastq",\
+                                       barcode_R1s,barcode_R2s,fastq_fns)
                         else:
                             logging.info("fastq_R2_fh do not exist: %s" % fastq_R2_fh)
                     else:

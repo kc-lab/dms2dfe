@@ -79,41 +79,44 @@ def fastq2dplx(fastq_R1_fh,fastq_R2_fh,barcode_R1s,barcode_R2s,fastq_fns) :
     for fastq_fn in fastq_fns:
         fastq_merged_fh="%s/%s_dplxd_merged.qcd.fastq" % (fastq_dh,fastq_fn)
         fastq_joined_fh="%s/%s_dplxd_joined.qcd.fastq" % (fastq_dh,fastq_fn)
-        fastq_merged_f =open(fastq_merged_fh,'w')
-        fastq_joined_f =open(fastq_joined_fh,'w')
+        if (not exists(fastq_merged_fh)) and (not exists(fastq_joined_fh)):
+            fastq_merged_f =open(fastq_merged_fh,'w')
+            fastq_joined_f =open(fastq_joined_fh,'w')
 
-        unresolved_merged_fh="%s_unresolved_merged.qcd.fastq" % (fastq_R1_fh)
-        unresolved_joined_fh="%s_unresolved_joined.qcd.fastq" % (fastq_R1_fh)
-        unresolved_merged_f =open(fastq_merged_fh,'w')
-        unresolved_joined_f =open(fastq_joined_fh,'w')
+            unresolved_merged_fh="%s_unresolved_merged.qcd.fastq" % (fastq_R1_fh)
+            unresolved_joined_fh="%s_unresolved_joined.qcd.fastq" % (fastq_R1_fh)
+            unresolved_merged_f =open(fastq_merged_fh,'w')
+            unresolved_joined_f =open(fastq_joined_fh,'w')
 
-        for fastq_R1_read in fastq_R1_reads :
-                fastq_R2_read =    fastq_R2_reads.next() #for fastq_R2_read in fastq_R2_reads :
-                if fastq_R1_read.id in fastq_R2_read.id : # check contiguiency(?)
-                    # print ">>> STATUS    : %s" % fastq_R1_read.id
-                    for i in range(len(barcode_R1s)): #zip(barcode_R1s,barcode_R2s,fastq_fns):
-                        barcode_R1=barcode_R1s[i]
-                        barcode_R2=barcode_R2s[i]
-                        fastq_fn    =fastq_fns[i]
-                        # print "%s\n%s\n" % (barcode_R1,fastq_R1_read.seq)
-                        if contains_barcode(barcode_R1 , str(fastq_R1_read.seq) ) and \
-                        contains_barcode(barcode_R2 , str(fastq_R2_read.seq)) :
-                            flag=1
-                            break
-                        elif contains_barcode(barcode_R1 , str(fastq_R2_read.seq) ) and \
-                        contains_barcode(barcode_R2 , str(fastq_R1_read.seq)) :
-                            flag=1
-                            break
+            for fastq_R1_read in fastq_R1_reads :
+                    fastq_R2_read =    fastq_R2_reads.next() #for fastq_R2_read in fastq_R2_reads :
+                    if fastq_R1_read.id in fastq_R2_read.id : # check contiguiency(?)
+                        # print ">>> STATUS    : %s" % fastq_R1_read.id
+                        for i in range(len(barcode_R1s)): #zip(barcode_R1s,barcode_R2s,fastq_fns):
+                            barcode_R1=barcode_R1s[i]
+                            barcode_R2=barcode_R2s[i]
+                            fastq_fn    =fastq_fns[i]
+                            # print "%s\n%s\n" % (barcode_R1,fastq_R1_read.seq)
+                            if contains_barcode(barcode_R1 , str(fastq_R1_read.seq) ) and \
+                            contains_barcode(barcode_R2 , str(fastq_R2_read.seq)) :
+                                flag=1
+                                break
+                            elif contains_barcode(barcode_R1 , str(fastq_R2_read.seq) ) and \
+                            contains_barcode(barcode_R2 , str(fastq_R1_read.seq)) :
+                                flag=1
+                                break
+                            else:
+                                flag=0
+                        if flag==1:
+                            Rs2mergedandjoined(fastq_R1_read,fastq_R2_read,fastq_merged_f,fastq_joined_f)
                         else:
-                            flag=0
-                    if flag==1:
-                        Rs2mergedandjoined(fastq_R1_read,fastq_R2_read,fastq_merged_f,fastq_joined_f)
-                    else:
-                        Rs2mergedandjoined(fastq_R1_read,fastq_R2_read,unresolved_merged_f,unresolved_joined_f)
-        fastq_merged_f.close()
-        fastq_joined_f.close()
-        unresolved_merged_f.close()
-        unresolved_joined_f.close()
+                            Rs2mergedandjoined(fastq_R1_read,fastq_R2_read,unresolved_merged_f,unresolved_joined_f)
+            fastq_merged_f.close()
+            fastq_joined_f.close()
+            unresolved_merged_f.close()
+            unresolved_joined_f.close()
+        else:
+            logging.info("already processed: %s" % fastq_fn)
     fastq_R1_reads.close()
     fastq_R2_reads.close()
 

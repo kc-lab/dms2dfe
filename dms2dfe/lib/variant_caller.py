@@ -209,7 +209,7 @@ def sam2mutmat(sbam_fh,fsta_id,fsta_seqlen,fsta_seq,cds_ref,Q_cutoff,prj_dh):
     mut_cds_mat_df.insert(0,'ref_cd',cds_ref)
     mut_cds_mat_df.loc[:,"refi"]=range(1,len(mut_cds_mat_df)+1)
     mut_cds_mat_df.to_csv(mat_mut_cds_fh_str)  
-    mut_cds_mat_fh="%s/data_mutmut/%s" % (prj_dh,basename(mat_mut_cds_fh_str))
+    mut_cds_mat_fh="%s/data_mutmat/%s" % (prj_dh,basename(mat_mut_cds_fh_str))
     if not exists(dirname(mut_cds_mat_fh)):
         try:
             makedirs(dirname(mut_cds_mat_fh))
