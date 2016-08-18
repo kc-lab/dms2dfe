@@ -107,7 +107,7 @@ def main(prj_dh):
 
 #plot data_fit
     data_fits=glob("%s/data_fit/aas/*" % prj_dh)+glob("%s/data_fit/cds/*" % prj_dh)
-    data_fits= [basename(fh) for fh in data_fits]
+    data_fits= [basename(fh) for fh in data_fits if "_WRT_" in basename(fh)]
     if len(data_fits)!=0:
         for data_fiti in np.unique(data_fits):
             for type_form in mut_types_form:
@@ -115,6 +115,8 @@ def main(prj_dh):
                     makedirs("%s/plots/%s" % (prj_dh,type_form))
 
                 data_fit_pair=  data_fiti.split('_WRT_')
+                # print data_fit_pair
+
                 data_fit_sel  =data_fit_pair[0]
                 data_fit_unsel=data_fit_pair[1]
                 data_fit_fh = "%s/data_fit/%s/%s" % (prj_dh,type_form,data_fiti)
