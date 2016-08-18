@@ -470,8 +470,22 @@ def data2sub_matrix(data_fit,values_col,index_col,type_form):
     :param index_col: column name with index (str).
     :param type_form: type of values ["aas" : amino acid | "cds" : codons].
     """                  
-    sub_matrix=pd.pivot_table(data_fit,values=values_col,index=index_col,columns='ref')
-    return sub_matrix
+    from dms2dfe.lib.global_vars import aas_21,cds_64
+    
+    data_sub_matrix=pd.pivot_table(data_fit,values=values_col,index=index_col,columns='ref')
+    #make it 21X21
+    if type_form=="aas":
+        sub_matrix=pd.DataFrame(index=aas_21,columns=aas_21)
+        sub_matrix.index.name='Wild type'
+        sub_matrix.columns.name='Mutation to'
+        for ref in aas_21:
+            for mut in aas_21:
+                try:
+                    sub_matrix.loc[mut,ref]=data_sub_matrix.loc[mut,ref]
+                except:
+#                     a=1
+                    sub_matrix.loc[mut,ref]=np.nan
+    return sub_matrix.astype(float)
 
 def plot_sub_matrix(data_fit,type_form,col,cmap="coolwarm",center=0,plot_fh=None):
     """
@@ -484,23 +498,54 @@ def plot_sub_matrix(data_fit,type_form,col,cmap="coolwarm",center=0,plot_fh=None
     :param center: center colormap to this value (int).
     """
     from dms2dfe.lib.io_nums import str2num
-    from dms2dfe.lib.global_vars import aas_21,cds_64
     import seaborn as sns
-    
+    from dms2dfe.lib.global_vars import aas_21
+
     sub_matrix  =data2sub_matrix(data_fit,col,'mut',type_form)
+
+    data_syn_locs=pd.DataFrame(columns=["refi","muti"])
+    rowi=0
+    for i in range(len(aas_21)):
+        data_syn_locs.loc[rowi,"refi"]=i
+        data_syn_locs.loc[rowi,"muti"]=len(aas_21)-i+0.25-1
+        rowi+=1
+
+#     data_nan_locs=sub_matrix.loc[pd.isnull(data_fit.loc[:,col]),["mutids","ref","mut"]]
+
+    data_nan_locs=pd.isnull(sub_matrix).stack().reset_index()
+    data_nan_locs.columns=["mut","ref","isnan"]
+    data_nan_locs=data_nan_locs.loc[data_nan_locs.loc[:,"isnan"]==True,:]
+
+    # get_refi muti
+    data_nan_locs["muti"]=[20-aas_21.index(i)+0.15 for i in data_nan_locs["mut"]]
+    data_nan_locs["refi"]=[aas_21.index(i) for i in data_nan_locs["ref"]]
+
     plt.figure(figsize=(5,4),dpi=500)
     ax=plt.subplot(111)
-    result=sns.heatmap(sub_matrix.T,cmap=cmap,ax=ax)
-    ax.set_ylabel('Wild type')
-    ax.set_xlabel('Mutation to')
+    result=sns.heatmap(sub_matrix,cmap=cmap,ax=ax,cbar=False)
+#     ax.set_xlabel('Wild type')
+#     ax.set_ylabel('Mutation to')
     yticklabels=sub_matrix.index.values.tolist()
     ax.set_yticklabels(yticklabels[::-1],rotation=0)
+    
+    data_syn_locs=data_syn_locs.reset_index(drop=True)
+    for i in data_syn_locs.reset_index().index.values:
+        ax.text(data_syn_locs.loc[i,"refi"],data_syn_locs.loc[i,"muti"],r"$\plus$")#,color='g')
+
+    data_nan_locs=data_nan_locs.reset_index(drop=True)
+    for i in data_nan_locs.index.values:
+        ax.text(data_nan_locs.loc[i,"refi"],data_nan_locs.loc[i,"muti"],r"$\otimes$")#,color='gray')
+    cbar=ax.figure.colorbar(ax.collections[0])
+    cbar.set_label("$F_{i}$")
+    plt.figtext(0.075, -0.05, "%s: Wild type allele \n%s: Data not available" % (r"$\plus$",r"$\otimes$"),\
+#                 fontdict={'size': 20}
+               )   
+    ax.axis("equal")
     plt.tight_layout()
     if plot_fh!=None:
         plt.savefig(plot_fh,format='pdf')
         plt.clf();plt.close()
     return ax
-
 
 def plot_cov(data_cov,data_lbl,plot_fh=None):
     plt.figure(figsize=[6,3],dpi=300)
