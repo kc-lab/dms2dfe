@@ -13,6 +13,7 @@ from glob import glob
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from Bio import SeqIO
 from pychimera.pychimera import guess_chimera_path
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
@@ -41,11 +42,19 @@ def main(prj_dh):
         sys.exit()
     configure.main(prj_dh)
     from dms2dfe.tmp import info
+    fsta_fh=info.fsta_fh
     pdb_fh=info.pdb_fh
     norm_type=info.norm_type
     Ni_cutoff=int(info.Ni_cutoff)
     cctmr=info.cctmr
-    
+
+    with open(fsta_fh,'r') as fsta_data:
+        for fsta_record in SeqIO.parse(fsta_data, "fasta") :
+            fsta_id=fsta_record.id
+            fsta_seq=str(fsta_record.seq) 
+            fsta_seqlen=len(fsta_seq)
+            break
+            
     if cctmr != 'nan':
         cctmr=[int("%s" % i) for i in cctmr.split(" ")]
         cctmr=[(cctmr[0],cctmr[1]),(cctmr[2],cctmr[3])]
@@ -70,12 +79,19 @@ def main(prj_dh):
     for lbl in lbls.index.values:
         plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,lbl)
         if not exists(plot_fh):
-            try:
-                data_cov=getwildtypecov(lbl,lbls,cctmr)
-                data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
-                plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
-            except:
-                logging.info("coverage not be plotted plot: sequencing data not provided.")
+            if not pd.isnull(lbls.loc[lbl,'fhs_1']):
+                fhs=glob(lbls.loc[lbl,'fhs_1']+"*")
+                if len(fhs)!=0:
+                    sbam_fh=[fh for fh in fhs if ((".s.bam" in fh) and (not "bam." in fh))][0]
+                    lbl_mat_mut_cds_fh=[fh for fh in fhs if "bam.mat_mut_cds" in fh][0]
+                    # print lbl_mat_mut_cds_fh
+                    data_cov=getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,fsta_id,fsta_seqlen,cctmr)
+                    data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
+                    plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
+                else:
+                    logging.warning("can not find sequencing data to get coverage")
+            else:
+                logging.warning("can not find sequencing data to get coverage")
 
 #plot data_lbl
     plot_type="repli"

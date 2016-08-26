@@ -219,7 +219,7 @@ def repli2avg(replis,prj_dh,type_form):
     data_avg=data_avg.replace(0, np.nan)
     return data_avg
         
-def getwildtypecov(lbl,lbls,cctmr=None):
+def getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,ref_id,ref_end,cctmr=None,ref_start=0):
     """
     This gets the codon level coverage of .fastq files.
     
@@ -228,39 +228,46 @@ def getwildtypecov(lbl,lbls,cctmr=None):
     :param cctmr: tuple with (1-based) boundaries of concatamers.
     :returns wt: dataframe with wild-type coverage.
     """
-    fhs=glob(lbls.loc[lbl,'fhs_1']+"*")
-    if len(fhs)!=0:
-        sbam_fh=[fh for fh in fhs if ((".s.bam" in fh) and (not "bam." in fh))][0]
-        lbl_mat_mut_cds_fh=[fh for fh in fhs if "bam.mat_mut_cds" in fh][0]
+    samfile = pysam.Samfile(sbam_fh, "rb" )
 
-        samfile = pysam.Samfile(sbam_fh, "rb" )
+    cov=pd.DataFrame(columns=['cov'])
+    for pileupcol in samfile.pileup(ref_id, ref_start,ref_end,max_depth=10000000):
+        cov.loc[pileupcol.pos, 'cov']=pileupcol.n
+    samfile.close()
 
-        cov=pd.DataFrame(columns=['cov'])
-        for pileupcol in samfile.pileup("aph_wt_nt_cctmr", 0,1596,max_depth=10000000):
-            cov.loc[pileupcol.pos, 'cov']=pileupcol.n
-        samfile.close()
+    if cctmr!=None:
+        cov_cctmr1=cov.iloc[(cctmr[0][0]-1)*3:(cctmr[0][1]-1)*3,:]
+        cov_cctmr2=cov.iloc[(cctmr[1][0]-1)*3:(cctmr[1][1]-1)*3,:]
+        cov=cov_cctmr1.reset_index(drop=True).astype(int)+cov_cctmr2.reset_index(drop=True).astype(int)
 
-        if cctmr!=None:
-            cov_cctmr1=cov.iloc[(cctmr[0][0]-1)*3:(cctmr[0][1]-1)*3,:]
-            cov_cctmr2=cov.iloc[(cctmr[1][0]-1)*3:(cctmr[1][1]-1)*3,:]
-            cov=cov_cctmr1.reset_index(drop=True).astype(int)+cov_cctmr2.reset_index(drop=True).astype(int)
+    # cov.to_csv("cov")
+    cov_per_cds=pd.DataFrame(columns=["1","2","3"])
+    for i in cov.index:
+        if np.remainder(i,3)==0:
+            cov_per_cds.loc[np.floor(i/3),"1"]=cov.loc[i,"cov"]
+        elif np.remainder(i,3)==1:
+            cov_per_cds.loc[np.floor(i/3),"2"]=cov.loc[i,"cov"]
+        elif np.remainder(i,3)==2:
+            cov_per_cds.loc[np.floor(i/3),"3"]=cov.loc[i,"cov"]
 
-        cov_per_cds=cov.groupby(np.array([cov.index.values, cov.index.values,cov.index.values]).T.flatten()[:len(cov.index.values)]).mean()
+    cov_per_cds.loc[:,"cov"]=cov_per_cds.T.mean()
+    # cov_per_cds=cov_per_cds.loc[:,"cov"]
+    # cov_per_cds.to_csv("cov_per_cds")
+    # minus the mutants
+    lbl_mat_mut_cds=pd.read_csv(lbl_mat_mut_cds_fh)
+    print lbl_mat_mut_cds_fh
+    lbl_mat_mut_cds=lbl_mat_mut_cds.fillna(0).set_index("ref_cd",drop=True)
+    lbl_mat_mut_cds=lbl_mat_mut_cds.loc[:,cds_64]
+    if cctmr!=None:
+        lbl_mat_mut_cds_cctmr1=lbl_mat_mut_cds.iloc[(cctmr[0][0]-1):(cctmr[0][1]-1),:]
+        lbl_mat_mut_cds_cctmr2=lbl_mat_mut_cds.iloc[(cctmr[1][0]-1):(cctmr[1][1]-1),:]
+        lbl_mat_mut_cds=lbl_mat_mut_cds_cctmr1+lbl_mat_mut_cds_cctmr2
 
-        # minus the mutants
-        lbl_mat_mut_cds=pd.read_csv(lbl_mat_mut_cds_fh)
-        if cctmr!=None:
-            lbl_mat_mut_cds_cctmr1=lbl_mat_mut_cds.iloc[(cctmr[0][0]-1):(cctmr[0][1]-1),:]
-            lbl_mat_mut_cds_cctmr2=lbl_mat_mut_cds.iloc[(cctmr[1][0]-1):(cctmr[1][1]-1),:]
-            lbl_mat_mut_cds=lbl_mat_mut_cds_cctmr1.fillna(0).set_index("ref_cd",drop=True)+lbl_mat_mut_cds_cctmr2.fillna(0).set_index("ref_cd",drop=True)
-        del lbl_mat_mut_cds['Unnamed: 0']
+    cov_mut=pd.DataFrame({"cov":lbl_mat_mut_cds.T.sum().reset_index(drop=True)})
+    # cov_mut.to_csv("cov_mut")
 
-        cov_mut=pd.DataFrame({"cov":lbl_mat_mut_cds.T.sum().reset_index(drop=True)})
-
-        wt=cov_per_cds - cov_mut 
-        return wt
-    else:
-        logging.warning("can not find sequencing data to get coverage")
+    wt=cov_per_cds.loc[:,"cov"] - cov_mut.loc[:,"cov"] 
+    return wt
 
 def data_fit2norm_wrt_wild(unsel_lbl,sel_lbl,type_form,FCA,cctmr,lbls):
     """

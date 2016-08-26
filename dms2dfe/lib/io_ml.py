@@ -8,7 +8,7 @@
 ``io_ml``
 ================================
 """
-from os.path import abspath,dirname,exists
+from os.path import abspath,dirname,exists,basename
 
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import LabelEncoder,label_binarize
@@ -424,7 +424,6 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
     data_fh="%s/data_ml_%s" % (data_dh,data_fit_key.replace('/','_'))
     y_coln_classi="FCA"
     if not exists(data_fh.replace("data_ml_","data_ml_regress_preds_")):
-        # print "%s/%s" % (prj_dh,data_fit_key)
         data_fit=pd.read_csv("%s/%s" % (prj_dh,data_fit_key))
         if np.sum(~data_fit.loc[:,y_coln_classi].isnull())>10:
             # if len(data_fit.loc[~data_fit.loc[:,y_coln_classi].isnull(),y_coln_classi].unique())>=3:        
@@ -516,18 +515,18 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
                 X_cols_regress.remove(y_coln_regress)            
             data_regress_train.to_csv(data_fh.replace("data_ml_","data_ml_regress_train_"))
             data_regress_test.to_csv(data_fh.replace("data_ml_","data_ml_regress_test_"))
+            try:
+                grid_search_regress,y_test_regress,y_pred_regress,feature_importances_regress,data_preds_regress\
+                =run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,\
+    test_size=0,data_test=data_regress_test,plot_fh=plot_fh.replace("fig_ml_","fig_ml_regress_"))
 
-            grid_search_regress,y_test_regress,y_pred_regress,feature_importances_regress,data_preds_regress\
-            =run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,\
-test_size=0,data_test=data_regress_test,plot_fh=plot_fh.replace("fig_ml_","fig_ml_regress_"))
-
-            data_preds_regress.to_csv(data_fh.replace("data_ml_","data_ml_regress_preds_"))
-            data_regress_all=data_preds_regress.append(data_regress_train)
-            data_regress_all.to_csv(data_fh.replace("data_ml_","data_ml_regress_all_"))
-            data_regress2data_fit(prj_dh,data_fit_key,data_regress_all)
-            return data_regress_all
-            # else:
-            #     logging.info("skipping: %s : requires more unique classes" % basename(data_fit_key))
+                data_preds_regress.to_csv(data_fh.replace("data_ml_","data_ml_regress_preds_"))
+                data_regress_all=data_preds_regress.append(data_regress_train)
+                data_regress_all.to_csv(data_fh.replace("data_ml_","data_ml_regress_all_"))
+                data_regress2data_fit(prj_dh,data_fit_key,data_regress_all)
+                return data_regress_all
+            except:
+                logging.info("skipping: %s : requires more data" % basename(data_fit_key))
         else:
             logging.info("skipping %s: requires more samples %d<10" %\
                             (data_fit_key,np.sum(~data_fit.loc[:,y_coln].isnull())))

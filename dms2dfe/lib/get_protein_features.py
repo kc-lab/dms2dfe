@@ -117,7 +117,8 @@ def pdb2dfromactivesite(pdb_fh,active_sites=[]):
                         =ligand_residue_obj[ligand_atom_obj.get_name()]-residue["CA"]
 
     dfromligands.index.name="aasi"
-    del dfromligands["ref_pdb"]
+    if "ref_pdb" in dfromligands:
+        del dfromligands["ref_pdb"]
     return dfromligands
 
 def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):

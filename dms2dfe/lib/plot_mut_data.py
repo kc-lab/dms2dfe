@@ -363,7 +363,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,\
     # extent = ax_all.get_window_extent().transformed(ax_all.figure.dpi_scale_trans.inverted())
     # extent.set_points(np.array([[5,0],[36,11]]))    
     # extent.set_points(np.array([[5,0],[36,11]]))    
-    plt.figtext(0.125, .02, "%s: Wild type allele \n%s: Mutations for which data is not available" % (r"$\plus$",r"$\otimes$"),\
+    plt.figtext(0.125, .02, "%s: Synonymous mutations \n%s: Mutations for which data is not available" % (r"$\plus$",r"$\otimes$"),\
                 fontdict={'size': 20})
     if plot_fh!=None:
         plt.savefig(plot_fh,format='pdf') 
@@ -461,7 +461,7 @@ def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col
         plt.clf();plt.close()
     return ax
 
-def data2sub_matrix(data_fit,values_col,index_col,type_form): 
+def data2sub_matrix(data_fit,values_col,index_col,type_form,aggfunc='mean'): 
     """
     This creates substitition matrix from input data (frequncies `data_lbl` or `data_fit`).
     
@@ -471,13 +471,15 @@ def data2sub_matrix(data_fit,values_col,index_col,type_form):
     :param type_form: type of values ["aas" : amino acid | "cds" : codons].
     """                  
     from dms2dfe.lib.global_vars import aas_21,cds_64
-    
-    data_sub_matrix=pd.pivot_table(data_fit,values=values_col,index=index_col,columns='ref')
+    if aggfunc=="mean":
+        data_sub_matrix=pd.pivot_table(data_fit,values=values_col,index=index_col,columns='ref')
+    else:
+        data_sub_matrix=pd.pivot_table(data_fit,values=values_col,index=index_col,columns='ref',aggfunc=aggfunc)        
     #make it 21X21
     if type_form=="aas":
         sub_matrix=pd.DataFrame(index=aas_21,columns=aas_21)
-        sub_matrix.index.name='Wild type'
-        sub_matrix.columns.name='Mutation to'
+        sub_matrix.index.name='Mutation to'
+        sub_matrix.columns.name='Wild type'
         for ref in aas_21:
             for mut in aas_21:
                 try:
@@ -520,7 +522,7 @@ def plot_sub_matrix(data_fit,type_form,col,cmap="coolwarm",center=0,plot_fh=None
     data_nan_locs["muti"]=[20-aas_21.index(i)+0.15 for i in data_nan_locs["mut"]]
     data_nan_locs["refi"]=[aas_21.index(i) for i in data_nan_locs["ref"]]
 
-    plt.figure(figsize=(5,4),dpi=500)
+    plt.figure(figsize=(5,4),dpi=300)
     ax=plt.subplot(111)
     result=sns.heatmap(sub_matrix,cmap=cmap,ax=ax,cbar=False)
 #     ax.set_xlabel('Wild type')
@@ -537,8 +539,9 @@ def plot_sub_matrix(data_fit,type_form,col,cmap="coolwarm",center=0,plot_fh=None
         ax.text(data_nan_locs.loc[i,"refi"],data_nan_locs.loc[i,"muti"],r"$\otimes$")#,color='gray')
     cbar=ax.figure.colorbar(ax.collections[0])
     cbar.set_label("$F_{i}$")
-    plt.figtext(0.075, -0.05, "%s: Wild type allele \n%s: Data not available" % (r"$\plus$",r"$\otimes$"),\
-#                 fontdict={'size': 20}
+    plt.figtext(0.075, 0.00, "%s: Synonymous substitutions \t%s: Substitutions for which data is not available" % (r"$\plus$",r"$\otimes$"),
+    # plt.figtext(0.075, -0.05, "\n%s: Substitutions for which data is not available" % (r"$\otimes$"),\
+                    fontdict={'size': 9}
                )   
     ax.axis("equal")
     plt.tight_layout()
@@ -553,9 +556,9 @@ def plot_cov(data_cov,data_lbl,plot_fh=None):
     ax1.plot(data_cov,lw=2,color='b')
     ax2 = ax1.twinx()
     ax2.plot(data2mut_matrix(data_lbl,"NiA","mut","aas").sum().tolist(),lw=2,color='r')
-    ax1.set_xlabel("Codon position")
-    ax1.set_ylabel("Coverage (reads per codons)",color='b')
-    ax2.set_ylabel("Mutants per codons",color='r')
+    ax1.set_xlabel("Position")
+    ax1.set_ylabel("Coverage\n(number of reads per codon)",color='b')
+    ax2.set_ylabel("Total number of\nmutations per codon",color='r')
     ax1.set_xlim([data_cov.index.values[0],data_cov.index.values[-1]])
     ax1.set_yscale('log')
     ax2.set_yscale('log')
