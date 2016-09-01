@@ -39,15 +39,16 @@ if not len(file_names)==0:
             logging.info("processing %s" % basename(fn))
             replyobj.status("Processing " + fn)
             rc("open " + fn)
-            rc("windowsize 800 800; align ligand ~ligand;rangecol bfactor -0.5 blue 0 gray 0.5 red :.A;preset apply publication 2; \
-                ~disp :.A,:.B;setattr m stickScale 2; delete :.B; delete solvent; delete :SPD; disp ligand; \
+            rc("windowsize 800 800; align ligand ~ligand;\
+               rangecol bfactor -0.5 blue 0 gray 0.5 red :.A;preset apply publication 2; \
+                ~disp :.A,:.B;setattr m stickScale 2; delete :.B; delete solvent; delete :SPD; disp ligand;center :.A;\
                 color gray,s; light mode ambient;color green ligand;\
-                colorkey 0.85,0.3 0.88,0.7 0.5 red 0 gray 0.5 blue; \
-                2dlabels create c%d text 'Fitness' xpos 0.81 ypos 0.25 color black;\
                 labelopt resinfo 'N-term'; rlabel protein & @n & @/idatmType=N3+;\
-                labelopt resinfo 'C-term'; rlabel protein & @c &  @/idatmType=Cac; color black,l" % file_names.index(fn))
-
-            # rc("scale 1.5")
+                labelopt resinfo 'C-term'; rlabel protein & @c &  @/idatmType=Cac; color black,l")
+                # colorkey 0.85,0.3 0.88,0.7 0.5 red 0 gray 0.5 blue; \
+                # 2dlabels create c%d text 'Fitness' xpos 0.81 ypos 0.25 color black;\" % file_names.index(fn) 
+            
+            rc("scale 1;")
 
             png_name = fn[:-3] + ".ps"
             rc("copy file %s supersample 3" % (fn[:-3] + "eps"))
@@ -66,13 +67,13 @@ if not len(file_names)==0:
 
             rc("copy file %s supersample 3" % (fn[:-3] + "_surf_.eps"))
 
-            rc("mclip #0 match near; scolor #0 zone protein; light mode ambient;")
+            rc("mclip #0 match focal; scolor #0 zone protein; light mode ambient;")
             rc("copy file %s supersample 3" % (fn[:-3] + "_surf_slice.eps"))
 
             rc("~mclip;turn y 180;")            
             rc("copy file %s supersample 3" % (fn[:-3] + "_surf_180.eps"))
 
-            rc("mclip #0 match near; scolor #0 zone protein; light mode ambient;")
+            rc("mclip #0 match focal; scolor #0 zone protein; light mode ambient;")
             rc("copy file %s supersample 3" % (fn[:-3] + "_surf_slice_180.eps"))
 
             rc("close all")

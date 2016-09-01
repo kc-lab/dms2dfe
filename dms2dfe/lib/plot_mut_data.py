@@ -555,7 +555,8 @@ def plot_cov(data_cov,data_lbl,plot_fh=None):
     ax1=plt.subplot(111)
     ax1.plot(data_cov,lw=2,color='b')
     ax2 = ax1.twinx()
-    ax2.plot(data2mut_matrix(data_lbl,"NiA","mut","aas").sum().tolist(),lw=2,color='r')
+    ax2.plot(data2mut_matrix(data_lbl,"NiA","mut","aas").sum().tolist(),
+             lw=2,color='r')
     ax1.set_xlabel("Position")
     ax1.set_ylabel("Coverage\n(number of reads per codon)",color='b')
     ax2.set_ylabel("Total number of\nmutations per codon",color='r')
@@ -572,7 +573,7 @@ def plot_cov(data_cov,data_lbl,plot_fh=None):
         plt.clf();plt.close()
     return ax1,ax2
 
-def pval2stars(pval):
+def pval2stars(pval,ns=True):
     if pval < 0.0001:
         return "****"
     elif (pval < 0.001):
@@ -582,8 +583,11 @@ def pval2stars(pval):
     elif (pval < 0.05):
         return "*"
     else:
-        return "ns"
-
+        if ns:
+            return "ns"
+        else:
+            return "P = %.2f" % pval
+            
 def annotatesigni(ax,x1,x2,y_max,s,space=0,lift=None):
     if lift==None:
         y_max=(y_max+1)
@@ -593,13 +597,15 @@ def annotatesigni(ax,x1,x2,y_max,s,space=0,lift=None):
         tmp=x2
         x2=x1
         x1=tmp
-    ax.text(np.mean([x1,x2]),y_max+2,s,horizontalalignment='center',verticalalignment='center')
+    ax.text(np.mean([x1,x2]),y_max+2,s,
+            horizontalalignment='center',verticalalignment='center')
     ax.plot([x1+space, x2-space], [y_max+1, y_max+1], 'k-', lw=2)
     ax.plot([x1+space, x1+space], [y_max+0.5, y_max+1], 'k-', lw=2)
     ax.plot([x2-space, x2-space], [y_max+0.5, y_max+1], 'k-', lw=2)
     return ax
 
-def plot_data_comparison_multiviolin(prj_dh,data_fits,col,data_fiti_ctrl=0,aasORcds="aas",data_fits_labels=None,ylabel=None,plot_fh=None):
+def plot_data_comparison_multiviolin(prj_dh,data_fits,col,data_fiti_ctrl=0,aasORcds="aas",ns=True,
+                                     data_fits_labels=None,ylabel=None,plot_fh=None):
     data_fit_fhs=["%s/data_fit/%s/%s" % (prj_dh,aasORcds,s) for s in data_fits]
 
     for data_fit_fh in data_fit_fhs:
@@ -636,9 +642,9 @@ def plot_data_comparison_multiviolin(prj_dh,data_fits,col,data_fiti_ctrl=0,aasOR
 #         print data_fit_test
         z, pval = mannwhitneyu(data_comparison.set_index("condi").loc[data_fit_ctrl,col],data_comparison.set_index("condi").loc[data_fit_test,col],alternative='two-sided')
         if data_fiti_ctrl==0:
-            ax=annotatesigni(ax,data_fiti_ctrl,data_fiti,y_max,pval2stars(pval),space=0.02,lift=data_fiti)    
+            ax=annotatesigni(ax,data_fiti_ctrl,data_fiti,y_max,pval2stars(pval,ns=ns),space=0.02,lift=data_fiti)    
         else:
-            ax=annotatesigni(ax,data_fiti_ctrl,data_fiti,y_max,pval2stars(pval),space=0.02)                
+            ax=annotatesigni(ax,data_fiti_ctrl,data_fiti,y_max,pval2stars(pval,ns=ns),space=0.02)                
     if data_fiti_ctrl!=0:
         ax.set_ylim([y_min-2,y_max+5])
     else:
