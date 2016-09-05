@@ -456,7 +456,7 @@ def main():
         get_TEM1_dataset(prj_dh)
     elif (test_dataset=='2') or ("APH2" in test_dataset):
         logging.info("Getting 'APH2' dataset..")
-        data_type=raw_input("Get 'publication data' or 'sequencing data'? [valid inputs: 1 | 2]:")
+        data_type=raw_input("Get 'publication data' or 'sequencing data (961.3 MB)'? [valid inputs: 1 | 2]:")
         prj_dh="APH2_Melnikov_et_al_2014"    
         if data_type=='1':
             get_APH2_dataset(prj_dh)

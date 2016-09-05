@@ -36,25 +36,25 @@ def main(prj_dh):
 
     """
     logging.info("start")
-    if not exists(prj_dh) :
-    #     logging.error("Could not find '%s'\n" % prj_dh)
-        configure.main(prj_dh)
-    #     sys.exit()
-          
-    # run modules
-    ana0_getfeats.main(prj_dh)
-    ana0_fastq2dplx.main(prj_dh)
-    ana0_fastq2sbam.main(prj_dh)
-    ana1_sam2mutmat.main(prj_dh)
-    ana2_mutmat2fit.main(prj_dh)
-    ana4_modeller.main(prj_dh)
-    ana3_fit2comparison.main(prj_dh)
-    ana4_plotter.main(prj_dh)    
+    if exists(prj_dh) :
+        configure.main(prj_dh,"deps")
+        configure.main(prj_dh)          
+        # run modules
+        ana0_getfeats.main(prj_dh)
+        ana0_fastq2dplx.main(prj_dh)
+        ana0_fastq2sbam.main(prj_dh)
+        ana1_sam2mutmat.main(prj_dh)
+        ana2_mutmat2fit.main(prj_dh)
+        ana4_modeller.main(prj_dh)
+        ana3_fit2comparison.main(prj_dh)
+        ana4_plotter.main(prj_dh)    
 
-    logging.info("Location of output data: %s/plots/aas/data_comparison" % (prj_dh))
-    logging.info("Location of output visualizations: %s/plots/aas/" % (prj_dh))
-    logging.info("For more information about outputs, please refer to http://kc-lab.github.io/dms2dfe .")
-    logging.shutdown()
-    sys.exit()
+        logging.info("Location of output data: %s/plots/aas/data_comparison" % (prj_dh))
+        logging.info("Location of output visualizations: %s/plots/aas/" % (prj_dh))
+        logging.info("For information file formats of outputs, please refer to http://kc-lab.github.io/dms2dfe .")
+        logging.shutdown()
+    else:
+        configure.main(prj_dh)                  
+    # sys.exit()
 if __name__ == '__main__':
     main(sys.argv[1])
