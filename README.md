@@ -25,11 +25,15 @@ From bash command line,
 
 Available at https://kc-lab.github.io/dms2dfe .
 
-##Citation
+##Publication
 
 **dms2dfe: Comprehensive Workflow for Analysis of Deep Mutational Scanning Data**  
 Rohan Dandage, Kausik Chakraborty  
 doi: http://dx.doi.org/10.1101/072645  
+
+##Issues
+
+Please mention them here: https://github.com/rraadd88/dms2dfe/issues .
 
 ##Footnotes
 

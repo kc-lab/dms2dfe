@@ -41,8 +41,8 @@ def getusablesbams_list(prj_dh):
                     sbam_fh=sbam_fh+".qcd.fastq.sam.s.bam"
                 else :
                     logging.warning("can not find: %s" % basename(sbam_fh))     
-            if (("s.bam" in sbam_fh) and (exists(sbam_fh))) and (not exists(sbam_fh+".mat_mut_cds") or (stat(sbam_fh+".mat_mut_cds").st_size ==0)):
-                #print sbam_fh
+            # if (("s.bam" in sbam_fh) and (exists(sbam_fh))) and (not exists(sbam_fh+".mat_mut_cds") or (stat(sbam_fh+".mat_mut_cds").st_size ==0)):
+            if ((sbam_fh.endswith("s.bam")) and (exists(sbam_fh))) and (not exists(sbam_fh+".mat_mut_cds") or (stat(sbam_fh+".mat_mut_cds").st_size ==0)):
                 sbam_fhs.append(sbam_fh)              
             else: 
                 logging.info("already processed: %s" % basename(sbam_fh))

@@ -135,22 +135,17 @@ def mat_cds2mat_aas(mat_cds,host) :
     :param host: name of host organism for choosing codon table. [coli | yeast | sapiens].
     :returns mat_aas: amino acid level mutation matrix.
     """
-    #aas_21=["A","C","D","E","F","G","H","I","K","L","M","N","P","Q","R","S","T","V","W","Y","X"] #for indexing
     aas_wt=[cds2aas(cd,host) for cd in list(mat_cds.index)]
     aas_64=[cds2aas(cd,host) for cd in list(mat_cds.columns)]
-    mat_aas_tmp=pd.DataFrame(np.float64(mat_cds.loc[:,:]),columns=aas_64,index=aas_wt) # copt cds dataframe as aas
-    mat_aas    =pd.DataFrame(columns=aas_21,index=aas_wt)
-    for aai in aas_21 : 
-        seriesORdf= len(np.shape(mat_aas_tmp.loc[:,'%s' % aai]))
-        if seriesORdf >1 :
-            mat_aas.loc[:,'%s' % aai]=mat_aas_tmp.loc[:,'%s' % aai].sum(axis=1)
-        else :
-            mat_aas.loc[:,'%s' % aai]=mat_aas_tmp.loc[:,'%s' % aai]
+    mat_aas_64 =mat_cds.fillna(0)
+    mat_aas_64.columns=aas_64
+    mat_aas=mat_aas_64.groupby(mat_aas_64.columns, axis=1).sum()
+    mat_aas    =mat_aas.loc[:,aas_21]
+    mat_aas.index=aas_wt
     mat_aas.columns.name='mut'
     mat_aas.index.name='ref'
-    # mat_aas.loc[:,'refi']=mat_cds.loc[:,'refi']
     return mat_aas
-            
+
 def getNS(data_all) : # data (col): can be cds or aas
     """
     This function separates the non-synonymous(N) and synonymous(S) mutations.
@@ -219,7 +214,8 @@ def repli2avg(replis,prj_dh,type_form):
     data_avg=data_avg.replace(0, np.nan)
     return data_avg
         
-def getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,ref_id,ref_end,cctmr=None,ref_start=0):
+def getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,ref_id,ref_end,
+                   cctmr=None,ref_start=0):
     """
     This gets the codon level coverage of .fastq files.
     
@@ -255,7 +251,7 @@ def getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,ref_id,ref_end,cctmr=None,ref_star
     # cov_per_cds.to_csv("cov_per_cds")
     # minus the mutants
     lbl_mat_mut_cds=pd.read_csv(lbl_mat_mut_cds_fh)
-    print lbl_mat_mut_cds_fh
+    # print lbl_mat_mut_cds_fh
     lbl_mat_mut_cds=lbl_mat_mut_cds.fillna(0).set_index("ref_cd",drop=True)
     lbl_mat_mut_cds=lbl_mat_mut_cds.loc[:,cds_64]
     if cctmr!=None:
@@ -369,16 +365,20 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh,fsta_seqlen,cctmr,N
             fsta_seqlen=(cctmr[0][1]-1)*3
             lbl_mat_cds=collate_cctmr(lbl_mat_cds,cctmr)
         lbl_mat_aas=mat_cds2mat_aas(lbl_mat_cds,host)# convert to aa data
+        # lbl_mat_cds.to_csv('test')
         for type_form in mut_types_form : # get aas or cds  
             if not exists("%s/data_lbl/%s/%s" % (prj_dh,type_form,str(lbli))):
+                # print lbl_mat_aas.tail(10)
                 if type_form=="aas":
                     data_lbl=pd.DataFrame(lbl_mat_aas.unstack())
                 elif type_form=="cds":
                     data_lbl=pd.DataFrame(lbl_mat_cds.drop("refi",axis=1).unstack())
+                # print data_lbl.iloc[170:180,:]
                 if (len(data_lbl)/(fsta_seqlen/3)==21) or (len(data_lbl)/(fsta_seqlen/3)==64):
                     data_lbl.columns=["NiA"]  # rename col Ni  
                     data_lbl.loc[:,'mutids']=makemutids(data_lbl,lbl_mat_cds.loc[:,"refi"]) # add mutids
                     data_lbl=pd.concat([data_lbl,getNS(data_lbl)], axis=1)
+                    
                     for type_NorS in mut_types_NorS : # N OR S  
                         data_lbl.loc[:,('Ni%scut' % type_NorS)]=data_lbl.loc[:,'Ni%s' % type_NorS]
                         data_lbl.loc[data_lbl.loc[:,('Ni%scut' % type_NorS)]<Ni_cutoff,('Ni%scut' % type_NorS)]=np.nan \
@@ -386,6 +386,7 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh,fsta_seqlen,cctmr,N
                         data_lbl.loc[:,('Ni%scutlog' % type_NorS)]=np.log2(data_lbl.loc[:,('Ni%scut' % type_NorS)].astype('float'))
                         data_lbl.loc[(data_lbl.loc[:,('Ni%scutlog' % type_NorS)]==-np.inf) \
                                      | (data_lbl.loc[:,('Ni%scutlog' % type_NorS)]==np.inf),('Ni%scutlog' % type_NorS)]=np.nan
+                    
                     if not exists(prj_dh+"/data_lbl/"+type_form):
                         try:
                             makedirs(prj_dh+"/data_lbl/"+type_form)

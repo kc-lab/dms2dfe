@@ -53,7 +53,7 @@ def main(prj_dh):
         logging.info("bt2_ref_fh do not exist, made one.")
     pool=Pool(processes=int(cores))  
     fastqs_list=getusablefastqs_list(prj_dh)
-    #print fastqs_list
+    # print fastqs_list
     if len(fastqs_list)!=0:
         # pooled(fastqs_list[0])
         pool.map(pooled,fastqs_list)

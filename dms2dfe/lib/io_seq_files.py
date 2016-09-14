@@ -185,8 +185,8 @@ def fastq2qcd(fastq_fhs_list,trimmomatic_fh): #[fastq_R1_fh,fastq_R2_fh]
                     subprocess.call(bashCommand,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
                 log_f.close()
             else:
-                sys.exit()
                 logging.error("trimmomatic_fh not defined")     
+                # sys.exit()
         else:
             logging.info("skipping: %s" % basename(fastq_R1_fh))     
     else:

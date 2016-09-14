@@ -255,7 +255,9 @@ def plot_ROC(y_test,y_score,classes):
     ax_roc.set_ylabel("TPR")
 #     ax_roc.legend(loc='lower right',prop={'size':9})
 # #     ax_roc.legend(loc='center right', bbox_to_anchor=(2, 0.5))
-    ax_roc.legend(loc='lower right', bbox_to_anchor=(2.5, 0.5))
+    ax_roc.legend(loc='lower right',
+                  # bbox_to_anchor=(2.5, 0.5)
+                 )
     plt.tight_layout()
     
 def plot_importances(importances,X_cols):
