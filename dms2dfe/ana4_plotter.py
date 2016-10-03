@@ -72,12 +72,15 @@ def main(prj_dh):
         makedirs(prj_dh+"/plots")
 
 #plot for coverage
+    if not exists(prj_dh+"/data_coverage/aas"):
+        makedirs(prj_dh+"/data_coverage/aas")
     plot_type="coverage"
     logging.info("processing: plot type: %s" % plot_type)
     lbls=pd.read_csv("%s/cfg/lbls" % prj_dh).set_index("varname",drop=True)
     type_form="aas"
     for lbl in lbls.index.values:
         plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,lbl)
+        data_fh="%s/data_coverage/%s/%s" % (prj_dh,type_form,lbl)        
         if not exists(plot_fh):
             if not pd.isnull(lbls.loc[lbl,'fhs_1']):
                 fhs=glob(lbls.loc[lbl,'fhs_1']+"*")
@@ -85,7 +88,11 @@ def main(prj_dh):
                     sbam_fh=[fh for fh in fhs if (fh.endswith(".s.bam"))][0]
                     lbl_mat_mut_cds_fh=[fh for fh in fhs if "bam.mat_mut_cds" in fh][0]
                     # print lbl_mat_mut_cds_fh
-                    data_cov=getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,fsta_id,fsta_seqlen,cctmr)
+                    if not exists(data_fh):
+                        data_cov=getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,fsta_id,fsta_seqlen,cctmr)
+                        data_cov.to_csv(data_fh,index=False)
+                    else: 
+                        data_cov=pd.read_csv(data_fh)
                     data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
                     plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
                 else:
@@ -137,7 +144,11 @@ def main(prj_dh):
                 data_fit_unsel=data_fit_pair[1]
                 data_fit_fh = "%s/data_fit/%s/%s" % (prj_dh,type_form,data_fiti)
                 if exists(data_fit_fh):
-                    data_fit=pd.read_csv(data_fit_fh)
+                    try:
+                        data_fit=pd.read_csv(data_fit_fh)
+                    except:
+                        logging.info("skipping: %s" % basename(data_fit_fh))
+                        continue
                     if "Unnamed: 0" in data_fit.columns:
                         data_fit=data_fit.drop("Unnamed: 0", axis=1)
 
@@ -231,7 +242,12 @@ def main(prj_dh):
                     if not exists("%s/plots/%s" % (prj_dh,type_form)):
                         makedirs("%s/plots/%s" % (prj_dh,type_form))
                     data_comparison_fh = "%s/data_comparison/%s/%s" % (prj_dh,type_form,data_comparisoni)
-                    data_comparison=pd.read_csv(data_comparison_fh)
+                    try:
+                        data_comparison=pd.read_csv(data_comparison_fh)
+                    except:
+                        logging.info("skipping: %s" % basename(data_comparison_fh))
+                        continue
+
                     if "Unnamed: 0" in data_comparison.columns:
                         data_comparison=data_comparison.drop("Unnamed: 0", axis=1)
                     #bar   

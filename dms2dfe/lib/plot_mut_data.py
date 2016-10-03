@@ -124,30 +124,50 @@ def plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=None):
         plt.clf();plt.close()
     return ax
 
-def plot_data_fit_dfe(data_fit,norm_type,col_fit="FiA",xlabel=r'$F_{i}$',axvspan_min=-2,axvspan_max=2,plot_fh=None):
+def plot_data_fit_dfe(data_fit,norm_type=None,col_fit="FiA",
+                      annot_X=True,annot_syn=False,
+                      xlabel=r'$F_{i}$',
+                      axvspan_min=0,axvspan_max=0,
+                      plot_fh=None):
     """
     This plots histogram of Distribution of Fitness Effects (DFE).
     
     :param data_fit: fitness data (`data_fit`).
     :param norm_type: Type of normalization across samples [wild: wrt wild type | syn : wrt synonymous mutations | none : fold change serves as fitness]
     """
-    fig = plt.figure(figsize=(8, 3),dpi=500)
+    plt.style.use('seaborn-white')
+    fig = plt.figure(figsize=(6, 2.25),dpi=300)
     ax=plt.subplot(111)
-    if norm_type=="syn":
-        if not 'FiS' in data_fit.columns.tolist():
-                data_fit.loc[:,'FiS']=data_fit.loc[(data_fit_infered.loc[:,'ref']==data_fit.loc[:,'mut']),col_fit]
+#     if norm_type=="syn":
+#         if not 'FiS' in data_fit.columns.tolist():
+#                 data_fit.loc[:,'FiS']=data_fit.loc[(data_fit_infered.loc[:,'ref']==data_fit.loc[:,'mut']),col_fit]
         
-        data_fit[[col_fit,'FiS']].plot(kind='hist',bins=40,color=['seagreen','darkorange'],\
-                                     ax=ax)
-        l2=ax.legend(['Non-synonymous','Synonymous'],loc="upper right")
-    else:
-        data_fit[col_fit].plot(kind='hist',bins=40,color='seagreen',ax=ax)
-
+#         data_fit[[col_fit,'FiS']].plot(kind='hist',bins=40,
+#                                color='limegreen',ax=ax,zorder=3,alpha=0.75)
+#         l2=ax.legend(['Non-synonymous','Synonymous'],loc="upper right")
+#     else:
+    data_fit[col_fit].plot(kind='hist',bins=40,
+                           color='limegreen',
+                           edgecolor='k',
+                           ax=ax,zorder=3,alpha=0.75)    
     xlim=np.ceil(np.max([data_fit.loc[:,col_fit].max(),data_fit.loc[:,col_fit].min()*-1]))
-    ax.axvspan(-xlim, axvspan_min, color='blue', alpha=0.10)
-    ax.axvspan(axvspan_min, axvspan_max, color='grey', alpha=0.10)
-    ax.axvspan(axvspan_max, xlim, color='red', alpha=0.10)
+    ax.axvspan(-xlim, axvspan_min, color='blue', alpha=0.05)
+#     ax.axvspan(axvspan_min, axvspan_max, color='grey', alpha=0.05)
+    ax.axvspan(axvspan_max, xlim, color='red', alpha=0.05)
     # l1=ax.legend(['Deleterious','Neutral','Beneficial'], loc='upper left')
+    
+    ymin,ymax=ax.get_ylim()
+    
+    if annot_X:
+        data_fit_X=data_fit.loc[data_fit.loc[:,"mut"]=="X",col_fit]
+        for i in list(data_fit_X):
+            ax.axvline(x=i, ymin=ymin, ymax=ymax,color="k",zorder=0)
+
+    if annot_syn:
+        data_fit_X=data_fit.loc[data_fit.loc[:,"mut"]=="X",col_fit]
+        ax.axvline(x=0, ymin=ymin, ymax=ymax,color="gray",zorder=1)
+
+    ax.legend(['Mutation to\nstop codon'],loc="upper right",frameon=True)
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel('Count')
@@ -650,7 +670,7 @@ def plot_data_comparison_multiviolin(prj_dh,data_fits,col,data_fiti_ctrl=0,aasOR
     else:
         ax.set_ylim([y_min-2,y_max+(data_fiti)*5])
     ax.set_xlabel("")
-    if len(data_fits_labels)!=None:
+    if data_fits_labels!=None:
         ax.set_xticklabels(data_fits_labels)
     if ylabel!=None:
         ax.set_ylabel(ylabel)

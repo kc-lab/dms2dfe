@@ -218,47 +218,46 @@ def plot_ROC(y_test,y_score,classes):
     :param y_score: probabilities of predictions.
     :param classes: list with unique classes in y
     """
-#     fig = plt.figure(figsize=(3,3),dpi=300)#figsize=(11,5))
-    fig = plt.figure(figsize=(8.5,3),dpi=300)
-    ax_roc = plt.subplot(131)
+    fig = plt.figure(figsize=(3,3),dpi=300)#figsize=(11,5))
+    ax_roc = plt.subplot(111)
 
     mean_tpr = 0.0
     mean_fpr = np.linspace(0, 1, 100)
     classes_to_plot=[]
     if len(classes)>2:
         for classi in range(len(classes)):
-#             print np.shape(y_score[0])
-#             rows, cols = np.shape(y_score[0])
             fpr, tpr, _ = roc_curve(y_test[:, classi], y_score[0][:, 1])
             if auc(fpr,tpr)<0.5:
                 fpr, tpr, _ = roc_curve(y_test[:, classi], y_score[0][:, 0])
-#             np.savetxt(classes[classi], np.hstack((fpr,tpr)), delimiter=',')
             if len(np.unique(tpr))>10:
                 mean_tpr += np.interp(mean_fpr, fpr, tpr)
                 mean_tpr[0] = 0.0
-                ax_roc.plot(fpr, tpr, label="%s (AUC=%.2f)" % (classes[classi],auc(fpr,tpr)))
+                ax_roc.plot(fpr, tpr,lw=2)#, label="%s (AUC=%.2f)" % (classes[classi],auc(fpr,tpr)))
+                ax_roc.annotate("%s (AUC=%.2f)" % (classes[classi],auc(fpr,tpr)), xy=(2, 1), xytext=(2, 1))
                 classes_to_plot.append(classi)
-#             else:
-#                 logging.warning("error in yscore")
         if len(classes_to_plot)!=0:
             mean_tpr /= len(classes_to_plot)
             mean_tpr[-1] = 1.0
-            ax_roc.plot(mean_fpr, mean_tpr,'k', lw=4, label="%s (AUC=%.2f)" % ("mean",auc(mean_fpr,mean_tpr)))
+            ax_roc.plot(mean_fpr, mean_tpr, lw=2)#, label="%s (AUC=%.2f)" % ("mean",auc(mean_fpr,mean_tpr)))
             logging.info("mean AUC = %.2f" % auc(fpr,tpr))
     else:
         fpr, tpr, _ = roc_curve(y_test, y_score[:, 1])
-        ax_roc.plot(fpr, tpr, label="%s (AUC=%.2f)" % ("mean",auc(fpr,tpr)))
+        ax_roc.plot(fpr, tpr,lw=2)#, label="%s (AUC=%.2f)" % ("mean",auc(fpr,tpr)))
         logging.info("mean AUC = %.2f" % auc(fpr,tpr))
 
+    ax_roc.annotate("AUC = %.2f" % auc(fpr,tpr), 
+                    xy=(0.45, 0), xytext=(0.45, 0))
     ax_roc.plot([0, 1], [0, 1], 'k--')
+    ax_roc.set_xlim([0,1])
+    ax_roc.set_ylim([0,1])
     ax_roc.set_xlabel("FPR")
     ax_roc.set_ylabel("TPR")
-#     ax_roc.legend(loc='lower right',prop={'size':9})
-# #     ax_roc.legend(loc='center right', bbox_to_anchor=(2, 0.5))
-    ax_roc.legend(loc='lower right',
-                  # bbox_to_anchor=(2.5, 0.5)
-                 )
+#     ax_roc.legend(loc='lower right',
+#                  )
+    ax_roc.grid(color='grey')
+    plt.axis('equal')
     plt.tight_layout()
+    return ax_roc
     
 def plot_importances(importances,X_cols):
     """
@@ -339,6 +338,10 @@ def run_RF(data_all,X_cols,y_coln,plot_fh="test",test_size=.5,data_test=None):
 
         if test_size!=0:    
             data_preds=None
+            np.savetxt("%s_y_test.csv" % plot_fh, y_test,delimiter=",")
+            np.savetxt("%s_y_score.csv" % plot_fh, y_score,delimiter=",")
+            # print classes
+            # sys.exit()
             plot_ROC(y_test,y_score,classes)
             plt.savefig(plot_fh+".pdf",format='pdf')
             # plt.savefig(plot_fh);plt.clf();plt.close()
