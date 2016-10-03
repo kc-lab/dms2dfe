@@ -105,8 +105,12 @@ def main(prj_dh):
                 elif feats_type=="depth":
                     logging.info("getting structural features")
                     if not exists(data_feats_fh):
-                        depth_df=get_residue_depth(pdb_fh,msms_fh)
-                        depth_df.reset_index().to_csv(data_feats_fh,index=False)
+                        try:
+                            depth_df=get_residue_depth(pdb_fh,msms_fh)
+                            depth_df.reset_index().to_csv(data_feats_fh,index=False)
+                        except:
+                            depth_df=pd.DataFrame(index=data_feats.index)
+                            logging.error("nawk not installed")
                     else:
                         depth_df=pd.read_csv(data_feats_fh)
                         depth_df=depth_df.set_index("aasi",drop=True)                        
