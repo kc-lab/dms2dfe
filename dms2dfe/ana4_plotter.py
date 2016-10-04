@@ -84,7 +84,8 @@ def main(prj_dh):
         if not exists(plot_fh):
             if not pd.isnull(lbls.loc[lbl,'fhs_1']):
                 fhs=glob(lbls.loc[lbl,'fhs_1']+"*")
-                if len(fhs)!=1:
+                print fhs
+                if len(fhs)!=0:
                     sbam_fh=[fh for fh in fhs if (fh.endswith(".s.bam"))][0]
                     lbl_mat_mut_cds_fh=[fh for fh in fhs if "bam.mat_mut_cds" in fh][0]
                     # print lbl_mat_mut_cds_fh

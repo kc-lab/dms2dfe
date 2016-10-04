@@ -9,7 +9,8 @@ from os import makedirs
 from glob import glob
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg') # no Xwindows
 from multiprocessing import Pool
 import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
