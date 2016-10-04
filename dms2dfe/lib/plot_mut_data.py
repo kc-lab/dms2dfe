@@ -13,7 +13,8 @@ from os.path import splitext,exists,basename
 from os import makedirs,stat
 import pandas as pd
 import numpy as np
-import matplotlib 
+import matplotlib
+matplotlib.use('Agg') # no Xwindows
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.lines as mlines
@@ -102,7 +103,8 @@ def plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=None):
         ax_lim_min=np.log2(Ni_cutoff)
     ax_lim_max=np.ceil(np.max([data_fit.loc[:,'NiAunsel'].max(),data_fit.loc[:,'NiAsel'].min()*-1]))+3
     
-    fig = plt.figure(figsize=(3, 3),dpi=500)
+    # fig = 
+    plt.figure(figsize=(3, 3),dpi=500)
     ax=plt.subplot(111)
     # plt.gcf().subplots_adjust(bottom=0.15)
     if norm_type=="syn":
@@ -136,7 +138,8 @@ def plot_data_fit_dfe(data_fit,norm_type=None,col_fit="FiA",
     :param norm_type: Type of normalization across samples [wild: wrt wild type | syn : wrt synonymous mutations | none : fold change serves as fitness]
     """
     plt.style.use('seaborn-white')
-    fig = plt.figure(figsize=(6, 2.25),dpi=300)
+    # fig = 
+    plt.figure(figsize=(6, 2.25),dpi=300)
     ax=plt.subplot(111)
 #     if norm_type=="syn":
 #         if not 'FiS' in data_fit.columns.tolist():
@@ -330,7 +333,8 @@ def plot_data_fit_heatmap(data_fit,type_form,col,\
         data_syn_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_syn_locs["ref"]]
         data_nan_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_nan_locs["mut"]]
 
-    fig=plt.figure(figsize=(80, 12),dpi=300)      
+    # fig=
+    plt.figure(figsize=(80, 12),dpi=300)      
     # fig=plt.figure(figsize=(40, 6),dpi=500)      
     gs = gridspec.GridSpec(3, 1,height_ratios=[1,1,32])
 
@@ -397,7 +401,8 @@ def plot_data_comparison_bar(data_comparison,plot_fh=None,index=[]):
     
     :param data_comparison: input `data_comparison` (dataframe).
     """
-    fig = plt.figure(figsize=(3, 3))
+    # fig = 
+    plt.figure(figsize=(3, 3))
     ax=plt.subplot(111)
     
     if len(index)==0:
@@ -648,7 +653,8 @@ def plot_data_comparison_multiviolin(prj_dh,data_fits,col,data_fiti_ctrl=0,aasOR
     data_fit_ctrl=data_fits[data_fiti_ctrl]
     data_fit_tests=[s for s in data_fits if data_fits.index(s)!=data_fiti_ctrl]
 
-    fig=plt.figure(figsize=[4,3],dpi=300)
+    # fig=
+    plt.figure(figsize=[4,3],dpi=300)
     ax=plt.subplot(111)
     import seaborn as sns
     from scipy.stats import mannwhitneyu

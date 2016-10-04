@@ -19,6 +19,9 @@ from dms2dfe.lib.io_nums import is_numeric
 
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg') # no Xwindows
+
 import matplotlib.pyplot as plt
 import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
@@ -218,7 +221,8 @@ def plot_ROC(y_test,y_score,classes):
     :param y_score: probabilities of predictions.
     :param classes: list with unique classes in y
     """
-    fig = plt.figure(figsize=(3,3),dpi=300)#figsize=(11,5))
+    # fig = 
+    plt.figure(figsize=(3,3),dpi=300)#figsize=(11,5))
     ax_roc = plt.subplot(111)
 
     mean_tpr = 0.0
