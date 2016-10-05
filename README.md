@@ -12,14 +12,14 @@ dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of 
 
 ##Usage
 
+From bash command line,
+
+    python path/to/dms2dfe/pipeline.py path/to/project_directory
+
 From python environment,
 
     import dms2dfe
     dms2dfe.pipeline.main("path/to/project_directory")
-
-From bash command line,
-
-    python path/to/dms2dfe/pipeline.py path/to/project_directory
 
 ##Detailed documentation
 
@@ -31,7 +31,7 @@ Available at https://kc-lab.github.io/dms2dfe .
 Rohan Dandage, Kausik Chakraborty  
 doi: http://dx.doi.org/10.1101/072645  
 
-##Issues
+##Questions
 
 Please mention them here: https://github.com/rraadd88/dms2dfe/issues .
 
