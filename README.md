@@ -16,11 +16,6 @@ From bash command line,
 
     python path/to/dms2dfe/pipeline.py path/to/project_directory
 
-From python environment,
-
-    import dms2dfe
-    dms2dfe.pipeline.main("path/to/project_directory")
-
 ##Detailed documentation
 
 Available at https://kc-lab.github.io/dms2dfe .

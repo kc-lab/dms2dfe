@@ -246,10 +246,18 @@ def plot_ROC(y_test,y_score,classes):
             logging.info("mean AUC = %.2f" % auc(fpr,tpr))
     else:
         fpr, tpr, _ = roc_curve(y_test, y_score[:, 1])
+        if auc(fpr,tpr)<0.5:
+            fpr, tpr, _ = roc_curve(y_test, y_score[:, 0])
+            logging.info("mean AUC = %.2f" % (1-auc(fpr,tpr)))
+        else:
+            logging.info("mean AUC = %.2f" % auc(fpr,tpr))
         ax_roc.plot(fpr, tpr,lw=2)#, label="%s (AUC=%.2f)" % ("mean",auc(fpr,tpr)))
-        logging.info("mean AUC = %.2f" % auc(fpr,tpr))
 
-    ax_roc.annotate("AUC = %.2f" % auc(fpr,tpr), 
+    if auc(fpr,tpr)<0.5:
+        ax_roc.annotate("AUC = %.2f" % (1-auc(fpr,tpr)), 
+                    xy=(0.45, 0), xytext=(0.45, 0))
+    else:
+        ax_roc.annotate("AUC = %.2f" % auc(fpr,tpr), 
                     xy=(0.45, 0), xytext=(0.45, 0))
     ax_roc.plot([0, 1], [0, 1], 'k--')
     ax_roc.set_xlim([0,1])
