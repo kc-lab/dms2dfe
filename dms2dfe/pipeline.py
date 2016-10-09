@@ -13,13 +13,6 @@ def main(prj_dh):
     """
     This runs all analysis steps in tandem.
 
-    From python environment,
-
-    .. code-block:: text
-
-        from dms2dfe import pipeline 
-        pipeline.main("path/to/project_directory")
-
     From bash command line,
 
     .. code-block:: text
