@@ -431,9 +431,9 @@ def get_APH2_dataset(prj_dh):
 
 def get_APH2_seq_data(prj_dh):
     data_input_dh="%s/data_input" % prj_dh
-    data_input_fns=["SRR1292901_1.fastq","SRR1292901_2.fastq",
-                    "SRR1292881_1.fastq","SRR1292881_2.fastq",
-                    "SRR1292709_1.fastq","SRR1292709_2.fastq"]   
+    data_input_fns=["SRX547509/SRR1292901_1.fastq","SRX547509/SRR1292901_2.fastq",
+                    "SRX547496/SRR1292881_1.fastq","SRX547496/SRR1292881_2.fastq",
+                    "SRX547413/SRR1292709_1.fastq","SRX547413/SRR1292709_2.fastq"]   
     if not exists(data_input_dh):
         makedirs(data_input_dh)
     log_fh="%s.get_test_dataset.log" % data_input_dh
@@ -442,7 +442,7 @@ def get_APH2_seq_data(prj_dh):
         data_input_fh="%s/%s" % (data_input_dh,data_input_fn)
         if not exists(data_input_fh):
             logging.info("downloading: %d/6 files" % (data_input_fns.index(data_input_fn)+1))
-            com="wget -q ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/fastq/SRA082/SRA082074/SRX547509/%s.bz2 --directory-prefix=%s" % (data_input_fn,data_input_dh)
+            com="wget -q ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/fastq/SRA082/SRA082074/%s.bz2 --directory-prefix=%s" % (data_input_fn,data_input_dh)
             # print com
             subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
     subprocess.call("bzip2 -d %s/*.bz2" % data_input_dh ,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
