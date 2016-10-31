@@ -530,14 +530,12 @@ def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
                     if data_comparison_fh.count("inferred")!=1:
                         data_fit_ctrl=pd.read_csv("%s/data_fit/%s/%s" % (prj_dh,type_form,ctrli))
                         data_fit_test=pd.read_csv("%s/data_fit/%s/%s" % (prj_dh,type_form,testi))                    
-                        data_comparison=pd.DataFrame()
-                        data_comparison.loc[:,"mutids"]=data_fit_ctrl.loc[:,"mutids"]
-                        data_comparison.loc[:,"mut"]=data_fit_ctrl.loc[:,"mut"]
-                        data_comparison.loc[:,"ref"]=data_fit_ctrl.loc[:,"ref"]
-                        data_comparison.loc[:,"Fi_ctrl"]=data_fit_ctrl.loc[:,"FiA"]
-                        data_comparison.loc[:,"class_fit_ctrl"]=data_fit_ctrl.loc[:,"class_fit"]
-                        data_comparison.loc[:,"Fi_test"]=data_fit_test.loc[:,"FiA"]
-                        data_comparison.loc[:,"class_fit_test"]=data_fit_test.loc[:,"class_fit"]
+                        data_comparison=concat_cols(data_fit_test,data_fit_ctrl,'mutids',
+                                ['mut','ref','FiA',"class_fit"],['FiA',"class_fit"],
+                                '_test','_ctrl')
+                        
+                        data_comparison.loc[:,"Fi_ctrl"]=data_comparison.loc[:,"FiA_ctrl"]
+                        data_comparison.loc[:,"Fi_test"]=data_comparison.loc[:,"FiA_test"]
     #                     data_comparison.to_csv("test_comparison")
                         data_comparison=class_comparison(data_comparison) # get class fit rel
                         if not exists('%s/data_comparison/%s' % (prj_dh,type_form)):
@@ -548,3 +546,17 @@ def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
                         data_comparison.reset_index().to_csv(data_comparison_fh,index=False) # store                    
         else:
             logging.warning("do not exist: data_fit/%s/%s & data_fit/%s/%s" % (type_form,lbl_ctrl,type_form,lbl_test))
+
+def concat_cols(df1,df2,idx_col,df1_cols,df2_cols,
+                df1_suffix,df2_suffix):
+#     df1_cols=[ for col in df1_cols]
+    df1=df1.set_index(idx_col)
+    df2=df2.set_index(idx_col)    
+    combo=pd.concat([df1.loc[:,df1_cols],df2.loc[:,df2_cols]],axis=1)
+    # find common columns and rename them
+    common_cols=[col for col in df1_cols if col in df2_cols]
+    for col in common_cols:
+        df1_cols[df1_cols.index(col)]="%s%s" % (col,df1_suffix)
+        df2_cols[df2_cols.index(col)]="%s%s" % (col,df2_suffix)
+    combo.columns=df1_cols+df2_cols
+    return combo

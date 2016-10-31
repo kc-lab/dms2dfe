@@ -84,18 +84,20 @@ def main(prj_dh):
         if not exists(plot_fh):
             if not pd.isnull(lbls.loc[lbl,'fhs_1']):
                 fhs=glob(lbls.loc[lbl,'fhs_1']+"*")
-                print fhs
+                # print fhs
                 if len(fhs)!=0:
-                    sbam_fh=[fh for fh in fhs if (fh.endswith(".s.bam"))][0]
-                    lbl_mat_mut_cds_fh=[fh for fh in fhs if "bam.mat_mut_cds" in fh][0]
-                    # print lbl_mat_mut_cds_fh
-                    if not exists(data_fh):
-                        data_cov=getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,fsta_id,fsta_seqlen,cctmr)
-                        data_cov.to_csv(data_fh,index=False)
-                    else: 
-                        data_cov=pd.read_csv(data_fh)
-                    data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
-                    plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
+                    sbam_fhs=[fh for fh in fhs if (fh.endswith(".s.bam"))]
+                    if len(sbam_fhs)!=0:
+                        sbam_fh=sbam_fhs[0]
+                        lbl_mat_mut_cds_fh=[fh for fh in fhs if "bam.mat_mut_cds" in fh][0]
+                        # print lbl_mat_mut_cds_fh
+                        if not exists(data_fh):
+                            data_cov=getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,fsta_id,fsta_seqlen,cctmr)
+                            data_cov.to_csv(data_fh,index=False)
+                        else: 
+                            data_cov=pd.read_csv(data_fh)
+                        data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
+                        plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
                 else:
                     logging.warning("can not find sequencing data to get coverage")
             else:

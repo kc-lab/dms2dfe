@@ -60,7 +60,7 @@ def main(prj_dh):
                      if (not "inferred" in basename(fh)) and ("_WRT_" in basename(fh))]
     data_fit_keys = np.unique(data_fit_keys)
     if len(data_fit_keys)!=0:
-        # pooled_io_ml(data_fit_keys[-1])
+        # pooled_io_ml(data_fit_keys[0])
         # for data_fit_key in data_fit_keys:
         #     pooled_io_ml(data_fit_key)
         pool_io_ml=Pool(processes=int(cores)) 

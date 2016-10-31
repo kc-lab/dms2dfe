@@ -113,11 +113,20 @@ def data_fit_feats2combo(data_fit,data_feats,y_coln,keep_mutids=False):
         data_all=data_all.loc[:,["mutids",y_coln]+list(X_cols)]
     return data_all,X_cols
 
-def y2classes(data_combo,y_coln,classes=2):
+def y2classes(data_combo,y_coln,classes=2,middle_percentile_skipped=0):
+    data_combo.loc[:,'classes']=np.nan
     if classes==2:
         median=data_combo.loc[:,y_coln].median()
-        data_combo.loc[data_combo.loc[:,y_coln]>=median,"classes"]="gt median"
-        data_combo.loc[data_combo.loc[:,y_coln]<median,"classes"]="lt median"
+        if middle_percentile_skipped==0:            
+            data_combo.loc[data_combo.loc[:,y_coln]>=median,"classes"]="gt median"
+            data_combo.loc[data_combo.loc[:,y_coln]<median,"classes"]="lt median"
+        else:
+            up_bound=data_combo.loc[~pd.isnull(data_combo.loc[:,y_coln]),y_coln].quantile(0.5+middle_percentile_skipped/2)            
+            lw_bound=data_combo.loc[~pd.isnull(data_combo.loc[:,y_coln]),y_coln].quantile(0.5-middle_percentile_skipped/2)
+            # print up_bound
+            # print lw_bound            
+            data_combo.loc[data_combo.loc[:,y_coln]>up_bound,"classes"]="gt median"
+            data_combo.loc[data_combo.loc[:,y_coln]<lw_bound,"classes"]="lt median"
     return data_combo
 
 def X_cols2numeric(data_all,X_cols,keep_cols=[]):
@@ -441,13 +450,18 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
     data_fh="%s/data_ml_%s" % (data_dh,data_fit_key.replace('/','_'))
     y_coln_classi="FCA"
     if not exists(data_fh.replace("data_ml_","data_ml_regress_preds_")):
-        data_fit=pd.read_csv("%s/%s" % (prj_dh,data_fit_key))
+        data_fit_fh="%s/%s" % (prj_dh,data_fit_key)
+        # print data_fit_fh
+        data_fit=pd.read_csv(data_fit_fh)
         if np.sum(~data_fit.loc[:,y_coln_classi].isnull())>10:
             # if len(data_fit.loc[~data_fit.loc[:,y_coln_classi].isnull(),y_coln_classi].unique())>=3:        
             logging.info("processing: %s" % data_fit_key)
             if not exists(data_fh.replace("data_ml_","data_ml_classi_feature_importances_")):
                 if not exists(data_fh.replace("data_ml_","data_ml_classi_train_")):
-                    data_fit=y2classes(data_fit,y_coln_classi)
+                    data_fit=y2classes(data_fit,y_coln_classi,middle_percentile_skipped=0.20)
+                    # print data_fit.shape
+                    # print data_fit.loc[:,'classes'].unique()
+                    data_ml_mutids=list(data_fit.loc[:,'mutids'])                
                     y_coln_classi="classes"
                     data_combo,X_cols_classi=data_fit_feats2combo(data_fit,data_feats,y_coln_classi,keep_mutids=True)
                     data_combo=data_combo.set_index("mutids",drop=True)
@@ -456,7 +470,6 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
                     data_ml=rescalecols(data_ml)
                     data_classi_train=denanrows(data_ml)                    
 #                         data_classi_train=y2classes(data_classi_train,y_coln_classi)
-                    data_ml_mutids=list(data_ml.index.values)                
                     data_classi_train_mutids=list(data_classi_train.index.values)
                     data_classi_test_mutids=[mutid for mutid in data_ml_mutids if not mutid in data_classi_train_mutids]
                     data_classi_test=data_ml.loc[data_classi_test_mutids,:]
@@ -495,9 +508,20 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
                     test_size=0.5,data_test=data_classi_test) #
 
                 feature_importances_classi.to_csv(data_fh.replace("data_ml_","data_ml_classi_feature_importances_"))
-#                     data_preds_classi.to_csv(data_fh.replace("data_ml_","data_ml_classi_preds_"))
-#                     data_classi_all=data_classi_train.append(data_preds_classi)
-#                     data_classi_all.to_csv(data_fh.replace("data_ml_","data_ml_classi_all_"))
+
+
+#                 # classi2_with selected features
+#                 print plot_fh.replace("fig_ml_","fig_ml_classi2_")
+
+#                 X_cols_classi2=[col for col in list(feature_importances_classi.loc[\
+#                                 feature_importances_classi.loc[:,"importances"]>0.002,'feature']) \
+#                                 if col in data_classi_train.columns.tolist()]
+#                 grid_search_classi,y_test_classi2,y_pred_classi2,
+#                 y_score_classi2,feature_importances_classi2,data_preds_classi2\
+#                 =run_RF(data_classi_train,X_cols_classi2,y_coln_classi,plot_fh=plot_fh.replace("fig_ml_","fig_ml_classi2_"),\
+#                     test_size=0.5,data_test=data_classi_test) #
+
+#                 feature_importances_classi2.to_csv(data_fh.replace("data_ml_","data_ml_classi2_feature_importances_"))
             else:
                 y_coln_classi="classes"
 #                     feature_importances_classi2=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_feature_importances_"))
