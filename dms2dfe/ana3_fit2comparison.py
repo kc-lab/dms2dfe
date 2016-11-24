@@ -40,10 +40,10 @@ def main(prj_dh):
     prj_dh_global=prj_dh
     if exists('%s/cfg/comparison' % prj_dh):
         comparison_pairs_list    =getusable_comparison_list(prj_dh)    
-#         pooled_data_fit2data_comparison(comparison_pairs_list[0])
-        pool_mut_mat_cds2data_lbl=Pool(processes=int(cores)) 
-        pool_mut_mat_cds2data_lbl.map(pooled_data_fit2data_comparison,comparison_pairs_list)
-        pool_mut_mat_cds2data_lbl.close(); pool_mut_mat_cds2data_lbl.join()
+        pool=Pool(processes=int(cores)) 
+        pool.map(pooled_data_fit2data_comparison,comparison_pairs_list)
+        pool.close(); pool.join()
+        # pooled_data_fit2data_comparison(comparison_pairs_list[0])
     else :
         logging.warning("do not exist: cfg/comparison")
     logging.shutdown()

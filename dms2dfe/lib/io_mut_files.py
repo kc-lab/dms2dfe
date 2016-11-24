@@ -418,16 +418,17 @@ def data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh,cctmr,lbls):
                 logging.info("processing: data_fit/%s/%s" % (type_form,fit_lbl))        
                 unsel_data=pd.read_csv(('%s/data_lbl/%s/%s' % (prj_dh,type_form,unsel_lbl)))
                 sel_data  =pd.read_csv(('%s/data_lbl/%s/%s' % (prj_dh,type_form,  sel_lbl)))
-                data_fit=pd.DataFrame(columns=['mutids','NiAunsel','NiAsel','NiSunsel','NiSsel','FCA','FCS','FiA','FiS'], index=unsel_data.index)
-                data_fit.loc[:,'mut']=unsel_data.loc[:,'mut']
-                data_fit.loc[:,'ref']=unsel_data.loc[:,'ref']
-                data_fit.loc[:,'mutids']=unsel_data.loc[:,'mutids']
-                data_fit.loc[:,'NiAunsel']=unsel_data.loc[:,'NiAcutlog']
-                data_fit.loc[:,'NiAsel']=sel_data.loc[:,'NiAcutlog']
-                data_fit.loc[:,'NiSunsel']=unsel_data.loc[:,'NiScutlog']
-                data_fit.loc[:,'NiSsel']=sel_data.loc[:,'NiScutlog']                
+                data_fit=concat_cols(unsel_data,sel_data,'mutids',
+                        ['mut','ref','NiAcutlog',"NiScutlog"],['NiAcutlog',"NiScutlog"],
+                        'unsel','sel')
+                data_fit.loc[:,'NiAunsel']=data_fit.loc[:,'NiAcutlogunsel']
+                data_fit.loc[:,'NiAsel']=data_fit.loc[:,'NiAcutlogsel']
+                data_fit.loc[:,'NiSunsel']=data_fit.loc[:,'NiScutlogunsel']
+                data_fit.loc[:,'NiSsel']=data_fit.loc[:,'NiScutlogsel']                
                 data_fit.loc[:,'FCA']=data_fit.loc[:,'NiAsel']-data_fit.loc[:,'NiAunsel'] # fold change all
                 data_fit.loc[:,'FCS']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCA']
+                data_fit.loc[:,'FiA']=np.nan
+                data_fit=data_fit.reset_index()
                 if 'wild' in norm_type:                            data_fit['FiA'],data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCW']=data_fit2norm_wrt_wild(unsel_lbl, \
                                                                                                     sel_lbl,type_form, \
                                                                                                     data_fit['FCA'], \
@@ -528,6 +529,7 @@ def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
                 for testi in data_fit_test_keys :       
                     data_comparison_fh='%s/data_comparison/%s/%s_VERSUS_%s' % (prj_dh,type_form,testi,ctrli)
                     if data_comparison_fh.count("inferred")!=1:
+                        # print data_comparison_fh
                         data_fit_ctrl=pd.read_csv("%s/data_fit/%s/%s" % (prj_dh,type_form,ctrli))
                         data_fit_test=pd.read_csv("%s/data_fit/%s/%s" % (prj_dh,type_form,testi))                    
                         data_comparison=concat_cols(data_fit_test,data_fit_ctrl,'mutids',
@@ -559,4 +561,5 @@ def concat_cols(df1,df2,idx_col,df1_cols,df2_cols,
         df1_cols[df1_cols.index(col)]="%s%s" % (col,df1_suffix)
         df2_cols[df2_cols.index(col)]="%s%s" % (col,df2_suffix)
     combo.columns=df1_cols+df2_cols
+    combo.index.name=idx_col
     return combo
