@@ -48,7 +48,9 @@ def main(prj_dh,inputs=None):
 
     """
     #SET VARS
-    cfgs=['lbls', 'fit', 'comparison', 'info', 'repli','feats','barcodes']
+    cfgs=['lbls', 'fit', 'comparison', 'info', 'repli',
+          'feats_mut','feats_sub','feats_pos',
+          'barcodes']
     cfg_dh=prj_dh+"/cfg"
 
     if inputs=="inputs":

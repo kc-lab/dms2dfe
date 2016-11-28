@@ -31,6 +31,15 @@ test_dataset/TEM1_Firnberg_et_al_2014/btem.4.bt2
 test_dataset/TEM1_Firnberg_et_al_2014/btem.logbt2bld
 test_dataset/TEM1_Firnberg_et_al_2014/btem.rev.1.bt2
 test_dataset/TEM1_Firnberg_et_al_2014/btem.rev.2.bt2
+test_dataset/TEM1_Firnberg_et_al_2014/btem_blastp.fasta
+test_dataset/TEM1_Firnberg_et_al_2014/btem_blastp.xml
+test_dataset/TEM1_Firnberg_et_al_2014/btem_blastp_msa.fasta
+test_dataset/TEM1_Firnberg_et_al_2014/btem_blastp_msa.fasta.log
+test_dataset/TEM1_Firnberg_et_al_2014/btem_prt.fasta
+test_dataset/TEM1_Firnberg_et_al_2014/cfg (copy)/*
+test_dataset/TEM1_Firnberg_et_al_2014/fit
+test_dataset/TEM1_Firnberg_et_al_2014/info
+test_dataset/TEM1_Firnberg_et_al_2014_random_sampling/*
 test_dataset/APH2_Melnikov_et_al_2014/data_comparison/*
 test_dataset/APH2_Melnikov_et_al_2014/data_feats/*
 test_dataset/APH2_Melnikov_et_al_2014/data_fit/*
@@ -46,3 +55,17 @@ test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.fasta.fai
 test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.logbt2bld
 test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.rev.1.bt2
 test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr.rev.2.bt2
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr_cctmr1.fasta
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr_cctmr1_blastp.fasta
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr_cctmr1_blastp.xml
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr_cctmr1_blastp_msa.fasta
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr_cctmr1_blastp_msa.fasta.log
+test_dataset/APH2_Melnikov_et_al_2014/aph_wt_nt_cctmr_cctmr1_prt.fasta
+test_dataset/APH2_Melnikov_et_al_2014/cfg (copy)/*
+test_dataset/APH2_Melnikov_et_al_2014/data_input.get_test_dataset.log
+test_dataset/APH2_Melnikov_et_al_2014/data_mutmut/*
+test_dataset/APH2_Melnikov_et_al_2014_random_sampling/*
+test_dataset/cov
+test_dataset/cov_mut
+test_dataset/cov_per_cds
+test_dataset/data_cov

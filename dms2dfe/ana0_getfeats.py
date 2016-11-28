@@ -69,9 +69,16 @@ def main(prj_dh):
     if not exists(prj_dh+"/data_feats/aas"):
         makedirs(prj_dh+"/data_feats/aas")
 
-    if not exists("%s/data_feats/feats" % prj_dh):
-        if exists("%s/cfg/feats" % prj_dh) and stat("%s/cfg/feats" % prj_dh).st_size !=0:
+    if not exists("%s/data_feats/data_feats_all" % prj_dh):
+        if  (exists("%s/cfg/feats" % prj_dh) and \
+            stat("%s/cfg/feats" % prj_dh).st_size !=0):
             data_feats=pd.read_csv('%s/cfg/feats' % prj_dh)
+        elif(exists("%s/cfg/feats_pos" % prj_dh) and \
+            stat("%s/cfg/feats_pos" % prj_dh).st_size !=0):
+            data_feats=pd.read_csv('%s/cfg/feats_pos' % prj_dh)
+            data_feats.loc[:,'aasi']=data_feats.loc[:,'refi']
+            del data_feats['refi']
+        if isinstance(data_feats,pd.DataFrame):
             if len(data_feats)!=0:
                 if "Unnamed: 0" in data_feats.columns:
                     data_feats=data_feats.drop("Unnamed: 0", axis=1)
@@ -125,9 +132,17 @@ def main(prj_dh):
             if len(data_feats)!=0:
                 data_feats=pd.concat([data_feats,dssp_df,dfromact_df,consrv_score_df,depth_df], axis=1) #combine dssp_df and dfromact
             else:
-                data_feats=pd.concat([dssp_df,dfromact_df,consrv_score_df,depth_df], axis=1) #combine dssp_df and dfromact
+                data_feats=pd.concat([dssp_df,
+                                      dfromact_df,
+                                      consrv_score_df,
+                                      depth_df], axis=1) #combine dssp_df and dfromact
             data_feats.reset_index().to_csv("%s/data_feats/aas/feats_all" % prj_dh,index=False)
-            logging.info("output: data_feats/aas/feats_all")
+            data_feats_pos_fh="%s/data_feats/aas/data_feats_pos" % prj_dh
+            # data_feats.loc[:,'refi']=data_feats.loc[:,'aasi']
+            # del data_feats['aasi']
+            data_feats.index.name='refi'
+            data_feats.reset_index().to_csv(data_feats_pos_fh,index=False)
+            logging.info("output: data_feats/aas/data_feats_pos")
         else:
             logging.warning("pdb_fh not given in cfg")
     else:

@@ -75,6 +75,11 @@ def getdssp_data(pdb_fh,dssp_fh):
     del dssp_data["junk"]
     del dssp_data["chain"]
     del dssp_data["ref_dssp"]
+    cols_hel=[col for col in dssp_data if "Helix formation" in col]
+    cols_bet=[col for col in dssp_data if "beta bridge" in col]    
+    cols_del=cols_hel+cols_bet
+    for col in cols_del:
+        del dssp_data[col]
     dssp_data=dssp_data.set_index("aasi")
     return dssp_data
 
