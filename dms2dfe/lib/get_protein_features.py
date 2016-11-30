@@ -9,7 +9,8 @@
 ================================
 """
 import pandas as pd
-from os.path import exists,abspath,dirname,basename
+from os.path import exists,abspath,dirname,basename,splitext
+from os import makedirs,stat
 from Bio.PDB import DSSP,PDBParser
 from Bio.PDB.Polypeptide import PPBuilder
 import numpy as np
@@ -21,7 +22,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from os.path import basename, splitext,exists
 
 from Bio import SeqIO,Seq,SeqRecord
 from Bio.Alphabet import IUPAC
@@ -31,7 +31,7 @@ import warnings
 warnings.simplefilter(action = "ignore") # , category = PDBConstructionWarning
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
-from dms2dfe.lib.global_vars import aas_21_3letter,secstruc_lbls
+from dms2dfe.lib.global_vars import aas_21,aas_21_3letter,secstruc_lbls
 
 def getdssp_data(pdb_fh,dssp_fh):
     """
@@ -294,3 +294,286 @@ def get_residue_depth(pdb_fh,msms_fh):
     depth_df=depth_df.set_index("aasi",drop=True)
     depth_df.columns=["Residue depth","Residue (C-alpha) depth"]
     return depth_df
+
+def get_data_feats_pos(prj_dh,info,data_out_fh):
+    if not exists(data_out_fh):
+        cctmr=info.cctmr
+        fsta_fh=info.fsta_fh
+        pdb_fh=info.pdb_fh
+        dssp_fh=info.dssp_fh
+        active_sites=info.active_sites
+        host=info.host
+        clustalo_fh=info.clustalo_fh
+        msms_fh=info.msms_fh
+        rate4site_fh=info.rate4site_fh
+
+        if active_sites!='nan':
+            active_sites=[int(i) for i in active_sites.split(" ")]
+        else:
+            active_sites=[]
+
+        if cctmr != 'nan':
+            cctmr=[int("%s" % i) for i in cctmr.split(" ")]
+            aas_len=cctmr[1]-1
+            fsta_fh=cctmr_fasta2ref_fasta(fsta_fh,cctmr)
+        else :
+            fsta_data = SeqIO.read(open(fsta_fh), "fasta")
+            aas_len=len(fsta_data)/3
+
+        if not exists(prj_dh+"/data_feats/aas"):
+            makedirs(prj_dh+"/data_feats/aas")
+
+        if  (exists("%s/cfg/feats" % prj_dh) and \
+            stat("%s/cfg/feats" % prj_dh).st_size !=0):
+            data_feats=pd.read_csv('%s/cfg/feats' % prj_dh)
+        elif(exists("%s/cfg/feats_pos" % prj_dh) and \
+            stat("%s/cfg/feats_pos" % prj_dh).st_size !=0):
+            data_feats=pd.read_csv('%s/cfg/feats_pos' % prj_dh)
+            data_feats.loc[:,'aasi']=data_feats.loc[:,'refi']
+            del data_feats['refi']
+        if isinstance(data_feats,pd.DataFrame):
+            if len(data_feats)!=0:
+                if "Unnamed: 0" in data_feats.columns:
+                    data_feats=data_feats.drop("Unnamed: 0", axis=1)
+                data_feats=data_feats.set_index("aasi",drop=True)
+                data_feats.index = [int(i) for i in data_feats.index]
+                tmp=pd.DataFrame(index=range(1,aas_len+1,1))
+                tmp.index.name="aasi"
+                data_feats=pd.concat([tmp,data_feats],axis=1,join_axes=[tmp.index])
+                logging.info("custom features taken from: cfg/feats")
+        else:
+            data_feats=pd.DataFrame(index=range(1,aas_len+1,1))
+            data_feats.index.name="aasi"
+        if not pd.isnull(pdb_fh):
+            feats_types=["dssp","dfromact","depth","consrv_score"]
+            for feats_type in feats_types:
+                data_feats_fh="%s/data_feats/aas/feats_%s" % (prj_dh,feats_type)
+                if feats_type=="dssp":
+                    if not exists(data_feats_fh):
+                        dssp_df=getdssp_data(pdb_fh,dssp_fh)
+                        dssp_df.reset_index().to_csv(data_feats_fh,index=False)
+                    else:
+                        dssp_df=pd.read_csv(data_feats_fh)
+                        dssp_df=dssp_df.set_index("aasi",drop=True)
+                elif feats_type=="dfromact":
+                    if not exists(data_feats_fh):
+                        dfromact_df=pdb2dfromactivesite(pdb_fh,active_sites)
+                        dfromact_df.reset_index().to_csv(data_feats_fh,index=False)
+                    else:
+                        dfromact_df=pd.read_csv(data_feats_fh)
+                        dfromact_df=dfromact_df.set_index("aasi",drop=True)                        
+                elif feats_type=="depth":
+                    logging.info("getting structural features")
+                    if not exists(data_feats_fh):
+                        try:
+                            depth_df=get_residue_depth(pdb_fh,msms_fh)
+                            depth_df.reset_index().to_csv(data_feats_fh,index=False)
+                        except:
+                            depth_df=pd.DataFrame(index=data_feats.index)
+                            logging.error("nawk not installed")
+                    else:
+                        depth_df=pd.read_csv(data_feats_fh)
+                        depth_df=depth_df.set_index("aasi",drop=True)                        
+                elif feats_type=="consrv_score":
+                    logging.info("getting conservation scores")
+                    if not exists(data_feats_fh):
+                        consrv_score_df=get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh)
+                        consrv_score_df.reset_index().to_csv(data_feats_fh,index=False)            
+                    else:
+                        consrv_score_df=pd.read_csv(data_feats_fh)
+                        consrv_score_df=consrv_score_df.set_index("aasi",drop=True)                        
+            if len(data_feats)!=0:
+                data_feats=pd.concat([data_feats,
+                                      dssp_df,
+                                      dfromact_df,
+                                      consrv_score_df,
+                                      depth_df], axis=1) #combine dssp_df and dfromact
+            else:
+                data_feats=pd.concat([dssp_df,
+                                      dfromact_df,
+                                      consrv_score_df,
+                                      depth_df], axis=1) #combine dssp_df and dfromact
+            # data_feats.reset_index().to_csv("%s/data_feats/aas/feats_all" % prj_dh,index=False)
+            # data_feats.loc[:,'refi']=data_feats.loc[:,'aasi']
+            # del data_feats['aasi']
+            data_feats.index.name='refi'
+            data_feats=data_feats.reset_index()
+            refrefis=[]
+            for i in data_feats.index.tolist():
+                # print data_feats.loc[i,'ref']
+                if data_feats.loc[i,'ref']!='*':
+                    refrefis.append("%s%03d" % (data_feats.loc[i,'ref'],data_feats.loc[i,'refi']))
+                elif data_feats.loc[i,'ref']=='*':
+                    refrefis.append("X%03d" % (data_feats.loc[i,'refi']))
+            data_feats.loc[:,'refrefi']=refrefis
+            del data_feats['ref']
+            del data_feats['refi']            
+
+            # data_feats.to_csv(data_out_fh+'_test',index=False)
+            
+            feats_sub_pos_tups=[['Solvent Accessible Surface Area','Solvent accessibility']]
+            data_feats_mut_diffs_fh="%s/data_feats_mut_diffs" % dirname(data_out_fh)            
+            data_feats=get_data_feats_mut_diffs(data_feats,feats_sub_pos_tups,data_out_fh=data_feats_mut_diffs_fh)
+
+            data_feats.to_csv(data_out_fh)
+            logging.info("output: data_feats/aas/data_feats_pos")
+            return data_feats
+        else:
+            logging.warning("pdb_fh not given in cfg")
+    else:
+        logging.info("already processed") 
+
+def get_data_feats_mut_diffs(data_feats_pos,feats_sub_pos_tups,
+                             data_out_fh):
+    data_feats_aas_fh='%s/data_feats_aas' % abspath(dirname(__file__))
+    data_feats_aas=pd.read_csv(data_feats_aas_fh)
+    data_feats_aas=data_feats_aas.set_index("aas",drop=True)
+
+    if 'refrefi' in data_feats_pos.columns:
+        data_feats_pos=data_feats_pos.set_index('refrefi')
+
+    data_feats_mut_diffs=pd.DataFrame()
+    for feats_sub_pos_tup in feats_sub_pos_tups:
+        feat_sub=feats_sub_pos_tup[0]
+        feat_pos=feats_sub_pos_tup[1]
+        feat_pos_label="Average $\Delta \Delta$ (%s) per position" % feat_pos
+        feat_mut="$\Delta \Delta$ (%s)" % feat_pos
+        if (feat_sub in data_feats_aas.columns) and (feat_pos in data_feats_pos.columns):
+            for refrefi in data_feats_pos.index:
+                for mut in data_feats_aas.index:
+                    mutid="%s%s" % (refrefi,mut)
+                    data_feats_mut_diffs.loc[mutid,'refrefi']=refrefi
+                    data_feats_mut_diffs.loc[mutid,'mut']=mut                
+                    data_feats_mut_diffs.loc[mutid,feat_mut]=\
+                        data_feats_aas.loc[mut,feat_sub]-data_feats_pos.loc[refrefi,feat_pos]            
+        #     mean
+        data_feats_pos_diffs=data_feats_mut_diffs.pivot_table(values=feat_mut,index='mut',columns='refrefi').mean()
+        data_feats_pos_diffs.index.name='refrefi'
+        data_feats_pos_diffs.name=feat_pos_label
+        data_feats_pos=pd.concat([data_feats_pos,data_feats_pos_diffs],axis=1)
+        data_feats_pos.index.name='refrefi'
+    data_feats_mut_diffs.index.name='mutids'
+    data_feats_mut_diffs.to_csv(data_out_fh)
+    return data_feats_pos
+
+def get_data_feats_sub(data_out_fh,data_feats_aas_fh='%s/data_feats_aas' % abspath(dirname(__file__))):
+#     data_feats_aas_fh='%s/data_feats_aas' % abspath(dirname(__file__))
+    if not exists(data_out_fh):
+        data_feats_aas=pd.read_csv(data_feats_aas_fh)
+        data_feats_aas=data_feats_aas.set_index("aas",drop=True)
+
+        subids=[]
+        for refaa in aas_21:
+            for mutaa in aas_21:
+                subids.append("%s%s" % (refaa,mutaa))  
+        data_feats_sub=pd.DataFrame(index=subids)
+        data_feats_sub.index.name='subids'
+
+        for subid in data_feats_sub.index:
+            refaa=subid[0]
+            mutaa=subid[1]
+            data_feats_sub.loc[subid,'Reference amino acid']=refaa
+            data_feats_sub.loc[subid,'Mutant amino acid']=mutaa
+            if (refaa in data_feats_aas.index) and (mutaa in data_feats_aas.index):
+                for feat in data_feats_aas:        
+                    data_feats_sub.loc[subid,"Reference amino acid's %s" % feat]=\
+                    data_feats_aas.loc[refaa,feat]
+                    data_feats_sub.loc[subid,"Mutant amino acid's %s" % feat]=\
+                    data_feats_aas.loc[mutaa,feat]
+                    data_feats_sub.loc[subid,"$\Delta \Delta$ (%s)" % feat]=\
+                    data_feats_aas.loc[mutaa,feat]-data_feats_aas.loc[refaa,feat]
+        data_feats_sub.to_csv(data_out_fh)
+        logging.info("output: data_feats/aas/data_feats_sub")
+        return data_feats_sub
+    else:
+        logging.info("already processed") 
+
+def get_data_feats_mut(prj_dh,data_out_fh):
+    if not exists(data_out_fh):
+        data_feats_mut_fh="%s/cfg/feats_mut" % (prj_dh)
+        data_feats_mut_diffs_fh="%s/data_feats/aas/data_feats_mut_diffs" % (prj_dh)
+        data_feats_mut=pd.DataFrame()
+        for data_fh in [data_feats_mut_fh,data_feats_mut_diffs_fh]:
+            if exists(data_fh):
+                data=pd.read_csv(data_fh)
+                if len(data)!=0:
+                    if 'mutids' in data.columns:
+                        data=data.set_index('mutids',drop=True)
+                    elif set(['mut','ref','refi']).issuperset(set(data.columns.tolist())): 
+                        data.loc[:,'mutids']=makemutids(data,data.loc[:,'refi'])
+                        data=data.set_index('mutids',drop=True)
+                    if len(data_feats_mut)==0:
+                        data_feats_mut=data
+                    else:
+                        data_feats_mut=pd.concat([data_feats_mut,data],axis=1)
+                        data_feats_mut.index.name='mutids'
+            else:
+                logging.info('not exists: %s' % basename(data_fh))
+        for col in ['mut','ref','refi','refrefi']:
+            if col in data_feats_mut:
+                del data_feats_mut[col]        
+        data_feats_mut.to_csv(data_out_fh)
+        logging.info("output: data_feats/aas/data_feats_mut")
+        return data_feats_mut    
+    else:
+        logging.info("already processed") 
+
+def concat_feats(data_feats_all,data_feats,col_index):        
+    if col_index in data_feats_all:
+        data_feats_all=data_feats_all.set_index(col_index,drop=True)
+    if col_index in data_feats:
+        data_feats=data_feats.set_index(col_index,drop=True)
+    for mutid in data_feats_all.index:
+        if col_index=='refrefi':
+            featidx=mutid[:4]
+        elif col_index=='subids':
+            featidx=mutid[0]+mutid[-1]
+        if featidx in data_feats.index:
+            for feat in data_feats.columns.tolist():
+                data_feats_all.loc[mutid,feat]=data_feats.loc[featidx,feat]
+    return data_feats_all
+
+def get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
+                      fsta_fh,host,
+                      data_out_fh):
+    if not exists(data_out_fh):
+        from os.path import splitext
+        from dms2dfe.lib.io_seq_files import fasta_nts2prt
+        from dms2dfe.lib.global_vars import aas_21
+        
+        data_feats_mut=pd.read_csv(data_feats_mut_fh)
+        data_feats_pos=pd.read_csv(data_feats_pos_fh)
+        data_feats_sub=pd.read_csv(data_feats_sub_fh)
+
+#fsta_fh='/home/kclabws1/Documents/propro/writ/prjs/1_dms/data/GMR_dms2dfe_b161123_ml_improvement/miseq2/gmr_wt.fasta'
+
+        prt_seq=fasta_nts2prt(fsta_fh,host=host).replace('*','X')
+        data_feats_all=pd.DataFrame()
+        for refi in range(1,len(prt_seq)+1):
+            ref=prt_seq[refi-1]
+            for mut in aas_21:
+                mutid="%s%03d%s" % (ref,refi,mut)
+                refrefi=mutid[:4] 
+                subid=mutid[0]+mutid[-1]
+                data_feats_all.loc[mutid,'refrefi']=refrefi
+                data_feats_all.loc[mutid,'subids']=subid
+        #     break
+        data_feats_all.index.name='mutids'
+
+        # FEATS PER MUT
+        data_feats_all=pd.concat([data_feats_all,data_feats_mut.set_index('mutids',drop=True)],axis=1)
+
+        # FEATS PER POS
+        col_index='refrefi'
+        data_feats_all=concat_feats(data_feats_all.set_index(col_index),
+                                    data_feats_pos,col_index)
+
+        # FEATS PER POS
+        col_index='subids'
+        data_feats_all=concat_feats(data_feats_all.set_index(col_index),
+                                    data_feats_sub,col_index)
+
+        data_feats_all.to_csv(data_out_fh)
+        return data_feats_all
+    else:
+        logging.info("already processed") 
