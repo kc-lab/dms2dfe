@@ -482,6 +482,7 @@ def get_data_feats_sub(data_out_fh,data_feats_aas_fh='%s/data_feats_aas' % abspa
                     data_feats_aas.loc[mutaa,feat]
                     data_feats_sub.loc[subid,"$\Delta \Delta$ (%s)" % feat]=\
                     data_feats_aas.loc[mutaa,feat]-data_feats_aas.loc[refaa,feat]
+        data_feats_sub.loc[:,'Substitution type']=data_feats_sub.index            
         data_feats_sub.to_csv(data_out_fh)
         logging.info("output: data_feats/aas/data_feats_sub")
         return data_feats_sub
@@ -518,20 +519,20 @@ def get_data_feats_mut(prj_dh,data_out_fh):
     else:
         logging.info("already processed") 
 
-def concat_feats(data_feats_all,data_feats,col_index):        
-    if col_index in data_feats_all:
-        data_feats_all=data_feats_all.set_index(col_index,drop=True)
-    if col_index in data_feats:
-        data_feats=data_feats.set_index(col_index,drop=True)
-    for mutid in data_feats_all.index:
-        if col_index=='refrefi':
-            featidx=mutid[:4]
-        elif col_index=='subids':
-            featidx=mutid[0]+mutid[-1]
-        if featidx in data_feats.index:
-            for feat in data_feats.columns.tolist():
-                data_feats_all.loc[mutid,feat]=data_feats.loc[featidx,feat]
+def concat_feats(data_feats_all,data_feats,col_index):
+    data_feats_all=set_index(data_feats_all,col_index)
+    data_feats    =set_index(data_feats    ,col_index)
+    data_feats_all=data_feats_all.join(data_feats)
     return data_feats_all
+
+def set_index(data,col_index):
+    if col_index in data:
+        data=data.reset_index().set_index(col_index)
+        if 'index' in data:
+            del data['index']
+        return data
+    elif data.index.name==col_index:
+        return data
 
 def get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
                       fsta_fh,host,
@@ -540,12 +541,12 @@ def get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
         from os.path import splitext
         from dms2dfe.lib.io_seq_files import fasta_nts2prt
         from dms2dfe.lib.global_vars import aas_21
-        
+
         data_feats_mut=pd.read_csv(data_feats_mut_fh)
         data_feats_pos=pd.read_csv(data_feats_pos_fh)
         data_feats_sub=pd.read_csv(data_feats_sub_fh)
 
-#fsta_fh='/home/kclabws1/Documents/propro/writ/prjs/1_dms/data/GMR_dms2dfe_b161123_ml_improvement/miseq2/gmr_wt.fasta'
+        #fsta_fh='/home/kclabws1/Documents/propro/writ/prjs/1_dms/data/GMR_dms2dfe_b161123_ml_improvement/miseq2/gmr_wt.fasta'
 
         prt_seq=fasta_nts2prt(fsta_fh,host=host).replace('*','X')
         data_feats_all=pd.DataFrame()
@@ -560,20 +561,25 @@ def get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
         #     break
         data_feats_all.index.name='mutids'
 
+        # FEATS PER POS
+        data_feats_all=concat_feats(data_feats_all,
+                                    data_feats_pos,
+                     'refrefi')
+        # FEATS PER SUB
+        data_feats_all=concat_feats(data_feats_all,
+                                    data_feats_sub,
+                     'subids')
         # FEATS PER MUT
-        data_feats_all=pd.concat([data_feats_all,data_feats_mut.set_index('mutids',drop=True)],axis=1)
+        data_feats_all=concat_feats(data_feats_all,
+                                    data_feats_mut,
+                     'mutids')
+        
+        for col in ['subids','refrefi']:
+            if col in data_feats_all:
+                del data_feats_all[col]
 
-        # FEATS PER POS
-        col_index='refrefi'
-        data_feats_all=concat_feats(data_feats_all.set_index(col_index),
-                                    data_feats_pos,col_index)
-
-        # FEATS PER POS
-        col_index='subids'
-        data_feats_all=concat_feats(data_feats_all.set_index(col_index),
-                                    data_feats_sub,col_index)
-
-        data_feats_all.to_csv(data_out_fh)
+        data_feats_all.to_csv(data_out_fh)                
+        logging.info("output: data_feats/aas/data_feats_all")                
         return data_feats_all
     else:
         logging.info("already processed") 
