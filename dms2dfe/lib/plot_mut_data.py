@@ -86,8 +86,6 @@ def plot_corr_mat(data_repli,plot_fh=None,xlim=(0,None),ylim=(0,None)):
             plt.savefig(plot_fh,format='pdf')  
             plt.clf();plt.close()
         return ax
-    else:
-        logging.warning("skipping data_replii : %s" % (data_lbl_key))
 
 def plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=None):
     """
@@ -370,6 +368,12 @@ def plot_data_fit_heatmap(data_fit,type_form,col,\
         ax.text(data_nan_locs.loc[i,"refi"],data_nan_locs.loc[i,"muti"],r"$\otimes$")#,color='gray')
 
     if not data_feats is None: 
+        if not 'aasi' in data_feats:
+            if 'refi' in data_feats:
+                data_feats.loc[:,'aasi']=data_feats.loc[:,'refi']
+            elif 'refrefi' in data_feats:
+                data_feats.loc[:,'aasi']=[str2num(s) for s in data_feats.loc[:,'refrefi']]        
+        data_feats=data_feats.sort('aasi',ascending=True)
         ax_ss = plt.subplot(gs[0])
         ax_acc = plt.subplot(gs[1])
 

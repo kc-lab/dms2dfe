@@ -31,7 +31,8 @@ def vector2bfactor(vector,pdb_fh,pdb_clrd_fh):
     : param pdb_fh : path of input PDB file
     : param pdb_clrd_fh : path of output PDB file 
     """
-    aas_21_3letter=['ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE','LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL']
+    aas_21_3letter=['ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE',
+                    'LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL']
     pdb_parser=PDBParser()
     pdb_data=pdb_parser.get_structure("pdb_name",pdb_fh)
     for model in pdb_data:

@@ -58,7 +58,10 @@ def main(prj_dh):
     data_feats_all=get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
                                       info.fsta_fh,info.host,
                                      data_feats_all_fh)
-    
+    #back compatibility
+    feats_all_fh="%s/data_feats/aas/feats_all" % prj_dh
+    data_feats_pos.to_csv(feats_all_fh)
+
     logging.shutdown()
 
 if __name__ == '__main__':

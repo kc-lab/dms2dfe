@@ -32,6 +32,7 @@ warnings.simplefilter(action = "ignore") # , category = PDBConstructionWarning
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe.lib.global_vars import aas_21,aas_21_3letter,secstruc_lbls
+from dms2dfe.lib.io_dfs import set_index
 
 def getdssp_data(pdb_fh,dssp_fh):
     """
@@ -75,11 +76,6 @@ def getdssp_data(pdb_fh,dssp_fh):
     del dssp_data["junk"]
     del dssp_data["chain"]
     del dssp_data["ref_dssp"]
-    cols_hel=[col for col in dssp_data if "Helix formation" in col]
-    cols_bet=[col for col in dssp_data if "beta bridge" in col]    
-    cols_del=cols_hel+cols_bet
-    for col in cols_del:
-        del dssp_data[col]
     dssp_data=dssp_data.set_index("aasi")
     return dssp_data
 
@@ -472,8 +468,8 @@ def get_data_feats_sub(data_out_fh,data_feats_aas_fh='%s/data_feats_aas' % abspa
         for subid in data_feats_sub.index:
             refaa=subid[0]
             mutaa=subid[1]
-            data_feats_sub.loc[subid,'Reference amino acid']=refaa
-            data_feats_sub.loc[subid,'Mutant amino acid']=mutaa
+            # data_feats_sub.loc[subid,'Reference amino acid']=refaa
+            # data_feats_sub.loc[subid,'Mutant amino acid']=mutaa
             if (refaa in data_feats_aas.index) and (mutaa in data_feats_aas.index):
                 for feat in data_feats_aas:        
                     data_feats_sub.loc[subid,"Reference amino acid's %s" % feat]=\
@@ -482,7 +478,7 @@ def get_data_feats_sub(data_out_fh,data_feats_aas_fh='%s/data_feats_aas' % abspa
                     data_feats_aas.loc[mutaa,feat]
                     data_feats_sub.loc[subid,"$\Delta \Delta$ (%s)" % feat]=\
                     data_feats_aas.loc[mutaa,feat]-data_feats_aas.loc[refaa,feat]
-        data_feats_sub.loc[:,'Substitution type']=data_feats_sub.index            
+        # data_feats_sub.loc[:,'Substitution type']=data_feats_sub.index            
         data_feats_sub.to_csv(data_out_fh)
         logging.info("output: data_feats/aas/data_feats_sub")
         return data_feats_sub
@@ -525,14 +521,6 @@ def concat_feats(data_feats_all,data_feats,col_index):
     data_feats_all=data_feats_all.join(data_feats)
     return data_feats_all
 
-def set_index(data,col_index):
-    if col_index in data:
-        data=data.reset_index().set_index(col_index)
-        if 'index' in data:
-            del data['index']
-        return data
-    elif data.index.name==col_index:
-        return data
 
 def get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
                       fsta_fh,host,
@@ -576,8 +564,7 @@ def get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
         
         for col in ['subids','refrefi']:
             if col in data_feats_all:
-                del data_feats_all[col]
-
+                del data_feats_all[col]               
         data_feats_all.to_csv(data_out_fh)                
         logging.info("output: data_feats/aas/data_feats_all")                
         return data_feats_all
