@@ -279,12 +279,19 @@ def plotss(data_feats,ax):
 def plotacc(data_feats,ax):
     ax.set_axis_off()
     xlim=len(data_feats)
-    ylim=data_feats.loc[:,"Solvent accessibility"].max()
-    ax.stackplot(data_feats.loc[:,"aasi"]-1,data_feats.loc[:,"Solvent accessibility"])
-    ax.set_xlim((0-0.5,xlim+0.5))
-    ax.set_ylim((0,ylim))
-    ax.text(xlim+1,0,"Solvent accessibility",fontdict={'size': 20})
-    return ax    
+
+    acc_cols=["Solvent accessibility","Solvent Accessible Surface Area"]
+    for acc_col in acc_cols:
+        if acc_col in data_feats:
+            ylim=data_feats.loc[:,acc_col].max()
+            ax.stackplot(data_feats.loc[:,"aasi"]-1,data_feats.loc[:,acc_col])
+            ax.set_xlim((0-0.5,xlim+0.5))
+            ax.set_ylim((0,ylim))
+            ax.text(xlim+1,0,acc_col,fontdict={'size': 20})
+            return ax    
+            break
+    print [c for c in data_feats.columns if 'ccessib' in c]
+    return ax
 
 def plot_data_fit_heatmap(data_fit,type_form,col,\
                           cmap="coolwarm",center=0,data_feats=None,xticklabels=None,plot_fh=None,cbar_label=None):

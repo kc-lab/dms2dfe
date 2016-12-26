@@ -41,6 +41,8 @@ def main(prj_dh):
     cores=info.cores
     trimmomatic_fh=info.trimmomatic_fh
     bowtie2_fh=info.bowtie2_fh
+    trimmomatic_com=info.trimmomatic_com
+    bowtie2_com=info.bowtie2_com
     samtools_fh=info.samtools_fh
     alignment_type=info.alignment_type
 
@@ -69,8 +71,8 @@ def pooled(fastq_fhs_list):
     
     :param fastq_fhs_list: R1 read of fastq tuple with R1 and R2 if otherwise paired.    
     """
-    fastq2qcd(fastq_fhs_list,trimmomatic_fh)
-    qcd2sbam(fastq_fhs_list,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtools_fh)
+    fastq2qcd(fastq_fhs_list,trimmomatic_fh,trimmomatic_com=trimmomatic_com)
+    qcd2sbam(fastq_fhs_list,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtools_fh,bowtie2_com=bowtie2_com)
 
 if __name__ == '__main__':
     main(sys.argv[1])

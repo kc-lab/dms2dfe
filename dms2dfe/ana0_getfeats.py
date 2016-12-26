@@ -60,8 +60,9 @@ def main(prj_dh):
                                      data_feats_all_fh)
     #back compatibility
     feats_all_fh="%s/data_feats/aas/feats_all" % prj_dh
-    data_feats_pos.to_csv(feats_all_fh)
-
+    if not data_feats_pos is None:
+        data_feats_pos.to_csv(feats_all_fh)
+        
     logging.shutdown()
 
 if __name__ == '__main__':

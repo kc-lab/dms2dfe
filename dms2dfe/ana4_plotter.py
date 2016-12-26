@@ -19,7 +19,7 @@ import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe import configure
 from dms2dfe.lib.plot_mut_data import plot_data_lbl_repli,plot_data_fit_scatter,plot_data_fit_dfe,plot_data_fit_heatmap,data2mut_matrix,plot_data_comparison_bar,plot_data_fit_clustermap,plot_sub_matrix,plot_cov,plot_data_comparison_violin
-from dms2dfe.lib.io_mut_files import getwildtypecov
+# from dms2dfe.lib.io_seq_files import getwildtypecov
 from dms2dfe.lib.plot_pdb import vector2bfactor
 from dms2dfe.lib.global_vars import mut_types_form
 
@@ -71,37 +71,37 @@ def main(prj_dh):
     if not exists(prj_dh+"/plots"):
         makedirs(prj_dh+"/plots")
 
-#plot for coverage
-    if not exists(prj_dh+"/data_coverage/aas"):
-        makedirs(prj_dh+"/data_coverage/aas")
-    plot_type="coverage"
-    logging.info("processing: plot type: %s" % plot_type)
-    lbls=pd.read_csv("%s/cfg/lbls" % prj_dh).set_index("varname",drop=True)
-    type_form="aas"
-    for lbl in lbls.index.values:
-        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,lbl)
-        data_fh="%s/data_coverage/%s/%s" % (prj_dh,type_form,lbl)        
-        if not exists(plot_fh):
-            if not pd.isnull(lbls.loc[lbl,'fhs_1']):
-                fhs=glob(lbls.loc[lbl,'fhs_1']+"*")
-                # print fhs
-                if len(fhs)!=0:
-                    sbam_fhs=[fh for fh in fhs if (fh.endswith(".s.bam"))]
-                    if len(sbam_fhs)!=0:
-                        sbam_fh=sbam_fhs[0]
-                        lbl_mat_mut_cds_fh=[fh for fh in fhs if "bam.mat_mut_cds" in fh][0]
-                        # print lbl_mat_mut_cds_fh
-                        if not exists(data_fh):
-                            data_cov=getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,fsta_id,fsta_seqlen,cctmr)
-                            data_cov.to_csv(data_fh,index=False)
-                        else: 
-                            data_cov=pd.read_csv(data_fh)
-                        data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
-                        plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
-                else:
-                    logging.warning("can not find sequencing data to get coverage")
-            else:
-                logging.warning("can not find sequencing data to get coverage")
+# #plot for coverage
+#     if not exists(prj_dh+"/data_coverage/aas"):
+#         makedirs(prj_dh+"/data_coverage/aas")
+#     plot_type="coverage"
+#     logging.info("processing: plot type: %s" % plot_type)
+#     lbls=pd.read_csv("%s/cfg/lbls" % prj_dh).set_index("varname",drop=True)
+#     type_form="aas"
+#     for lbl in lbls.index.values:
+#         plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,lbl)
+#         data_fh="%s/data_coverage/%s/%s" % (prj_dh,type_form,lbl)        
+#         if not exists(plot_fh):
+#             if not pd.isnull(lbls.loc[lbl,'fhs_1']):
+#                 fhs=glob(lbls.loc[lbl,'fhs_1']+"*")
+#                 # print fhs
+#                 if len(fhs)!=0:
+#                     sbam_fhs=[fh for fh in fhs if (fh.endswith(".s.bam"))]
+#                     if len(sbam_fhs)!=0:
+#                         sbam_fh=sbam_fhs[0]
+#                         lbl_mat_mut_cds_fh=[fh for fh in fhs if "bam.mat_mut_cds" in fh][0]
+#                         # print lbl_mat_mut_cds_fh
+#                         if not exists(data_fh):
+#                             data_cov=getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,fsta_id,fsta_seqlen,cctmr)
+#                             data_cov.to_csv(data_fh,index=False)
+#                         else: 
+#                             data_cov=pd.read_csv(data_fh)
+#                         data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
+#                         plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
+#                 else:
+#                     logging.warning("can not find sequencing data to get coverage")
+#             else:
+#                 logging.warning("can not find sequencing data to get coverage")
 
 #plot data_lbl
     plot_type="repli"

@@ -453,7 +453,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
     grid_search_classi_fh=data_fh.replace("data_ml_","data_ml_classi_")+'.pkl'
     grid_search_regress_fh=data_fh.replace("data_ml_","data_ml_regress_")+'.pkl'
 
-    y_coln_classi="FCA"
+    y_coln_classi="FCA_norm"
     if not exists(data_fh.replace("data_ml_","data_ml_regress_preds_")):
         data_fit_fh="%s/%s" % (prj_dh,data_fit_key)
         data_fit=pd.read_csv(data_fit_fh)

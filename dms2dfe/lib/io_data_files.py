@@ -14,7 +14,10 @@ from os.path import exists,basename,abspath,dirname
 import logging
 from glob import glob  
 import numpy as np
+from dms2dfe.lib.io_seq_files import get_fsta_feats
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
+
+
 
 ## DEFS
 def is_cfg_ok(cfg_dh,cfgs) :
@@ -82,6 +85,7 @@ def info2src(prj_dh):
             logging.error('Path to file is missing. Check in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
             return None
 
+    info.loc['fsta_id','input'],info.loc['fsta_seq','input'],info.loc['fsta_len','input']=get_fsta_feats(info.loc['fsta_fh','input'])
     info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     csv2src(prj_dh+"/cfg/info","%s/../tmp/info.py" % (abspath(dirname(__file__))))
     logging.info("configuration compiled: %s/cfg/info" % prj_dh)
@@ -210,3 +214,90 @@ def csvs2h5(dh,sub_dh_list,fn_list):
                 key=key+"2"
                 cfg_h5.put(key,df.convert_objects(), format='table', data_columns=True) # store the otpts in h5 eg. cds/N/lbl        
 
+
+#mut_lbl_fit_comparison
+def getusable_lbls_list(prj_dh):
+    """
+    This detects the samples that can be processed.
+    
+    :param prj_dh: path to project directory.
+    :returns lbls_list: list of names of samples that can be processed.
+    """
+    lbls=pd.read_csv(prj_dh+'/cfg/lbls')
+    lbls=lbls.set_index('varname')
+    lbls_list=[]
+    #data_lbl cols: NiA mutids NiS NiN NiNcut NiNcutlog NiScut NiScutlog NiAcut NiAcutlog    
+    for lbli,lbl in lbls.iterrows() :
+        # print "%s/data_lbl/%s/%s" % (prj_dh,'aas',str(lbli))
+        if (not exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',str(lbli)))) \
+        and (not exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',str(lbli)))):
+            fh_1=str(lbl['fhs_1'])
+            # print fh_1
+            lbl_mat_mut_cds_fh=[fh for fh in glob(fh_1+"*") if '.mat_mut_cds' in fh]
+            if len(lbl_mat_mut_cds_fh)!=0:
+                lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
+                lbls_list.append([lbli,lbl_mat_mut_cds_fh])
+            else :
+                fh_1="%s/data_mutmat/%s" % (prj_dh,basename(fh_1))
+                # print fh_1
+                lbl_mat_mut_cds_fh=[fh for fh in glob(fh_1+"*") if '.mat_mut_cds' in fh]
+                if len(lbl_mat_mut_cds_fh)!=0:
+                    lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
+                    lbls_list.append([lbli,lbl_mat_mut_cds_fh])
+                else:    
+                    logging.warning("can not find: %s" % basename(fh_1))
+        # else:
+            # logging.info("already processed: %s" % (str(lbli)))
+    return lbls_list
+
+def getusable_fits_list(prj_dh):
+    """
+    This gets the list of samples that can be processed for fitness estimations.
+    
+    :param prj_dh: path to project directory.
+    :returns fits_pairs_list: list of tuples with names of input and selected samples.
+    """
+    if exists('%s/cfg/fit'% (prj_dh)):
+        fits=pd.read_csv(prj_dh+'/cfg/fit')
+
+        if "Unnamed: 0" in fits.columns:
+            fits=fits.drop("Unnamed: 0", axis=1)
+        fits_pairs_list=[]
+        sel_cols=[col for col in fits.columns.tolist() if "sel_" in col]
+        for pairi in fits.index.values :
+            unsel_lbl=fits.loc[pairi,"unsel"]
+            sels=list(fits.loc[pairi,sel_cols])
+            # print sels
+            for sel_lbl in sels :
+                if not pd.isnull(sel_lbl):
+                    fit_lbl=sel_lbl+"_WRT_"+unsel_lbl
+                    if (not exists("%s/data_fit/%s/%s" % (prj_dh,'aas',fit_lbl))) \
+                    and (not exists("%s/data_fit/%s/%s" % (prj_dh,'cds',fit_lbl))):             
+                        if  ((exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',sel_lbl))) \
+                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',unsel_lbl)))) or \
+                            ((exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',sel_lbl))) \
+                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',unsel_lbl)))) : 
+                            fits_pairs_list.append([unsel_lbl,sel_lbl])
+                        else :
+                            logging.warning("data_lbl not present : %s or %s" % (sel_lbl,unsel_lbl))
+                    else :
+                        logging.info("already processed: %s" % (fit_lbl))
+        return fits_pairs_list
+    else:    
+        logging.warning("ana3_mutmat2fit : getusable_fits_list : not fits in cfg/fit")
+        return []
+
+def getusable_comparison_list(prj_dh):
+    """
+    This converts the table of tests and controls in configuration file into tuples of test and control.
+    
+    :param prj_dh: path to project directory.
+    """
+    comparisons=pd.read_csv(prj_dh+'/cfg/comparison')
+    comparisons=comparisons.set_index('ctrl')
+    comparison_list=[]
+    for ctrl,row in comparisons.iterrows() :
+        row=row[~row.isnull()]
+        for test in row[0:] :
+            comparison_list.append([ctrl,test])
+    return  comparison_list  

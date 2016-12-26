@@ -29,7 +29,7 @@ def main(prj_dh):
         sys.exit()
     configure.main(prj_dh)
 
-    global prj_dh_global,host,norm_type,fsta_seqlen,cctmr_global,output_dh,prj_dh_global,lbls,Ni_cutoff
+    global prj_dh_global,host,norm_type,fsta_len,cctmr_global,output_dh,prj_dh_global,lbls,Ni_cutoff,fsta_fh_global,clips
 
     from dms2dfe.tmp import info
     fsta_fh=info.fsta_fh
@@ -37,25 +37,24 @@ def main(prj_dh):
     host=info.host
     cores=info.cores
     norm_type=info.norm_type
+    fsta_len=info.fsta_len
     Ni_cutoff=int(info.Ni_cutoff)
     # SET global variables
 
     lbls=pd.read_csv(prj_dh+'/cfg/lbls')
     lbls=lbls.set_index('varname')
     prj_dh_global=prj_dh
-    
+    fsta_fh_global=fsta_fh    
     if cctmr != 'nan':
         cctmr=[int("%s" % i) for i in cctmr.split(" ")]
         cctmr_global=[(cctmr[0],cctmr[1]),(cctmr[2],cctmr[3])]
     else:
         cctmr_global=None
 
-    with open(fsta_fh,'r') as fsta_data:
-        for fsta_record in SeqIO.parse(fsta_data, "fasta") :
-            fsta_id=fsta_record.id
-            fsta_seq=str(fsta_record.seq) 
-            fsta_seqlen=len(fsta_seq)
-            logging.info("ref name : '%s', length : '%d' " % (fsta_record.id, fsta_seqlen))
+    if info.clips != 'nan':
+        clips=[int(s) for s in info.clips.split(' ')]
+    else:
+        clips=None
 
     lbls_list=getusable_lbls_list(prj_dh)
     if len(lbls_list)!=0:
@@ -65,12 +64,13 @@ def main(prj_dh):
         # pooled_mut_mat_cds2data_lbl(lbls_list[0])
     else:
         logging.info("already processed: mut_mat_cds2data_lbl")
-        
+
     repli2data_lbl_avg(prj_dh)
     fits_pairs_list    =getusable_fits_list(prj_dh)    
     if len(fits_pairs_list)!=0:
         pool_data_lbl2data_fit=Pool(processes=int(cores)) 
-        pool_data_lbl2data_fit.map(pooled_data_lbl2data_fit,fits_pairs_list)
+        pool_data_lbl2data_fit.map(pooled_data_lbl2data_fit,
+                                   fits_pairs_list)
         pool_data_lbl2data_fit.close(); pool_data_lbl2data_fit.join()
         # pooled_data_lbl2data_fit(fits_pairs_list[0])
     else:
@@ -86,7 +86,7 @@ def pooled_mut_mat_cds2data_lbl(lbls_list_tp):
     lbli=lbls_list_tp[0]
     lbl_mat_mut_cds_fh=lbls_list_tp[1]
     logging.info("processing : %s" % (lbli))
-    mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh_global,fsta_seqlen,cctmr_global,Ni_cutoff)
+    mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh_global,fsta_len,cctmr_global,Ni_cutoff,fsta_fh_global,clips=clips)
 
 
 def pooled_data_lbl2data_fit(fits_list):
@@ -98,7 +98,7 @@ def pooled_data_lbl2data_fit(fits_list):
     unsel_lbl=fits_list[0]
     sel_lbl=fits_list[1]
     logging.info("processing : %s and %s" % (unsel_lbl,sel_lbl))
-    data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh_global,cctmr_global,lbls)
+    data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh_global,cctmr_global,lbls,fsta_fh_global)
 
 if __name__ == '__main__':
     main(sys.argv[1])

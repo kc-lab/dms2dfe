@@ -8,24 +8,21 @@
 ``get_protein_features``
 ================================
 """
-import pandas as pd
 from os.path import exists,abspath,dirname,basename,splitext
 from os import makedirs,stat
 from Bio.PDB import DSSP,PDBParser
-from Bio.PDB.Polypeptide import PPBuilder
-import numpy as np
+# from Bio.PDB.Polypeptide import PPBuilder
 import subprocess
-import re
-import pysam
+# import re
+# import pysam
 
-import matplotlib.pyplot as plt
-import numpy as np
+# import matplotlib.pyplot as plt
 import pandas as pd
-
+import numpy as np
 
 from Bio import SeqIO,Seq,SeqRecord
-from Bio.Alphabet import IUPAC
-import subprocess
+# from Bio.Alphabet import IUPAC
+# import subprocess
 
 import warnings
 warnings.simplefilter(action = "ignore") # , category = PDBConstructionWarning
@@ -62,7 +59,7 @@ def getdssp_data(pdb_fh,dssp_fh):
 
     dssp_data.columns=["junk","aasi","chain","ref_dssp","Secondary structure","Helix formation in helix types 3 4 and 5","bend","Chirality",\
                        "beta bridge labels","First residue of beta bridge","Second residue of beta bridge","Sheet of beta bridge",\
-                       "Solvent accessibility",\
+                       "Solvent Accessible Surface Area",\
                       "Offset from residue to the partner in N-H-->O H-bond (1)","junk","Energy (kcal/mol) of N-H-->O H-bond (1)",\
                       "Offset from residue to the partner in O-->H-N H-bond (1)","junk","Energy (kcal/mol) of O-->H-N H-bond (1)",\
                       "Offset from residue to the partner in N-H-->O H-bond (2)","junk","Energy (kcal/mol) of N-H-->O H-bond (2)",\
@@ -120,7 +117,23 @@ def pdb2dfromactivesite(pdb_fh,active_sites=[]):
     dfromligands.index.name="aasi"
     if "ref_pdb" in dfromligands:
         del dfromligands["ref_pdb"]
+    #average and minimum distances
+    cols_all=dfromligands.columns.tolist()
+    for moltype in ['Distance from Ligand:','Distance from active site residue:']:
+        cols_moltype=[c for c in cols_all if moltype in c]
+        if len(cols_all)>0:
+            dfromligands.loc[:,'%s average' % moltype]=dfromligands.loc[:,cols_moltype].T.mean()
+            dfromligands.loc[:,'%s minimum' % moltype]=dfromligands.loc[:,cols_moltype].T.min()
+            mols=np.unique([c[c.find(moltype):c.find(' (ATOM')] for c in cols_moltype])
+            if len(mols)>1:
+                for mol in mols:
+                    cols_mol=[c for c in cols_moltype if mol in c]
+                    dfromligands.loc[:,'%s: average' % mol]=dfromligands.loc[:,cols_mol].T.mean()
+                    dfromligands.loc[:,'%s: minimum' % mol]=dfromligands.loc[:,cols_mol].T.min()    
+
     return dfromligands
+
+
 
 def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
     from Bio.Blast import NCBIWWW
@@ -291,6 +304,72 @@ def get_residue_depth(pdb_fh,msms_fh):
     depth_df.columns=["Residue depth","Residue (C-alpha) depth"]
     return depth_df
 
+def get_bfactor(pdb_fh,ref_out=False):
+    pdb_parser=PDBParser()
+    pdb_data=pdb_parser.get_structure("pdb_name",pdb_fh)
+    data_bfactor=pd.DataFrame(columns=['ref_3letter','Temperature factor (flexibility)'])
+    data_bfactor.index.name='refi'
+    for model in pdb_data:
+        for chain in model:
+            for residue in chain:
+                if residue.get_resname() in aas_21_3letter: #only aas 
+                    for atom in residue:
+                        data_bfactor.loc[residue.id[1],'ref_3letter']=residue.get_resname()
+                        data_bfactor.loc[residue.id[1],'Temperature factor (flexibility)']=atom.get_bfactor()
+                        break
+    if ref_out:
+        return data_bfactor
+    else:
+        return data_bfactor.loc[:,'Temperature factor (flexibility)']
+
+def get_dfrominterface(pdb_fh):
+    """
+    This calculates distances between each ligand atom or optionally provided amino acids (sources) and each residue in the protein.
+    
+    :param pdb_fh: path to .pdb file.
+    """
+    junk_residues = ["HOH"," MG","CA"," NA","SO4","IOD","NA","CL","GOL","PO4"]
+    pdb_parser=PDBParser()
+    pdb_data=pdb_parser.get_structure("pdb_name",pdb_fh)
+    model = pdb_data[0]
+
+
+    if len(model.child_dict)==2:
+        chainA = model["A"] #only a chain
+        chainB = model["B"] #only a chain
+        def get_resobjs(chainA):
+            ligands_residue_objs=[]
+            for residue in chainA:
+                if not residue.get_resname() in junk_residues:
+                    if residue.get_resname() in aas_21_3letter: #only aas
+                        ligands_residue_objs.append(residue)
+            return ligands_residue_objs
+
+        chainA_resobjs=get_resobjs(chainA)
+        chainB_resobjs=get_resobjs(chainB)
+
+        resobjs_tups=zip(chainA_resobjs,chainB_resobjs)
+
+        dfrominter=pd.DataFrame(columns=['Distance from dimer interface'])
+        for tup in resobjs_tups:
+            resA=tup[0]
+            resB=tup[1]
+            if resA.get_id()[1]==resB.get_id()[1]:
+                dfrominter.loc[resA.get_id()[1],'Distance from dimer interface']=\
+                (resA['CA']-resB['CA'])/2    
+        dfrominter.index.name='refi'
+        return dfrominter
+    
+def get_pdb_feats(pdb_fh):
+    pdb_parser=PDBParser()
+    pdb_data=pdb_parser.get_structure("pdb_name",pdb_fh)
+    model = pdb_data[0]
+    if len(model.child_dict)==2:
+        pdb_feats=pd.concat([get_bfactor(pdb_fh), get_dfrominterface(pdb_fh)],axis=1)
+    else:
+        pdb_feats=get_bfactor(pdb_fh)
+    return pdb_feats
+
 def get_data_feats_pos(prj_dh,info,data_out_fh):
     if not exists(data_out_fh):
         cctmr=info.cctmr
@@ -319,14 +398,14 @@ def get_data_feats_pos(prj_dh,info,data_out_fh):
         if not exists(prj_dh+"/data_feats/aas"):
             makedirs(prj_dh+"/data_feats/aas")
 
-        if  (exists("%s/cfg/feats" % prj_dh) and \
-            stat("%s/cfg/feats" % prj_dh).st_size !=0):
-            data_feats=pd.read_csv('%s/cfg/feats' % prj_dh)
-        elif(exists("%s/cfg/feats_pos" % prj_dh) and \
+        if(exists("%s/cfg/feats_pos" % prj_dh) and \
             stat("%s/cfg/feats_pos" % prj_dh).st_size !=0):
             data_feats=pd.read_csv('%s/cfg/feats_pos' % prj_dh)
             data_feats.loc[:,'aasi']=data_feats.loc[:,'refi']
             del data_feats['refi']
+        elif  (exists("%s/cfg/feats" % prj_dh) and \
+            stat("%s/cfg/feats" % prj_dh).st_size !=0):
+            data_feats=pd.read_csv('%s/cfg/feats' % prj_dh)
         if isinstance(data_feats,pd.DataFrame):
             if len(data_feats)!=0:
                 if "Unnamed: 0" in data_feats.columns:
@@ -341,7 +420,7 @@ def get_data_feats_pos(prj_dh,info,data_out_fh):
             data_feats=pd.DataFrame(index=range(1,aas_len+1,1))
             data_feats.index.name="aasi"
         if not pd.isnull(pdb_fh):
-            feats_types=["dssp","dfromact","depth","consrv_score"]
+            feats_types=["dssp","dfromact","depth","consrv_score",'pdb']
             for feats_type in feats_types:
                 data_feats_fh="%s/data_feats/aas/feats_%s" % (prj_dh,feats_type)
                 if feats_type=="dssp":
@@ -378,23 +457,35 @@ def get_data_feats_pos(prj_dh,info,data_out_fh):
                     else:
                         consrv_score_df=pd.read_csv(data_feats_fh)
                         consrv_score_df=consrv_score_df.set_index("aasi",drop=True)                        
+                elif feats_type=="pdb":
+                    logging.info("getting features from pdb")
+                    if not exists(data_feats_fh):
+                        pdb_df=get_pdb_feats(pdb_fh)
+                        pdb_df.reset_index().to_csv(data_feats_fh,index=False)            
+                    else:
+                        pdb_df=pd.read_csv(data_feats_fh)
+                        pdb_df=consrv_score_df.set_index("aasi",drop=True)                        
             if len(data_feats)!=0:
                 data_feats=pd.concat([data_feats,
                                       dssp_df,
                                       dfromact_df,
                                       consrv_score_df,
-                                      depth_df], axis=1) #combine dssp_df and dfromact
+                                      depth_df,
+                                     pdb_df], axis=1) #combine dssp_df and dfromact
             else:
                 data_feats=pd.concat([dssp_df,
                                       dfromact_df,
                                       consrv_score_df,
-                                      depth_df], axis=1) #combine dssp_df and dfromact
+                                      depth_df,
+                                     pdb_df], axis=1) #combine dssp_df and dfromact
             # data_feats.reset_index().to_csv("%s/data_feats/aas/feats_all" % prj_dh,index=False)
             # data_feats.loc[:,'refi']=data_feats.loc[:,'aasi']
             # del data_feats['aasi']
             data_feats.index.name='refi'
             data_feats=data_feats.reset_index()
             refrefis=[]
+            # print data_feats.index.name
+            # print data_feats.index.tolist()[:5]
             for i in data_feats.index.tolist():
                 # print data_feats.loc[i,'ref']
                 if data_feats.loc[i,'ref']!='*':
@@ -407,9 +498,13 @@ def get_data_feats_pos(prj_dh,info,data_out_fh):
 
             # data_feats.to_csv(data_out_fh+'_test',index=False)
             
-            feats_sub_pos_tups=[['Solvent Accessible Surface Area','Solvent accessibility']]
-            data_feats_mut_diffs_fh="%s/data_feats_mut_diffs" % dirname(data_out_fh)            
-            data_feats=get_data_feats_mut_diffs(data_feats,feats_sub_pos_tups,data_out_fh=data_feats_mut_diffs_fh)
+            # feats_sub_pos_tups=[[
+            #                     'Solvent Accessible Surface Area',
+            #                      'Solvent Accessible Surface Area']]
+            # data_feats_mut_diffs_fh="%s/data_feats_mut_diffs" % dirname(data_out_fh)            
+            # data_feats=get_data_feats_mut_diffs(data_feats,
+            #                                     feats_sub_pos_tups,
+            #                                     data_out_fh=data_feats_mut_diffs_fh)
 
             data_feats.to_csv(data_out_fh)
             logging.info("output: data_feats/aas/data_feats_pos")
@@ -432,18 +527,20 @@ def get_data_feats_mut_diffs(data_feats_pos,feats_sub_pos_tups,
     for feats_sub_pos_tup in feats_sub_pos_tups:
         feat_sub=feats_sub_pos_tup[0]
         feat_pos=feats_sub_pos_tup[1]
-        feat_pos_label="Average $\Delta \Delta$ (%s) per position" % feat_pos
-        feat_mut="$\Delta \Delta$ (%s)" % feat_pos
-        if (feat_sub in data_feats_aas.columns) and (feat_pos in data_feats_pos.columns):
+        feat_pos_label="$\Delta \Delta$ (%s) per position" % feat_pos
+        feat_mut="$\Delta \Delta$ (%s) per mutation" % feat_pos
+        if (feat_sub in data_feats_aas.columns) and \
+            (feat_pos in data_feats_pos.columns):
             for refrefi in data_feats_pos.index:
                 for mut in data_feats_aas.index:
                     mutid="%s%s" % (refrefi,mut)
                     data_feats_mut_diffs.loc[mutid,'refrefi']=refrefi
                     data_feats_mut_diffs.loc[mutid,'mut']=mut                
                     data_feats_mut_diffs.loc[mutid,feat_mut]=\
-                        data_feats_aas.loc[mut,feat_sub]-data_feats_pos.loc[refrefi,feat_pos]            
+                        data_feats_aas.loc[mut,feat_sub]\
+                        -data_feats_pos.loc[refrefi,feat_pos]            
         #     mean
-        data_feats_pos_diffs=data_feats_mut_diffs.pivot_table(values=feat_mut,index='mut',columns='refrefi').mean()
+        data_feats_pos_diffs=data_feats_mut_diffs.pivot_table(values=feat_mut,                                              index='mut',columns='refrefi').mean()
         data_feats_pos_diffs.index.name='refrefi'
         data_feats_pos_diffs.name=feat_pos_label
         data_feats_pos=pd.concat([data_feats_pos,data_feats_pos_diffs],axis=1)
@@ -476,8 +573,10 @@ def get_data_feats_sub(data_out_fh,data_feats_aas_fh='%s/data_feats_aas' % abspa
                     data_feats_aas.loc[refaa,feat]
                     data_feats_sub.loc[subid,"Mutant amino acid's %s" % feat]=\
                     data_feats_aas.loc[mutaa,feat]
-                    data_feats_sub.loc[subid,"$\Delta \Delta$ (%s)" % feat]=\
-                    data_feats_aas.loc[mutaa,feat]-data_feats_aas.loc[refaa,feat]
+                    data_feats_sub.loc[subid,
+                                       "$\Delta \Delta$ (%s) per substitution" \
+                                       % feat]\
+                    =data_feats_aas.loc[mutaa,feat]-data_feats_aas.loc[refaa,feat]
         # data_feats_sub.loc[:,'Substitution type']=data_feats_sub.index            
         data_feats_sub.to_csv(data_out_fh)
         logging.info("output: data_feats/aas/data_feats_sub")
@@ -564,7 +663,11 @@ def get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
         
         for col in ['subids','refrefi']:
             if col in data_feats_all:
-                del data_feats_all[col]               
+                del data_feats_all[col] 
+        cols_del=[col for col in data_feats_all if 'Unnamed' in col]
+        for col in cols_del:
+            del data_feats_all[col] 
+
         data_feats_all.to_csv(data_out_fh)                
         logging.info("output: data_feats/aas/data_feats_all")                
         return data_feats_all

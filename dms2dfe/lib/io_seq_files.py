@@ -8,14 +8,27 @@
 ``io_seq_files``
 ================================
 """
+from __future__ import division
 # import sys
 from os.path import splitext,exists,basename,dirname
 import pandas as pd
 from glob import glob
 import subprocess
 from Bio import SeqIO
+import pysam
+import numpy as np
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
+
+def get_fsta_feats(fsta_fh):
+    with open(fsta_fh,'r') as fsta_data:
+        for fsta_record in SeqIO.parse(fsta_data, "fasta") :
+            fsta_id=fsta_record.id
+            fsta_seq=str(fsta_record.seq) 
+            fsta_len=len(fsta_seq)
+            break # only first header
+    return fsta_id,fsta_seq,fsta_len
+            # logging.info("ref name : '%s', length : '%d' " % (fsta_record.id, fsta_seqlen))
 
 def contains_barcode(barcode_seq, read_seq) : 
     """
@@ -192,7 +205,8 @@ def fastq2qcd(fastq_fhs_list,trimmomatic_fh): #[fastq_R1_fh,fastq_R2_fh]
     else:
         logging.info("already processed: %s" % basename(fastq_R1_fh))     
                    
-def qcd2sbam(fastq_fhs_list,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtools_fh): #[fastq_R1_fh,fastq_R2_fh]
+def qcd2sbam(fastq_fhs_list,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtools_fh,
+             bowtie2_com=''): #[fastq_R1_fh,fastq_R2_fh]
     """
     This aligns the fastq files using bowtie2.
     The resultant .sam files are converted to sorted .bam files (.sbam) for downstream ana1_sam2mutmat module. 
@@ -219,9 +233,11 @@ def qcd2sbam(fastq_fhs_list,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtool
     if exists(fastq_R1_fh) :
         if not exists(fastq_R1_fh+".sam.s.bam"):
             if fastq_R2_fh and exists(fastq_R2_fh): # paired end
-                bashCommand = "%s -p 1 --very-sensitive%s --no-discordant --no-mixed %s -1 %s -2 %s -S %s.sam 2> %s.sam.log" % (bowtie2_fh,alignment_type,bt2_ref_fh,fastq_R1_fh,fastq_R2_fh,fastq_R1_fh,fastq_R1_fh)       
+                bashCommand = "%s %s-p 1 --very-sensitive%s --no-discordant --no-mixed %s -1 %s -2 %s -S %s.sam 2> %s.sam.log" \
+                                % (bowtie2_fh,bowtie2_com,alignment_type,bt2_ref_fh,fastq_R1_fh,fastq_R2_fh,fastq_R1_fh,fastq_R1_fh)       
             elif exists(fastq_R1_fh): # single end
-                bashCommand = "%s -p 1 --very-sensitive%s %s -q %s -S %s.sam 2> %s.samlog" % (bowtie2_fh,alignment_type,bt2_ref_fh,fastq_R1_fh,fastq_R1_fh,fastq_R1_fh)
+                bashCommand = "%s %s-p 1 --very-sensitive%s %s -q %s -S %s.sam 2> %s.samlog"\
+                 % (bowtie2_fh,bowtie2_com,alignment_type,bt2_ref_fh,fastq_R1_fh,fastq_R1_fh,fastq_R1_fh)
             else:
                 logging.error("can not find : %s or %s" % (basename(fastq_R1_fh),basename(fastq_R2_fh)))
             logging.info("processing: %s " % basename(fastq_R1_fh))
@@ -296,3 +312,103 @@ def fasta_writer(otpt_f,read_id,read_seq):
     """  
     otpt_f.write(">"+read_id+"\n")
     otpt_f.write(read_seq+"\n")
+
+def getcov(sbam_fh,fsta_fh,refini=0,refend=None,data_out_fh=None):    
+    refid,refseq,reflen=get_fsta_feats(fsta_fh)
+    if refend is None:
+        refend=reflen
+    samfile = pysam.Samfile(sbam_fh, "rb" )
+    cov=pd.DataFrame(columns=['cov'])
+    cov.index.name='refi'
+    for pileupcol in samfile.pileup(refid, refini,refend,max_depth=10000000):
+        cov.loc[pileupcol.pos, 'cov']=pileupcol.n
+    samfile.close()
+    cov.index=[refi+1 for refi in cov.index]
+    cov.to_csv(sbam_fh+'.nts_cov')
+    if not data_out_fh is None:
+        cov.to_csv(data_out_fh)
+    return cov
+
+def getdepth_cds(sbam_fh,fsta_fh,
+                 cctmr=None,refini=0,refend=None,data_out_fh=None):
+    refid,refseq,reflen=get_fsta_feats(fsta_fh)
+    if refend is None:
+        refend=reflen
+
+    cov_fh=sbam_fh+'.nts_cov'
+    if not exists(cov_fh):
+        cov=getcov(sbam_fh,fsta_fh)
+    else:
+        cov=pd.read_csv(cov_fh)
+    if cctmr!=None:
+        cov_cctmr1=cov.iloc[(cctmr[0][0]-1)*3:(cctmr[0][1]-1)*3,:]
+        cov_cctmr2=cov.iloc[(cctmr[1][0]-1)*3:(cctmr[1][1]-1)*3,:]
+        cov=cov_cctmr1.reset_index(drop=True).astype(int)+cov_cctmr2.reset_index(drop=True).astype(int)
+
+    # cov.to_csv("cov")
+    depth_cds=pd.DataFrame(columns=["1","2","3"])
+    for i in cov.index:
+        if np.remainder(i,3)==1:
+            depth_cds.loc[np.ceil(i/3),"1"]=cov.loc[i,"cov"]
+        elif np.remainder(i,3)==2:
+            depth_cds.loc[np.ceil(i/3),"2"]=cov.loc[i,"cov"]
+        elif np.remainder(i,3)==0:
+            depth_cds.loc[np.ceil(i/3),"3"]=cov.loc[i,"cov"]
+
+    depth_cds.loc[:,"depth_cds"]=depth_cds.T.mean()
+    depth_cds.index.name='refi'
+    depth_cds_fh="%s.depth_cds" % sbam_fh
+    depth_cds.to_csv(depth_cds_fh)
+    if not data_out_fh is None:
+        depth_cds.to_csv(data_out_fh)
+    return depth_cds
+
+def getdepth_ref(sbam_fh,fsta_fh,
+              cctmr=None,refini=0,refend=None,data_out_fh=None):
+    """
+    This gets the codon level coverage of .fastq files.
+    
+    :param lbl: name of sample.
+    :param lbls: dataframe with configuration `lbls`.
+    :param cctmr: tuple with (1-based) boundaries of concatamers.
+    :returns wt: dataframe with wild-type coverage.
+    """
+    from dms2dfe.lib.global_vars import cds_64
+    refid,refseq,reflen=get_fsta_feats(fsta_fh)
+    if refend is None:
+        refend=reflen
+
+    depth_cds_fh="%s.depth_cds" % sbam_fh
+    # print depth_cds_fh
+    if not exists(depth_cds_fh):
+        depth_cds=getdepth_cds(sbam_fh,fsta_fh,cctmr=None,refini=0,refend=None)
+    else:
+        depth_cds=pd.read_csv(depth_cds_fh)
+    if 'refi' in depth_cds:
+        depth_cds=depth_cds.set_index('refi')
+
+    depth_ref=depth_cds
+    depth_ref.index.name='refi'
+    # minus the mutants
+    lbl_mat_mut_cds_fh='%s.mat_mut_cds' % sbam_fh
+    lbl_mat_mut_cds=pd.read_csv(lbl_mat_mut_cds_fh)
+    # print lbl_mat_mut_cds_fh
+    lbl_mat_mut_cds=lbl_mat_mut_cds.fillna(0).set_index("ref_cd",drop=True)
+    lbl_mat_mut_cds=lbl_mat_mut_cds.loc[:,cds_64]
+    if cctmr!=None:
+        lbl_mat_mut_cds_cctmr1=lbl_mat_mut_cds.iloc[(cctmr[0][0]-1):(cctmr[0][1]-1),:]
+        lbl_mat_mut_cds_cctmr2=lbl_mat_mut_cds.iloc[(cctmr[1][0]-1):(cctmr[1][1]-1),:]
+        lbl_mat_mut_cds=lbl_mat_mut_cds_cctmr1+lbl_mat_mut_cds_cctmr2
+
+    data_mut=pd.DataFrame({'refi':range(1,lbl_mat_mut_cds.shape[0]+1,1),
+                            'depth_mut' : lbl_mat_mut_cds.T.sum().reset_index(drop=True),
+                            })
+    data_mut=data_mut.set_index('refi')
+
+    depth_ref=data_mut.join(depth_ref)
+    depth_ref.loc[:,'depth_ref']=depth_ref.loc[:,"depth_cds"] - depth_ref.loc[:,"depth_mut"] 
+    depth_ref_fh="%s.depth_ref" % sbam_fh
+    depth_ref.to_csv(depth_ref_fh)
+    if not data_out_fh is None:
+        depth_ref.to_csv(data_out_fh)
+    return depth_ref

@@ -8,103 +8,22 @@
 ``io_mut_files``
 ================================
 """
+from __future__ import division
 import sys
 from os.path import splitext,exists,basename
 from os import makedirs,stat
 import pandas as pd
 import numpy as np
 from glob import glob
-import pysam
 import logging
-logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
+logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe.lib.fit_curve import fit_gauss_params
 from dms2dfe.lib.global_vars import aas_21,cds_64,mut_types_form,mut_types_NorS
 from dms2dfe.lib.convert_seq import cds2aas
-
-def getusable_lbls_list(prj_dh):
-    """
-    This detects the samples that can be processed.
-    
-    :param prj_dh: path to project directory.
-    :returns lbls_list: list of names of samples that can be processed.
-    """
-    lbls=pd.read_csv(prj_dh+'/cfg/lbls')
-    lbls=lbls.set_index('varname')
-    lbls_list=[]
-    #data_lbl cols: NiA mutids NiS NiN NiNcut NiNcutlog NiScut NiScutlog NiAcut NiAcutlog    
-    for lbli,lbl in lbls.iterrows() :
-        if (not exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',str(lbli)))) \
-        and (not exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',str(lbli)))):
-            fh_1=str(lbl['fhs_1'])
-            # print fh_1
-            lbl_mat_mut_cds_fh=[fh for fh in glob(fh_1+"*") if '.mat_mut_cds' in fh]
-            if len(lbl_mat_mut_cds_fh)!=0:
-                lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
-                lbls_list.append([lbli,lbl_mat_mut_cds_fh])
-            else :
-                fh_1="%s/data_mutmat/%s" % (prj_dh,basename(fh_1))
-                # print fh_1
-                lbl_mat_mut_cds_fh=[fh for fh in glob(fh_1+"*") if '.mat_mut_cds' in fh]
-                if len(lbl_mat_mut_cds_fh)!=0:
-                    lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
-                    lbls_list.append([lbli,lbl_mat_mut_cds_fh])
-                else:    
-                    logging.warning("can not find: %s" % basename(fh_1))
-        else:
-            logging.info("already processed: %s" % (str(lbli)))
-    return lbls_list
-
-def getusable_fits_list(prj_dh):
-    """
-    This gets the list of samples that can be processed for fitness estimations.
-    
-    :param prj_dh: path to project directory.
-    :returns fits_pairs_list: list of tuples with names of input and selected samples.
-    """
-    if exists('%s/cfg/fit'% (prj_dh)):
-        fits=pd.read_csv(prj_dh+'/cfg/fit')
-
-        if "Unnamed: 0" in fits.columns:
-            fits=fits.drop("Unnamed: 0", axis=1)
-        fits_pairs_list=[]
-        sel_cols=[col for col in fits.columns.tolist() if "sel_" in col]
-        for pairi in fits.index.values :
-            unsel_lbl=fits.loc[pairi,"unsel"]
-            sels=list(fits.loc[pairi,sel_cols])
-            # print sels
-            for sel_lbl in sels :
-                if not pd.isnull(sel_lbl):
-                    fit_lbl=sel_lbl+"_WRT_"+unsel_lbl
-                    if (not exists("%s/data_fit/%s/%s" % (prj_dh,'aas',fit_lbl))) \
-                    and (not exists("%s/data_fit/%s/%s" % (prj_dh,'cds',fit_lbl))):             
-                        if  ((exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',sel_lbl))) \
-                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',unsel_lbl)))) or \
-                            ((exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',sel_lbl))) \
-                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',unsel_lbl)))) : 
-                            fits_pairs_list.append([unsel_lbl,sel_lbl])
-                        else :
-                            logging.warning("data_lbl not present : %s or %s" % (sel_lbl,unsel_lbl))
-                    else :
-                        logging.info("already processed: %s" % (fit_lbl))
-        return fits_pairs_list
-    else:    
-        logging.warning("ana3_mutmat2fit : getusable_fits_list : not fits in cfg/fit")
-        return []
-
-def getusable_comparison_list(prj_dh):
-    """
-    This converts the table of tests and controls in configuration file into tuples of test and control.
-    
-    :param prj_dh: path to project directory.
-    """
-    comparisons=pd.read_csv(prj_dh+'/cfg/comparison')
-    comparisons=comparisons.set_index('ctrl')
-    comparison_list=[]
-    for ctrl,row in comparisons.iterrows() :
-        row=row[~row.isnull()]
-        for test in row[0:] :
-            comparison_list.append([ctrl,test])
-    return  comparison_list  
+from dms2dfe.lib.io_seq_files import getdepth_cds,getdepth_ref
+from dms2dfe.lib.io_data_files import getusable_lbls_list,getusable_fits_list,getusable_comparison_list
+from dms2dfe.lib.io_dfs import concat_cols
+from dms2dfe.lib.io_nums import str2num
 
 def makemutids(data_lbl,refis):
     """
@@ -116,17 +35,32 @@ def makemutids(data_lbl,refis):
     """
     mutids=[]
     data_lbl=data_lbl.reset_index()
-    ref_len=len(refis)
-    for muti in range(len(data_lbl)/ref_len):
+    reflen=len(refis)
+    for muti in range(len(data_lbl)//reflen):
         refii=0
         for refi in refis:
-            mutids.append("%s%03d%s" % (data_lbl.loc[muti*ref_len+refii,'ref'],refi,data_lbl.loc[muti*ref_len+refii,'mut']))
+            mutids.append("%s%03d%s" % (data_lbl.loc[muti*reflen+refii,'ref'],refi,data_lbl.loc[muti*reflen+refii,'mut']))
             refii+=1
     if len(data_lbl)!=len(mutids):
         logging.error("len(data_lbl)!=len(mutids) bcz %d != %d" % (len(data_lbl),len(mutids)))
         sys.exit()
     return mutids    
-    
+
+def mutids_converter(mutids,out,type_form):
+    if type_form=='aas':
+        offset=0
+    elif type_form=='cds':
+        offset=2
+        
+    if out=='refi':
+        return [str2num(mutid) for mutid in mutids]    
+    elif out=='ref':
+        return [mutid[:1+offset] for mutid in mutids]
+    elif out=='mut':
+        return [mutid[-1-offset:] for mutid in mutids]
+    elif out=='refrefi':
+        return [mutid[:4+offset] for mutid in mutids]
+
 def mat_cds2mat_aas(mat_cds,host) :
     """
     This converts mutation matrix of codon to that of amino acid.
@@ -197,6 +131,15 @@ def repli2avg(replis,prj_dh,type_form):
     data_avg_ar=np.array([])
     for replii in replis :
         data_replii=pd.read_csv("%s/data_lbl/%s/%s" % (prj_dh,type_form,replii))
+        if not 'mut' in data_replii:
+            data_replii.loc[:,'mut']\
+            =mutids_converter(data_replii.loc[:,'mutids'],
+                              'mut',type_form)
+        if not 'ref' in data_replii:
+            data_replii.loc[:,'ref']\
+            =mutids_converter(data_replii.loc[:,'mutids'],
+                              'ref',type_form)
+        
         data_replii=data_replii.set_index(['mut','ref','mutids'])
         data_replii=data_replii.fillna(0)
         if len(data_avg_ar)==0 :
@@ -213,104 +156,62 @@ def repli2avg(replis,prj_dh,type_form):
     data_avg=data_avg.reset_index()
     data_avg=data_avg.replace(0, np.nan)
     return data_avg
+
+# def data_fit2norm_wrt_wild(unsel_lbl,sel_lbl,type_form,FCA,cctmr,lbls,
+#                            fsta_fh):
+#     """
+#     This normalises Fold changes (FC) to normalised fitness values (Fi)
+    
+#     Gets fhs of sbam files and using pysam, gets the coverage per nt
+#     bins it into 3 nt bins i.e. codons.
+#     substract mat mut cd sum,
+    
+#     get log2 ratio of vectors for both sel to unsel (FCW)
+    
+#     .. math::
+
+#         DMut = (Mut selected /WT selected )/(Mut input /WT input )
+#         Fi = FC - FCW
+    
+#     :param unsel_lbl: name of input sample.
+#     :param sel_lbl: name of selected sample.
+#     :param type_form: type of mutations codon (`cds`) or amino acid (`aas`) form.
+#     :param FCA: Fold change(FC) values of all(A) mutations.
+#     :param cctmr: tuple with (1-based) boundaries of concatamers.
+#     :param lbls: dataframe with configuration `lbls`.
+#     :returns FiA:  normalised fitness values (Fi)
+#     """
+#     refid,refseq,refend=get_fsta_feats(fsta_fh)
+#     refini=0
+
+#     if 'varname' in lbls:
+#         lbls=lbls.set_index('varname')
+#     sel_sbam_fh=lbls.loc[sel_lbl,'fhs_1']
+#     unsel_sbam_fh=lbls.loc[sel_lbl,'fhs_1'] 
+#     # stitch get sbam_fh if fastq_fh is in lbls
+#     FCW=pd.DataFrame()
+#     FCW.loc[:,'FCW']=np.log(getwildtypecov(sel_sbam_fh,refid,refend,cctmr=cctmr,refini=0))\
+#                      -np.log(getwildtypecov(unsel_sbam_fh,refid,refend,cctmr=cctmr,refini=0))
+
+#     FiA=pd.DataFrame()
+#     if type_form=='aas':
+#         iterations=21
+#     if type_form=='cds':
+#         iterations=64
         
-def getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,ref_id,ref_end,
-                   cctmr=None,ref_start=0):
-    """
-    This gets the codon level coverage of .fastq files.
-    
-    :param lbl: name of sample.
-    :param lbls: dataframe with configuration `lbls`.
-    :param cctmr: tuple with (1-based) boundaries of concatamers.
-    :returns wt: dataframe with wild-type coverage.
-    """
-    samfile = pysam.Samfile(sbam_fh, "rb" )
-
-    cov=pd.DataFrame(columns=['cov'])
-    for pileupcol in samfile.pileup(ref_id, ref_start,ref_end,max_depth=10000000):
-        cov.loc[pileupcol.pos, 'cov']=pileupcol.n
-    samfile.close()
-
-    if cctmr!=None:
-        cov_cctmr1=cov.iloc[(cctmr[0][0]-1)*3:(cctmr[0][1]-1)*3,:]
-        cov_cctmr2=cov.iloc[(cctmr[1][0]-1)*3:(cctmr[1][1]-1)*3,:]
-        cov=cov_cctmr1.reset_index(drop=True).astype(int)+cov_cctmr2.reset_index(drop=True).astype(int)
-
-    # cov.to_csv("cov")
-    cov_per_cds=pd.DataFrame(columns=["1","2","3"])
-    for i in cov.index:
-        if np.remainder(i,3)==0:
-            cov_per_cds.loc[np.floor(i/3),"1"]=cov.loc[i,"cov"]
-        elif np.remainder(i,3)==1:
-            cov_per_cds.loc[np.floor(i/3),"2"]=cov.loc[i,"cov"]
-        elif np.remainder(i,3)==2:
-            cov_per_cds.loc[np.floor(i/3),"3"]=cov.loc[i,"cov"]
-
-    cov_per_cds.loc[:,"cov"]=cov_per_cds.T.mean()
-    # cov_per_cds=cov_per_cds.loc[:,"cov"]
-    # cov_per_cds.to_csv("cov_per_cds")
-    # minus the mutants
-    lbl_mat_mut_cds=pd.read_csv(lbl_mat_mut_cds_fh)
-    # print lbl_mat_mut_cds_fh
-    lbl_mat_mut_cds=lbl_mat_mut_cds.fillna(0).set_index("ref_cd",drop=True)
-    lbl_mat_mut_cds=lbl_mat_mut_cds.loc[:,cds_64]
-    if cctmr!=None:
-        lbl_mat_mut_cds_cctmr1=lbl_mat_mut_cds.iloc[(cctmr[0][0]-1):(cctmr[0][1]-1),:]
-        lbl_mat_mut_cds_cctmr2=lbl_mat_mut_cds.iloc[(cctmr[1][0]-1):(cctmr[1][1]-1),:]
-        lbl_mat_mut_cds=lbl_mat_mut_cds_cctmr1+lbl_mat_mut_cds_cctmr2
-
-    cov_mut=pd.DataFrame({"cov":lbl_mat_mut_cds.T.sum().reset_index(drop=True)})
-    # cov_mut.to_csv("cov_mut")
-
-    wt=cov_per_cds.loc[:,"cov"] - cov_mut.loc[:,"cov"] 
-    return wt
-
-def data_fit2norm_wrt_wild(unsel_lbl,sel_lbl,type_form,FCA,cctmr,lbls):
-    """
-    This normalises Fold changes (FC) to normalised fitness values (Fi)
-    
-    Gets fhs of sbam files and using pysam, gets the coverage per nt
-    bins it into 3 nt bins i.e. codons.
-    substract mat mut cd sum,
-    
-    get log2 ratio of vectors for both sel to unsel (FCW)
-    
-    .. math::
-
-        DMut = (Mut selected /WT selected )/(Mut input /WT input )
-        Fi = FC - FCW
-    
-    :param unsel_lbl: name of input sample.
-    :param sel_lbl: name of selected sample.
-    :param type_form: type of mutations codon (`cds`) or amino acid (`aas`) form.
-    :param FCA: Fold change(FC) values of all(A) mutations.
-    :param cctmr: tuple with (1-based) boundaries of concatamers.
-    :param lbls: dataframe with configuration `lbls`.
-    :returns FiA:  normalised fitness values (Fi)
-    """
-    FCW=pd.DataFrame()
-    FCW.loc[:,'FCW']=np.log(getwildtypecov(sel_lbl,lbls,cctmr)/getwildtypecov(unsel_lbl,lbls,cctmr))
-
-    FiA=pd.DataFrame()
-    if type_form=='aas':
-        iterations=21
-    if type_form=='cds':
-        iterations=64
-        
-    if len(FCA)/len(FCW)==iterations:
-        for i in range(iterations):
-#             print "%d %d %d" % (i*len(FCW),i*len(FCW)+len(FCW)-1, i*len(FCW)+len(FCW)-i*len(FCW))
-            FCA_frag=FCA.iloc[i*len(FCW):i*len(FCW)+len(FCW)]
-            FCA_frag=FCA_frag.reset_index()
-            FiA_frag=FCA_frag["FCA"]-FCW["FCW"]
-            FiA=pd.concat([FiA,FiA_frag],ignore_index=True)
-    else: 
-        logging.error("len(FCA)/len(FCW) is %d instead of %d" % (len(FCA)/len(FCW),iterations))
-    if len(FiA)!=len(FCA):
-        logging.error("len(FiA) is %d instead of %d" % (len(FiA),len(FCA)))
-    return FiA,FCW                                      
+#     if len(FCA)/len(FCW)==iterations:
+#         for i in range(iterations):
+# #             print "%d %d %d" % (i*len(FCW),i*len(FCW)+len(FCW)-1, i*len(FCW)+len(FCW)-i*len(FCW))
+#             FCA_frag=FCA.iloc[i*len(FCW):i*len(FCW)+len(FCW)]
+#             FCA_frag=FCA_frag.reset_index()
+#             FiA_frag=FCA_frag["FCA"]-FCW["FCW"]
+#             FiA=pd.concat([FiA,FiA_frag],ignore_index=True)
+#     else: 
+#         logging.error("len(FCA)/len(FCW) is %d instead of %d" % (len(FCA)/len(FCW),iterations))
+#     if len(FiA)!=len(FCA):
+#         logging.error("len(FiA) is %d instead of %d" % (len(FiA),len(FCA)))
+#     return FiA,FCW                                      
                 
-
 def repli2data_lbl_avg(prj_dh):    
     """
     This averages frequency data of replicates in data_lbl.
@@ -337,12 +238,12 @@ def repli2data_lbl_avg(prj_dh):
                             for repli_key in repli_keys:
                                 if not exists("%s/%s" % (prj_dh,repli_key)):
                                     logging.warning("can not find: %s/%s" % (prj_dh,repli_key))
-                    else:
-                        logging.info("already processed %s" % avg_lbl)
+                    # else:
+                    #     logging.info("already processed %s" % avg_lbl)
     else:
         logging.warning("skipping repli2data_lbl_avg")
 
-def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh,fsta_seqlen,cctmr,Ni_cutoff):    
+def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh,reflen,cctmr,Ni_cutoff,fsta_fh,clips=None):    
     """
     This function converts mutation matrix (produced from .mat) file into data_lbl format.
     
@@ -350,7 +251,7 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh,fsta_seqlen,cctmr,N
     :param lbl_mat_mut_cds_fh: path to codon level mutation matrix (.mat_mut_cds).
     :param host : name of host organism for choosing codon table. (coli | yeast | sapiens).
     :param prj_dh: path to project directory.
-    :param fsta_seqlen: nucleotide level length of the reference sequence.
+    :param reflen: nucleotide level length of the reference sequence.
     :param cctmr: tuple with (1-based) boundaries of concatamers.
     :param Ni_cutoff: threshold of depth per codon to be processed further. 
     """
@@ -362,7 +263,7 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh,fsta_seqlen,cctmr,N
         lbl_mat_cds.columns.name='mut'
         lbl_mat_cds.index.name='ref'
         if cctmr != None:
-            fsta_seqlen=(cctmr[0][1]-1)*3
+            reflen=(cctmr[0][1]-1)*3
             lbl_mat_cds=collate_cctmr(lbl_mat_cds,cctmr)
         lbl_mat_aas=mat_cds2mat_aas(lbl_mat_cds,host)# convert to aa data
         # lbl_mat_cds.to_csv('test')
@@ -374,7 +275,8 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh,fsta_seqlen,cctmr,N
                 elif type_form=="cds":
                     data_lbl=pd.DataFrame(lbl_mat_cds.drop("refi",axis=1).unstack())
                 # print data_lbl.iloc[170:180,:]
-                if (len(data_lbl)/(fsta_seqlen/3)==21) or (len(data_lbl)/(fsta_seqlen/3)==64):
+                ref_prt_len=(float(reflen)//3)
+                if (len(data_lbl)//ref_prt_len==21) or (len(data_lbl)//ref_prt_len==64):
                     data_lbl.columns=["NiA"]  # rename col Ni  
                     data_lbl.loc[:,'mutids']=makemutids(data_lbl,lbl_mat_cds.loc[:,"refi"]) # add mutids
                     data_lbl=pd.concat([data_lbl,getNS(data_lbl)], axis=1)
@@ -383,24 +285,57 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh,fsta_seqlen,cctmr,N
                         data_lbl.loc[:,('Ni%scut' % type_NorS)]=data_lbl.loc[:,'Ni%s' % type_NorS]
                         data_lbl.loc[data_lbl.loc[:,('Ni%scut' % type_NorS)]<Ni_cutoff,('Ni%scut' % type_NorS)]=np.nan \
                         #Ni_cutoff=8 varscan default
-                        data_lbl.loc[:,('Ni%scutlog' % type_NorS)]=np.log2(data_lbl.loc[:,('Ni%scut' % type_NorS)].astype('float'))
+                        data_lbl.loc[:,('Ni%scutlog' % type_NorS)]\
+                        =np.log2(data_lbl.loc[:,('Ni%scut' % type_NorS)].astype('float'))
                         data_lbl.loc[(data_lbl.loc[:,('Ni%scutlog' % type_NorS)]==-np.inf) \
                                      | (data_lbl.loc[:,('Ni%scutlog' % type_NorS)]==np.inf),('Ni%scutlog' % type_NorS)]=np.nan
                     
+                    data_lbl.loc[:,'refi']=mutids_converter(data_lbl.loc[:,'mutids'],'refi',type_form)
+                    data_lbl.loc[:,'ref']=mutids_converter(data_lbl.loc[:,'mutids'],'ref',type_form)
+                    data_lbl.loc[:,'mut']=mutids_converter(data_lbl.loc[:,'mutids'],'mut',type_form)
+
+                    sbam_fh=lbl_mat_mut_cds_fh.replace('.mat_mut_cds','')
+                    if not exists(prj_dh+"/data_coverage"):
+                        try:
+                            makedirs(prj_dh+"/data_coverage")
+                        except :
+                            logging.warning("race error data_coverage")                    
                     if not exists(prj_dh+"/data_lbl/"+type_form):
                         try:
                             makedirs(prj_dh+"/data_lbl/"+type_form)
                         except :
                             logging.warning("race error data_lbl")
+                    if exists(sbam_fh):
+                        depth_ref_fh="%s/data_coverage/%s.depth_ref" % (prj_dh,lbli)
+                        depth_ref=getdepth_ref(sbam_fh,fsta_fh,cctmr=cctmr,data_out_fh=depth_ref_fh)
+                        if 'refi' in depth_ref:
+                            depth_ref=depth_ref.set_index('refi')
+                        if 'refi' in data_lbl:
+                            data_lbl=data_lbl.set_index('refi')
+                        data_lbl=data_lbl.join(depth_ref)
+                        data_lbl=data_lbl.reset_index()
+                    #clip ends
+                    if not clips is None:
+                        cols=[col for col in data_lbl.columns if not (('mut' in col) or ('ref' in col))]
+                        # print cols
+                        data_lbl.loc[(data_lbl.loc[:,'refi']<clips[0]),cols]=np.nan
+                        data_lbl.loc[(data_lbl.loc[:,'refi']>clips[1]),cols]=np.nan
                     data_lbl.reset_index().to_csv('%s/data_lbl/%s/%s' % (prj_dh,type_form,str(lbli)),index=False)
                 else:
-                    logging.error("len(data_lbl)/ref_len is %d instead of 21 or 64" % (len(data_lbl)/(fsta_seqlen/3)))
+                    logging.error("len(data_lbl)/reflen is %d instead of 21 or 64" % (len(data_lbl)/(reflen/3)))
             else :
                 logging.info("already processed: %s" % (str(lbli)))
+        if not exists(prj_dh+"/data_mutmat"):
+            try:
+                makedirs(prj_dh+"/data_mutmat")
+            except :
+                logging.warning("race error data_mutmat")
+        lbl_mat_cds_out_fh='%s/data_mutmat/%s' % (prj_dh,basename(lbl_mat_mut_cds_fh))
+        lbl_mat_cds.to_csv(lbl_mat_cds_out_fh)
     else :
         logging.warning("can not find lbl_mat_mut_cds_fh : %s" % (lbl_mat_mut_cds_fh))
 
-def data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh,cctmr,lbls):
+def data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh,cctmr,lbls,fsta_fh):
     """
     This estimates Fitness (data_fit) from mutation data (data_lbl) in selcted and unselected samples.  
     
@@ -419,7 +354,8 @@ def data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh,cctmr,lbls):
                 unsel_data=pd.read_csv(('%s/data_lbl/%s/%s' % (prj_dh,type_form,unsel_lbl)))
                 sel_data  =pd.read_csv(('%s/data_lbl/%s/%s' % (prj_dh,type_form,  sel_lbl)))
                 data_fit=concat_cols(unsel_data,sel_data,'mutids',
-                        ['mut','ref','NiAcutlog',"NiScutlog"],['NiAcutlog',"NiScutlog"],
+                        ['mut','ref','NiAcutlog',"NiScutlog",'depth_ref'],
+                                     ['NiAcutlog',"NiScutlog",'depth_ref'],
                         'unsel','sel')
                 data_fit.loc[:,'NiAunsel']=data_fit.loc[:,'NiAcutlogunsel']
                 data_fit.loc[:,'NiAsel']=data_fit.loc[:,'NiAcutlogsel']
@@ -427,22 +363,28 @@ def data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh,cctmr,lbls):
                 data_fit.loc[:,'NiSsel']=data_fit.loc[:,'NiScutlogsel']                
                 data_fit.loc[:,'FCA']=data_fit.loc[:,'NiAsel']-data_fit.loc[:,'NiAunsel'] # fold change all
                 data_fit.loc[:,'FCS']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCA']
-                data_fit.loc[:,'FiA']=np.nan
+                data_fit.loc[:,'FC_depth_ref']=\
+                np.log2(data_fit.loc[:,'depth_refsel'])\
+                -np.log2(data_fit.loc[:,'depth_refunsel'])
+                data_fit.loc[:,'FCA_norm']=np.nan
                 data_fit=data_fit.reset_index()
-                if 'wild' in norm_type:                            data_fit['FiA'],data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCW']=data_fit2norm_wrt_wild(unsel_lbl, \
-                                                                                                    sel_lbl,type_form, \
-                                                                                                    data_fit['FCA'], \
-                                                                                                    cctmr,lbls)
+                if 'wild' in norm_type:                            
+                    # data_fit['FiA'],
+                    # data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCW']\
+                    # =data_fit2norm_wrt_wild(unsel_lbl,sel_lbl,type_form,data_fit['FCA'],cctmr,lbls,fsta_fh)
+                    # =data_fit2norm_wrt_wild(unsel_lbl,sel_lbl,type_form,data_fit['FCA'],cctmr,lbls)
+                    data_fit.loc[:,'FCA_norm']=data_fit.loc[:,'FCA']-data_fit.loc[:,'FC_depth_ref']
                 elif 'syn' in norm_type:
                     try:
                         gauss_mean, gauss_sdev = fit_gauss_params(data_fit.loc[:,'FCS'])
-                        data_fit.loc[:,'FiA']=(data_fit.loc[:,'FCA']-gauss_mean)/gauss_sdev
+                        data_fit.loc[:,'FCA_norm']=(data_fit.loc[:,'FCA']-gauss_mean)/gauss_sdev
                     except:
                         logging.info("norm wrt syn: excepted: data_fit/%s/%s" % (type_form,fit_lbl))
                 elif norm_type == 'none':
-                    data_fit.loc[:,'FiA']=data_fit.loc[:,'FCA']
-                data_fit.loc[:,'FiS']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FiA']
-                data_fit=rescale_fitnessbysynonymous(data_fit)
+                    data_fit.loc[:,'FCA_norm']=data_fit.loc[:,'FCA']
+                data_fit.loc[:,'FiS']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCA_norm']
+                # print data_fit.head()
+                data_fit=rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA")
                 data_fit=class_fit(data_fit)
                 if not exists(prj_dh+"/data_fit/"+type_form):
                     try:
@@ -548,18 +490,3 @@ def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
                         data_comparison.reset_index().to_csv(data_comparison_fh,index=False) # store                    
         else:
             logging.warning("do not exist: data_fit/%s/%s & data_fit/%s/%s" % (type_form,lbl_ctrl,type_form,lbl_test))
-
-def concat_cols(df1,df2,idx_col,df1_cols,df2_cols,
-                df1_suffix,df2_suffix):
-#     df1_cols=[ for col in df1_cols]
-    df1=df1.set_index(idx_col)
-    df2=df2.set_index(idx_col)    
-    combo=pd.concat([df1.loc[:,df1_cols],df2.loc[:,df2_cols]],axis=1)
-    # find common columns and rename them
-    common_cols=[col for col in df1_cols if col in df2_cols]
-    for col in common_cols:
-        df1_cols[df1_cols.index(col)]="%s%s" % (col,df1_suffix)
-        df2_cols[df2_cols.index(col)]="%s%s" % (col,df2_suffix)
-    combo.columns=df1_cols+df2_cols
-    combo.index.name=idx_col
-    return combo
