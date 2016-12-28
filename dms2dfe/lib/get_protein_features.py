@@ -30,6 +30,7 @@ import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe.lib.global_vars import aas_21,aas_21_3letter,secstruc_lbls
 from dms2dfe.lib.io_dfs import set_index
+from dms2dfe.lib.io_mut_files import makemutids_fromprtseq
 
 def getdssp_data(pdb_fh,dssp_fh):
     """
@@ -401,24 +402,28 @@ def get_data_feats_pos(prj_dh,info,data_out_fh):
         if(exists("%s/cfg/feats_pos" % prj_dh) and \
             stat("%s/cfg/feats_pos" % prj_dh).st_size !=0):
             data_feats=pd.read_csv('%s/cfg/feats_pos' % prj_dh)
-            data_feats.loc[:,'aasi']=data_feats.loc[:,'refi']
-            del data_feats['refi']
+            if 'aasi' in data_feats:
+                if not 'refi' in data_feats:
+                    data_feats.loc[:,'refi']=data_feats.loc[:,'aasi']
+                del data_feats['aasi']
         elif  (exists("%s/cfg/feats" % prj_dh) and \
             stat("%s/cfg/feats" % prj_dh).st_size !=0):
             data_feats=pd.read_csv('%s/cfg/feats' % prj_dh)
-        if isinstance(data_feats,pd.DataFrame):
-            if len(data_feats)!=0:
-                if "Unnamed: 0" in data_feats.columns:
-                    data_feats=data_feats.drop("Unnamed: 0", axis=1)
-                data_feats=data_feats.set_index("aasi",drop=True)
+        if isinstance(data_feats,pd.DataFrame) and len(data_feats)!=0:
+                data_feats=data_feats.set_index("refi",drop=True)
                 data_feats.index = [int(i) for i in data_feats.index]
                 tmp=pd.DataFrame(index=range(1,aas_len+1,1))
-                tmp.index.name="aasi"
+                tmp.index.name="refi"
                 data_feats=pd.concat([tmp,data_feats],axis=1,join_axes=[tmp.index])
                 logging.info("custom features taken from: cfg/feats")
         else:
             data_feats=pd.DataFrame(index=range(1,aas_len+1,1))
-            data_feats.index.name="aasi"
+            data_feats.index.name="refi"
+        if not 'ref' in data_feats:
+            data_feats.loc[:,'ref']=list(info.prt_seq)
+        if "Unnamed: 0" in data_feats.columns:
+            data_feats=data_feats.drop("Unnamed: 0", axis=1)
+
         if not pd.isnull(pdb_fh):
             feats_types=["dssp","dfromact","depth","consrv_score",'pdb']
             for feats_type in feats_types:
@@ -464,7 +469,7 @@ def get_data_feats_pos(prj_dh,info,data_out_fh):
                         pdb_df.reset_index().to_csv(data_feats_fh,index=False)            
                     else:
                         pdb_df=pd.read_csv(data_feats_fh)
-                        pdb_df=consrv_score_df.set_index("aasi",drop=True)                        
+                        pdb_df=pdb_df.set_index("refi",drop=True)
             if len(data_feats)!=0:
                 data_feats=pd.concat([data_feats,
                                       dssp_df,
@@ -527,8 +532,8 @@ def get_data_feats_mut_diffs(data_feats_pos,feats_sub_pos_tups,
     for feats_sub_pos_tup in feats_sub_pos_tups:
         feat_sub=feats_sub_pos_tup[0]
         feat_pos=feats_sub_pos_tup[1]
-        feat_pos_label="$\Delta \Delta$ (%s) per position" % feat_pos
-        feat_mut="$\Delta \Delta$ (%s) per mutation" % feat_pos
+        feat_pos_label="$\Delta$(%s) per position" % feat_pos
+        feat_mut="$\Delta$(%s) per mutation" % feat_pos
         if (feat_sub in data_feats_aas.columns) and \
             (feat_pos in data_feats_pos.columns):
             for refrefi in data_feats_pos.index:
@@ -540,7 +545,8 @@ def get_data_feats_mut_diffs(data_feats_pos,feats_sub_pos_tups,
                         data_feats_aas.loc[mut,feat_sub]\
                         -data_feats_pos.loc[refrefi,feat_pos]            
         #     mean
-        data_feats_pos_diffs=data_feats_mut_diffs.pivot_table(values=feat_mut,                                              index='mut',columns='refrefi').mean()
+        data_feats_pos_diffs=data_feats_mut_diffs.pivot_table(values=feat_mut,
+                            index='mut',columns='refrefi').mean()
         data_feats_pos_diffs.index.name='refrefi'
         data_feats_pos_diffs.name=feat_pos_label
         data_feats_pos=pd.concat([data_feats_pos,data_feats_pos_diffs],axis=1)
@@ -574,7 +580,7 @@ def get_data_feats_sub(data_out_fh,data_feats_aas_fh='%s/data_feats_aas' % abspa
                     data_feats_sub.loc[subid,"Mutant amino acid's %s" % feat]=\
                     data_feats_aas.loc[mutaa,feat]
                     data_feats_sub.loc[subid,
-                                       "$\Delta \Delta$ (%s) per substitution" \
+                                       "$\Delta$(%s) per substitution" \
                                        % feat]\
                     =data_feats_aas.loc[mutaa,feat]-data_feats_aas.loc[refaa,feat]
         # data_feats_sub.loc[:,'Substitution type']=data_feats_sub.index            
@@ -584,7 +590,7 @@ def get_data_feats_sub(data_out_fh,data_feats_aas_fh='%s/data_feats_aas' % abspa
     else:
         logging.info("already processed") 
 
-def get_data_feats_mut(prj_dh,data_out_fh):
+def get_data_feats_mut(prj_dh,data_out_fh,info):
     if not exists(data_out_fh):
         data_feats_mut_fh="%s/cfg/feats_mut" % (prj_dh)
         data_feats_mut_diffs_fh="%s/data_feats/aas/data_feats_mut_diffs" % (prj_dh)
@@ -608,6 +614,9 @@ def get_data_feats_mut(prj_dh,data_out_fh):
         for col in ['mut','ref','refi','refrefi']:
             if col in data_feats_mut:
                 del data_feats_mut[col]        
+        if len(data_feats_mut)==0:
+            data_feats_mut=pd.DataFrame(index=makemutids_fromprtseq(info.prt_seq))
+            data_feats_mut.index.name='mutids'
         data_feats_mut.to_csv(data_out_fh)
         logging.info("output: data_feats/aas/data_feats_mut")
         return data_feats_mut    

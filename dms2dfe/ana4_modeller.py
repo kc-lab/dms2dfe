@@ -52,10 +52,14 @@ def main(prj_dh):
         makedirs("%s/data_ml/%s" % (prj_dh,type_form))
 
     data_feats=pd.read_csv("%s/data_feats/aas/data_feats_all" % (prj_dh))
-    # remove junk columns
+    # remove junk columns # stitch
     cols_del=[col for col in data_feats if "Helix formation" in col]+\
     [col for col in data_feats if "beta bridge" in col]+\
-    [col for col in data_feats if "Chirality" in col]
+    [col for col in data_feats if "Chirality" in col]+\
+    [col for col in data_feats if "Offset from residue to the partner" in col]+\
+    [col for col in data_feats if "Energy (kcal/mol) of " in col]+\
+    [col for col in data_feats if "Secondary structure" in col]
+
     for col in cols_del:
         del data_feats[col]
 
@@ -65,12 +69,12 @@ def main(prj_dh):
                      if (not "inferred" in basename(fh)) and ("_WRT_" in basename(fh))]
     data_fit_keys = np.unique(data_fit_keys)
     if len(data_fit_keys)!=0:
-        # pooled_io_ml(data_fit_keys[0])
+        pooled_io_ml(data_fit_keys[0])
         # # for data_fit_key in data_fit_keys:
         # #     pooled_io_ml(data_fit_key)
-        pool_io_ml=Pool(processes=int(cores)) 
-        pool_io_ml.map(pooled_io_ml,data_fit_keys)
-        pool_io_ml.close(); pool_io_ml.join()
+        # pool_io_ml=Pool(processes=int(cores)) 
+        # pool_io_ml.map(pooled_io_ml,data_fit_keys)
+        # pool_io_ml.close(); pool_io_ml.join()
     else:
         logging.info("already processed")
     logging.shutdown()

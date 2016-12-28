@@ -46,6 +46,20 @@ def makemutids(data_lbl,refis):
         sys.exit()
     return mutids    
 
+def makemutids_fromprtseq(prt_seq,muts=None):
+    refs=list(prt_seq)
+    refis=range(1,len(refs)+1,1)
+    if muts is None:
+        from dms2dfe.lib.global_vars import aas_21
+        muts=aas_21
+    mutids=[]
+    for i in range(len(refs)):
+        for mut in muts: 
+            mutid="%s%03d%s" % (refs[i],refis[i],mut)
+            mutids.append(mutid.replace('*','X'))
+    return mutids
+
+
 def mutids_converter(mutids,out,type_form):
     if type_form=='aas':
         offset=0

@@ -65,6 +65,7 @@ def info2src(prj_dh):
     
     :param prj_dh: path to project directory
     """        
+    from dms2dfe.lib.io_seq_files import fasta_nts2prt
     auto_find_missing_paths(prj_dh)
     info=pd.read_csv(prj_dh+"/cfg/info")
     # info=auto_find_missing_paths(prj_dh)
@@ -85,7 +86,9 @@ def info2src(prj_dh):
             logging.error('Path to file is missing. Check in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
             return None
 
+    info.loc['prj_dh','input']=abspath(prj_dh)
     info.loc['fsta_id','input'],info.loc['fsta_seq','input'],info.loc['fsta_len','input']=get_fsta_feats(info.loc['fsta_fh','input'])
+    info.loc['prt_seq','input']=fasta_nts2prt(info.loc['fsta_fh','input'],host=info.loc['host','input'])
     info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     csv2src(prj_dh+"/cfg/info","%s/../tmp/info.py" % (abspath(dirname(__file__))))
     logging.info("configuration compiled: %s/cfg/info" % prj_dh)

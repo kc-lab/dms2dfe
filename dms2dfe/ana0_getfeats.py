@@ -52,7 +52,7 @@ def main(prj_dh):
     data_feats_sub=get_data_feats_sub(data_out_fh=data_feats_sub_fh)
     #FEATS PER MUTATION
     data_feats_mut_fh="%s/data_feats/aas/data_feats_mut" % prj_dh
-    data_feats_mut=get_data_feats_mut(prj_dh,data_out_fh=data_feats_mut_fh)    
+    data_feats_mut=get_data_feats_mut(prj_dh,data_feats_mut_fh,info)    
     #FEATS ALL
     data_feats_all_fh="%s/data_feats/aas/data_feats_all" % prj_dh
     data_feats_all=get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,

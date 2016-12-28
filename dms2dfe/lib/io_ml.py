@@ -17,6 +17,7 @@ from sklearn.grid_search import GridSearchCV
 
 from dms2dfe.lib.io_dfs import set_index
 from dms2dfe.lib.io_nums import is_numeric
+from dms2dfe.lib.io_plots import saveplot,get_axlims
 
 import numpy as np
 import pandas as pd
@@ -114,7 +115,8 @@ def data_fit_feats2combo(data_fit,data_feats,y_coln,keep_mutids=False):
         data_all=data_all.loc[:,["mutids",y_coln]+list(X_cols)]
     return data_all,X_cols
 
-def y2classes(data_combo,y_coln,classes=2,middle_percentile_skipped=0):
+def y2classes(data_combo,y_coln,classes=2,
+             middle_percentile_skipped=0):
     data_combo.loc[:,'classes']=np.nan
     if classes==2:
         median=data_combo.loc[:,y_coln].median()
@@ -214,13 +216,53 @@ def denanrows(data_all,condi="any"):
     if "mutids" in data_all.columns.tolist():
         data_all_use=data_all.drop("mutids",axis=1)
     else:
-        data_all_use=data_all
+        data_all_use=data_all.copy()
     for rowi in range(len(data_all_use)):
         if condi=="any":
             keep_rows_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
         if condi=="all":
             keep_rows_bool.append(any(~pd.isnull(data_all_use.iloc[rowi,:])))
     data_all=data_all.loc[keep_rows_bool,:]
+    return data_all
+
+def denan(data_all,axis,condi="any"):
+    """
+    This removes rows with any np.nan value/s.  
+    
+    :param data_all: input dataframe.
+    :param condi: conditions for deletion of rows ["any": if any element is nan ,default | "all" : if all elements are nan] 
+    :returns data_all: output dataframe.
+    """
+    import logging
+    logging.info("denan: original: rows=%s cols=%s" % data_all.shape)
+
+    if axis=='both':
+        condi_cols=condi.split(' ')[0]
+        condi_rows=condi.split(' ')[1]
+    if axis=='rows' or axis==0:
+        condi_rows=condi        
+    if axis=='cols' or axis==1:
+        condi_cols=condi
+    if axis=='cols' or axis==1 or axis=='both':
+        data_all_use=data_all.copy()
+        keep_bool=[]
+        for col in data_all_use:
+            if condi_cols=="any":
+                keep_bool.append(all(~pd.isnull(data_all_use.loc[:,col])))
+            if condi_cols=="all":
+                keep_bool.append(any(~pd.isnull(data_all_use.loc[:,col])))
+        data_all=data_all.loc[:,keep_bool]
+        logging.info("denan: cols:      rows=%s cols=%s" % data_all.shape)
+    if axis=='rows' or axis==0 or axis=='both':
+        data_all_use=data_all.copy()
+        keep_bool=[]
+        for rowi in range(len(data_all_use)):
+            if condi_rows=="any":
+                keep_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
+            if condi_rows=="all":
+                keep_bool.append(any(~pd.isnull(data_all_use.iloc[rowi,:])))
+        data_all=data_all.loc[keep_bool,:]
+        logging.info("denan: rows:      rows=%s cols=%s" % data_all.shape)
     return data_all
 
 def plot_ROC(y_test,y_score,classes):
@@ -299,12 +341,48 @@ def plot_importances(importances,X_cols):
     feature_importances.plot(kind="barh",ax=ax_imp,legend=False)
     ax_imp.invert_yaxis()
     ax_imp.set_yticklabels(feature_importances.loc[:,"feature"])
-    ax_imp.set_xlabel("Relative importances")
+    ax_imp.set_xlabel("Feature importance")
     ax_imp.set_xticklabels(ax_imp.get_xticks(),rotation=90)
     plt.tight_layout()
     return feature_importances
 
-def run_RF(data_all,X_cols,y_coln,plot_fh="test",test_size=.5,data_test=None):
+def get_RF_ci(RF_type,RFC,X_train,X_test,y_test,y_score,
+                classes=['yes','no'],plot_fh=None):
+    import forestci as fci
+    # calculate inbag and unbiased variance
+    inbag = fci.calc_inbag(X_train.shape[0], RFC)
+    V_IJ_unbiased = fci.random_forest_error(RFC,inbag, X_train,
+                                                 X_test)
+    # Plot forest prediction for emails and standard deviation for estimates
+    # Blue points are spam emails; Green points are non-spam emails
+    idx = np.where(y_test == 1)[0]
+    fig=plt.figure(figsize=[3,3])
+    ax=plt.subplot(111)
+    if RF_type=='classi':
+        ax.errorbar(y_score[idx, 1], np.sqrt(V_IJ_unbiased[idx]),
+                     fmt='.', alpha=0.75, label=classes[0])
+
+        idx = np.where(y_test == 0)[0]
+        ax.errorbar(y_score[idx, 1], np.sqrt(V_IJ_unbiased[idx]),
+                     fmt='.', alpha=0.75, label=classes[1])
+
+        ax.set_xlabel('Prediction probability')
+        ax.set_ylabel('Standard deviation')
+        ax.legend()
+    if RF_type=='regress':
+        # Plot error bars for predicted MPG using unbiased variance
+        ax.errorbar(y_test, y_score, yerr=np.sqrt(V_IJ_unbiased), fmt='o')
+        xlim,ylim=get_axlims(y_test,y_score,
+                             space=0.1,equal=True)
+        ax.plot(xlim,xlim, '--')
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+        ax.set_xlabel('Test')
+        ax.set_ylabel('Predicted')
+    saveplot(plot_fh)
+
+def run_RF_classi(data_all,X_cols,y_coln,
+           plot_fh="test",test_size=0.34,data_test=None):
     """
     This implements Random Forest classifier.
     
@@ -339,7 +417,7 @@ def run_RF(data_all,X_cols,y_coln,plot_fh="test",test_size=.5,data_test=None):
             y_train=y
             X_test_df=data_test.loc[:,list(X_cols)]
 #             X_test_df.to_csv("test_xtest")
-            X_test_df=denanrows(X_test_df)
+            X_test_df=denan(X_test_df,axis='both',condi='all any')
             X_test=X_test_df.as_matrix()
             y_test=None
 
@@ -349,7 +427,7 @@ def run_RF(data_all,X_cols,y_coln,plot_fh="test",test_size=.5,data_test=None):
                       "min_samples_leaf":[1,25,50,100],
                       "criterion": ["gini", "entropy"]}
 
-        grid_search = GridSearchCV(model, param_grid=param_grid,cv=5)
+        grid_search = GridSearchCV(model, param_grid=param_grid,cv=10)
 #     return grid_search,X_train,y_train
 #         np.savetxt("X_train", X_train,delimiter=",")
 #         np.savetxt("y_train", y_train,delimiter=",")
@@ -375,8 +453,13 @@ def run_RF(data_all,X_cols,y_coln,plot_fh="test",test_size=.5,data_test=None):
 
         importances = grid_search.best_estimator_.feature_importances_
         feature_importances=plot_importances(importances,X_cols)
-        plt.savefig(plot_fh.replace("_roc_","_relative_importances_")+".pdf",format='pdf')
-        # plt.savefig(plot_fh.replace("_roc_","_relative_importances_"));plt.clf();plt.close()
+        feature_importances_plot_fh=plot_fh.replace("_roc_","_relative_importances_")+".pdf"
+        plt.savefig(feature_importances_plot_fh,format='pdf')
+        # confidence intervals
+        # ci_plot_fh=plot_fh.replace("_roc_","_ci_")+".pdf"
+        # get_RF_ci('classi',grid_search,X_train,X_test,
+        #                 y_test,y_score,
+        #                 classes=classes,plot_fh=ci_plot_fh)
     return grid_search,y_test,y_pred,y_score,feature_importances,data_preds
 
 def run_RF_regress(data_all,X_cols,y_coln,test_size=0.5,data_test=None,plot_fh="test"):
@@ -417,9 +500,10 @@ def run_RF_regress(data_all,X_cols,y_coln,test_size=0.5,data_test=None,plot_fh="
                   "oob_score": [True],
                  }
 
-    grid_search = GridSearchCV(model, param_grid=param_grid,cv=5)
+    grid_search = GridSearchCV(model, param_grid=param_grid,cv=10)
     grid_search.fit(X_train,y_train)
     y_pred=grid_search.predict(X_test)
+    y_score=grid_search.predict_proba(X_test)
 
     if test_size!=0:    
         data_preds=None
@@ -433,6 +517,10 @@ def run_RF_regress(data_all,X_cols,y_coln,test_size=0.5,data_test=None,plot_fh="
     feature_importances=plot_importances(importances,X_cols)
     plt.savefig(plot_fh.replace("_roc_","_relative_importances_")+".pdf",format='pdf')
     # plt.savefig(plot_fh.replace("_roc_","_relative_importances_"));plt.clf();plt.close()
+    # ci_plot_fh=plot_fh.replace("_roc_","_ci_")+".pdf"
+    # get_RF_ci('regress',grid_search,X_train,X_test,
+    #                 y_test,y_score,
+    #                 plot_fh=ci_plot_fh)
     return grid_search,y_test,y_pred,feature_importances,data_preds
 
 import cPickle as pickle
@@ -471,16 +559,23 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
                     X_cols_classi=data_feats.columns.tolist()
                     # data_combo=pd.concat([set_index(data_feats,"mutids"),
                     #                       set_index(data_fit,"mutids").loc[:,y_coln_classi]],axis=1)
+                    # data_combo=data_feats.join(data_fit.loc[:,y_coln_classi])
                     data_combo=pd.concat([data_feats,
                                           data_fit.loc[:,y_coln_classi]],axis=1)
                     data_combo.index.name='mutids'
                     # data_combo=set_index(data_combo,"mutids")
                     # data_combo.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_combo_"),index=False) #test
-
+                    # print sum(~pd.isnull(data_combo.loc[:,'classes']))
                     data_ml=X_cols2binary(data_combo.drop(y_coln_classi,axis=1))
+                    # print sum(~pd.isnull(data_ml.loc[:,'classes']))
                     data_ml.loc[:,y_coln_classi]=data_combo.loc[:,y_coln_classi]
+                    # print sum(~pd.isnull(data_ml.loc[:,'classes']))
                     data_ml=rescalecols(data_ml)
-                    data_classi_train=denanrows(data_ml)                    
+                    # print sum(~pd.isnull(data_ml.loc[:,'classes']))
+                    # data_classi_train=denanrows(data_ml)    
+                    data_classi_train=denan(data_ml,axis='both',condi='all any')
+                    # print sum(~pd.isnull(data_classi_train.loc[:,'classes']))
+
                     data_classi_train_mutids=list(data_classi_train.index.values)
                     data_classi_test_mutids=[mutid for mutid in data_ml_mutids if not mutid in data_classi_train_mutids]
                     data_classi_test=data_ml.loc[data_classi_test_mutids,:]
@@ -504,9 +599,9 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
                 # classi
                 grid_search_classi,y_test_classi,y_pred_classi,y_score_classi,\
                 feature_importances_classi,data_preds_classi=\
-                run_RF(data_classi_train,X_cols_classi,y_coln_classi,
+                run_RF_classi(data_classi_train,X_cols_classi,y_coln_classi,
                         plot_fh=plot_fh.replace("fig_ml_","fig_ml_classi1_"),
-                        test_size=0.5,data_test=data_classi_test) #                
+                        test_size=0.34,data_test=data_classi_test) #                
                 with open(grid_search_classi_fh, 'wb') as fh:
                     pickle.dump(grid_search_classi, fh, -1)
                 feature_importances_classi.to_csv(data_fh.replace("data_ml_","data_ml_classi_feature_importances_"))
@@ -518,26 +613,25 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
                 data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
                 data_classi_train  =data_classi_train.set_index("mutids",drop=True)
             #regress
-            y_coln_regress="FCA"
+            y_coln_regress="FCA_norm"
             data_regress_train=data_classi_train                
             data_regress_train=X_cols2binary(data_regress_train,[y_coln_classi])
             data_fit=set_index(data_fit,"mutids")
             data_regress_train.loc[:,y_coln_regress]=\
             data_fit.loc[data_classi_train.index.values,y_coln_regress]
-            data_regress_train=denanrows(data_regress_train)
+            data_regress_train=denan(data_regress_train,axis='both',condi='all any')
             data_regress_test=data_classi_test                
             if y_coln_classi in data_regress_test.columns.tolist(): 
                 data_regress_test=data_regress_test.drop(y_coln_classi,axis=1)
             else:
-                data_regress_test=denanrows(data_regress_test)
+                data_regress_test=denan(data_regress_test,axis='both',condi='all any')
                 data_regress_test=X_cols2binary(data_regress_test,[y_coln_classi])
-            data_regress_test=denanrows(data_regress_test)
+            data_regress_test=denan(data_regress_test,axis='both',condi='all any')
 
             X_cols_regress_class_fit=[]
-            X_cols_regress=[col for col in X_cols_regress_class_fit+\
-                            list(feature_importances_classi.loc[\
-                            feature_importances_classi.loc[\
-                            :,"importances"]>0.002,'feature']) \
+            # X_cols_regress_selected=list(feature_importances_classi.loc[feature_importances_classi.loc[:,"importances"]>0.002,'feature'])
+            X_cols_regress_selected=feature_importances_classi.sort_values(by='importances',ascending=False).head(50).loc[:,'feature'].tolist()
+            X_cols_regress=[col for col in X_cols_regress_class_fit+X_cols_regress_selected\
                             if col in data_regress_test.columns.tolist()]
             if y_coln_regress in X_cols_regress:
                 X_cols_regress.remove(y_coln_regress)
@@ -547,7 +641,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
                 grid_search_regress,y_test_regress,y_pred_regress,\
                 feature_importances_regress,data_preds_regress=\
                 run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,
-                test_size=0,data_test=data_regress_test,plot_fh=plot_fh.replace("fig_ml_","fig_ml_regress_"))
+                                test_size=0,data_test=data_regress_test,plot_fh=plot_fh.replace("fig_ml_","fig_ml_regress_"))
 
                 with open(grid_search_regress_fh, 'wb') as fh:
                     pickle.dump(grid_search_regress, fh, -1)
