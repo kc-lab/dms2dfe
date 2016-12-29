@@ -17,7 +17,7 @@ import numpy as np
 from dms2dfe.lib.io_seq_files import get_fsta_feats
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
-
+import pickle
 
 ## DEFS
 def is_cfg_ok(cfg_dh,cfgs) :
@@ -304,3 +304,12 @@ def getusable_comparison_list(prj_dh):
         for test in row[0:] :
             comparison_list.append([ctrl,test])
     return  comparison_list  
+
+def to_pkl(data,fh):
+    if not fh is None:
+        with open(fh, 'wb') as f:
+            pickle.dump(data, f, -1)    
+
+def read_pkl(fh):
+    with open(fh,'rb') as f:
+        return pickle.load(f) 

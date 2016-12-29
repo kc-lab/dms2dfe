@@ -18,7 +18,7 @@ warnings.simplefilter(action = "ignore", category = DeprecationWarning)
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe import configure
-from dms2dfe.lib.io_ml import data_fit_feats2combo,y2classes,X_cols2numeric,denanrows,run_RF,data_fit2ml
+from dms2dfe.lib.io_ml import data_fit2ml
 from dms2dfe.lib.global_vars import mut_types_form
 
 def main(prj_dh):

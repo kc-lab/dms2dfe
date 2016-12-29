@@ -7,15 +7,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def saveplot(plot_fh,form='both',
-            transparent=True,
-            tight_layout=True,):
+            transparent=False,
+            tight_layout=True,
+            print_fh=False):
     if not plot_fh is None:
         def save(plot_fh,form,transparent):
             if '.%s' % form in plot_fh:
                 plot_out_fh=plot_fh
             else:
                 plot_out_fh='%s.%s' % (plot_fh,form)
-            print plot_out_fh
+            if print_fh:
+                print plot_out_fh
             plt.savefig(plot_out_fh,format=form,transparent=transparent)
         if tight_layout:
             plt.tight_layout()
