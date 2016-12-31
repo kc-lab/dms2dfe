@@ -170,61 +170,6 @@ def repli2avg(replis,prj_dh,type_form):
     data_avg=data_avg.reset_index()
     data_avg=data_avg.replace(0, np.nan)
     return data_avg
-
-# def data_fit2norm_wrt_wild(unsel_lbl,sel_lbl,type_form,FCA,cctmr,lbls,
-#                            fsta_fh):
-#     """
-#     This normalises Fold changes (FC) to normalised fitness values (Fi)
-    
-#     Gets fhs of sbam files and using pysam, gets the coverage per nt
-#     bins it into 3 nt bins i.e. codons.
-#     substract mat mut cd sum,
-    
-#     get log2 ratio of vectors for both sel to unsel (FCW)
-    
-#     .. math::
-
-#         DMut = (Mut selected /WT selected )/(Mut input /WT input )
-#         Fi = FC - FCW
-    
-#     :param unsel_lbl: name of input sample.
-#     :param sel_lbl: name of selected sample.
-#     :param type_form: type of mutations codon (`cds`) or amino acid (`aas`) form.
-#     :param FCA: Fold change(FC) values of all(A) mutations.
-#     :param cctmr: tuple with (1-based) boundaries of concatamers.
-#     :param lbls: dataframe with configuration `lbls`.
-#     :returns FiA:  normalised fitness values (Fi)
-#     """
-#     refid,refseq,refend=get_fsta_feats(fsta_fh)
-#     refini=0
-
-#     if 'varname' in lbls:
-#         lbls=lbls.set_index('varname')
-#     sel_sbam_fh=lbls.loc[sel_lbl,'fhs_1']
-#     unsel_sbam_fh=lbls.loc[sel_lbl,'fhs_1'] 
-#     # stitch get sbam_fh if fastq_fh is in lbls
-#     FCW=pd.DataFrame()
-#     FCW.loc[:,'FCW']=np.log(getwildtypecov(sel_sbam_fh,refid,refend,cctmr=cctmr,refini=0))\
-#                      -np.log(getwildtypecov(unsel_sbam_fh,refid,refend,cctmr=cctmr,refini=0))
-
-#     FiA=pd.DataFrame()
-#     if type_form=='aas':
-#         iterations=21
-#     if type_form=='cds':
-#         iterations=64
-        
-#     if len(FCA)/len(FCW)==iterations:
-#         for i in range(iterations):
-# #             print "%d %d %d" % (i*len(FCW),i*len(FCW)+len(FCW)-1, i*len(FCW)+len(FCW)-i*len(FCW))
-#             FCA_frag=FCA.iloc[i*len(FCW):i*len(FCW)+len(FCW)]
-#             FCA_frag=FCA_frag.reset_index()
-#             FiA_frag=FCA_frag["FCA"]-FCW["FCW"]
-#             FiA=pd.concat([FiA,FiA_frag],ignore_index=True)
-#     else: 
-#         logging.error("len(FCA)/len(FCW) is %d instead of %d" % (len(FCA)/len(FCW),iterations))
-#     if len(FiA)!=len(FCA):
-#         logging.error("len(FiA) is %d instead of %d" % (len(FiA),len(FCA)))
-#     return FiA,FCW                                      
                 
 def repli2data_lbl_avg(prj_dh):    
     """
@@ -257,7 +202,8 @@ def repli2data_lbl_avg(prj_dh):
     else:
         logging.warning("skipping repli2data_lbl_avg")
 
-def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh,reflen,cctmr,Ni_cutoff,fsta_fh,clips=None):    
+def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,
+                    host,prj_dh,reflen,cctmr,Ni_cutoff,fsta_fh,clips=None):
     """
     This function converts mutation matrix (produced from .mat) file into data_lbl format.
     

@@ -14,7 +14,7 @@ import subprocess
 from dms2dfe import configure
 from dms2dfe.lib.variant_caller import getusablesbams_list,sam2mutmat #is_qry_alind_useful,qual_chars2nums,get_mut_cds
 import logging
-logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
+logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
 
 def main(prj_dh):

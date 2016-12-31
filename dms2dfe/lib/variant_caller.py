@@ -14,7 +14,8 @@ import numpy as np
 import pandas as pd
 import pysam
 import logging
-logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
+import subprocess
+logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe.lib.global_vars import cds_64
 
 # # DEFS
@@ -48,6 +49,11 @@ def getusablesbams_list(prj_dh):
                 logging.info("already processed: %s" % basename(sbam_fh))
         else :
             logging.info("already processed: %s" % basename(sbam_fh))
+            if not exists('%s/data_mutmat' % prj_dh):
+                makedirs('%s/data_mutmat' % prj_dh)
+            com="cp %s.mat_mut_cds %s/data_mutmat/%s.mat_mut_cds" % (sbam_fh,prj_dh,basename(sbam_fh))
+            # print com
+            subprocess.call(com,shell=True)
     return sbam_fhs
 
 def qual_chars2nums(qual_chars,qual_format):

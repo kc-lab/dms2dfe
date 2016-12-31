@@ -17,7 +17,7 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import confusion_matrix,classification_report,regression
 
 from dms2dfe.lib.io_data_files import read_pkl,to_pkl
-from dms2dfe.lib.io_dfs import set_index
+from dms2dfe.lib.io_dfs import set_index,denan
 from dms2dfe.lib.io_nums import is_numeric
 from dms2dfe.lib.io_plots import saveplot,get_axlims
 
@@ -34,90 +34,15 @@ warnings.simplefilter(action = "ignore", category = FutureWarning)
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
-
-def data_fit_feats2combo(data_fit,data_feats,y_coln,keep_mutids=False):
+def denanrows(data_all,condi="any"):
     """
-    This combines data_fit and data_feats to make data_all.
+    This removes rows with any np.nan value/s.  
     
-    :param data_fit: fitness data (pandas dataframe).
-    :param data_feats: features wrt length of protein 
-    :param y_coln: name of column with classes in `data_fit`. 
-    :returns data_all: `data_fit` and `data_feats` concatenated.
-    :returns Xcols: list of features.
+    :param data_all: input dataframe.
+    :param condi: conditions for deletion of rows ["any": if any element is nan ,default | "all" : if all elements are nan] 
+    :returns data_all: output dataframe.
     """
-
-    if "Unnamed: 0" in data_feats.columns:
-        data_feats=data_feats.drop("Unnamed: 0", axis=1)
-    if "Unnamed: 0" in data_fit.columns:
-        data_fit=data_fit.drop("Unnamed: 0", axis=1)
-
-    for row in data_fit.iterrows():
-        mutid=row[1]["mutids"]
-        data_fit.loc[row[0],"aasi"]=int(''.join(ele for ele in mutid if ele.isdigit()))
-    data_fit.loc[:,"aasi"]=data_fit.loc[:,"aasi"].astype(int)
-    data_fit=data_fit.set_index("aasi",drop=True)
-    
-    if not data_feats.index.name=="aasi":
-        data_feats=data_feats.set_index("aasi",drop=True)
-    if np.nan in data_feats.index.values:
-        data_feats=data_feats.drop(np.nan,axis=0)
-    # data_feats.to_csv("test_data_feats")
-    data_feats_prt=pd.DataFrame(index=data_fit.index,columns=data_feats.columns)
-    rowi=0
-    for row in data_feats_prt.iterrows():
-        if (row[0] in data_feats_prt.index.values) and (row[0] in data_feats.index.values):
-            data_feats_prt.iloc[rowi,:]=data_feats.loc[row[0],:]
-        rowi+=1
-    # data_feats.to_csv("test_data_feats2")
-    data_feats_prt.columns=["%s" % col for col in data_feats_prt.columns.tolist()]
-    # data_feats_prt.to_csv("test_data_feats_prt")
-    
-    data_feats_aas_fh='%s/data_feats_aas' % abspath(dirname(__file__))
-    data_feats_aas=pd.read_csv(data_feats_aas_fh)
-    data_feats_aas=data_feats_aas.set_index("aas",drop=True)
-
-    data_feats_aas_mut=pd.DataFrame(index=data_fit.loc[:,"mut"],columns=data_feats_aas.columns)
-    rowi=0
-    for row in data_feats_aas_mut.iterrows():
-        if row[0] in data_feats_aas.index.values:
-            data_feats_aas_mut.iloc[rowi,:]=data_feats_aas.loc[row[0],:]
-        rowi+=1
-    data_feats_aas_mut.columns=["Mutant amino acid's %s" % col for col in data_feats_aas_mut.columns.tolist()]
-
-    data_feats_aas_ref=pd.DataFrame(index=data_fit.loc[:,"ref"],columns=data_feats_aas.columns)
-    rowi=0
-    for row in data_feats_aas_ref.iterrows():
-        if row[0] in data_feats_aas.index.values:
-            data_feats_aas_ref.iloc[rowi,:]=data_feats_aas.loc[row[0],:]
-        rowi+=1
-    data_feats_aas_ref.columns=["Reference amino acid's %s" % col for col in data_feats_aas_ref.columns.tolist()]
-
-    if len(data_fit) == len(data_feats_prt):
-        if len(data_fit) == len(data_feats_aas_mut):
-            if len(data_fit) == len(data_feats_aas_ref):
-                data_feats_prt.index=data_fit.index
-                data_feats_aas_mut.index=data_fit.index
-                data_feats_aas_ref.index=data_fit.index
-                data_all=pd.concat([data_fit,data_feats_prt,data_feats_aas_mut,data_feats_aas_ref],axis=1)
-            else :
-                logging.warning("len(data_feats_aas_ref)(%d) != len(data_fit)(%d)" % (len(data_feats_aas_ref),len(data_fit)))    
-        else :
-            logging.warning("len(data_feats_aas_mut)(%d) != len(data_fit)(%d)" % (len(data_feats_aas_mut),len(data_fit)))    
-    else :
-        logging.warning("len(data_feats_prt)(%d) != len(data_fit)(%d)" % (len(data_feats_prt),len(data_fit)))    
-
-
-    data_all["Mutant amino acid"]   =data_all["mut"]
-    data_all["Reference amino acid"]=data_all["ref"]
-    X_cols=['Mutant amino acid','Reference amino acid'] # X_cols=['mut','ref']
-    X_cols=np.array(X_cols+data_feats_prt.columns.tolist() \
-                    +data_feats_aas_mut.columns.tolist() \
-                    +data_feats_aas_ref.columns.tolist())
-    if not keep_mutids:
-        data_all=data_all.loc[:,[y_coln]+list(X_cols)]
-    elif keep_mutids:
-        data_all=data_all.loc[:,["mutids",y_coln]+list(X_cols)]
-    return data_all,X_cols
+    return denan(data_all,axis=0,condi="any")
 
 def y2classes(data_combo,y_coln,classes=2,
              middle_percentile_skipped=0):
@@ -207,67 +132,6 @@ def binary2classes(y_pred,classes):
                     y_pred_classes.append(classes[classi])
                     break
     return y_pred_classes
-
-def denanrows(data_all,condi="any"):
-    """
-    This removes rows with any np.nan value/s.  
-    
-    :param data_all: input dataframe.
-    :param condi: conditions for deletion of rows ["any": if any element is nan ,default | "all" : if all elements are nan] 
-    :returns data_all: output dataframe.
-    """
-    keep_rows_bool=[]
-    if "mutids" in data_all.columns.tolist():
-        data_all_use=data_all.drop("mutids",axis=1)
-    else:
-        data_all_use=data_all.copy()
-    for rowi in range(len(data_all_use)):
-        if condi=="any":
-            keep_rows_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
-        if condi=="all":
-            keep_rows_bool.append(any(~pd.isnull(data_all_use.iloc[rowi,:])))
-    data_all=data_all.loc[keep_rows_bool,:]
-    return data_all
-
-def denan(data_all,axis,condi="any"):
-    """
-    This removes rows with any np.nan value/s.  
-    
-    :param data_all: input dataframe.
-    :param condi: conditions for deletion of rows ["any": if any element is nan ,default | "all" : if all elements are nan] 
-    :returns data_all: output dataframe.
-    """
-    import logging
-    logging.info("denan: original: rows=%s cols=%s" % data_all.shape)
-
-    if axis=='both':
-        condi_cols=condi.split(' ')[0]
-        condi_rows=condi.split(' ')[1]
-    if axis=='rows' or axis==0:
-        condi_rows=condi        
-    if axis=='cols' or axis==1:
-        condi_cols=condi
-    if axis=='cols' or axis==1 or axis=='both':
-        data_all_use=data_all.copy()
-        keep_bool=[]
-        for col in data_all_use:
-            if condi_cols=="any":
-                keep_bool.append(all(~pd.isnull(data_all_use.loc[:,col])))
-            if condi_cols=="all":
-                keep_bool.append(any(~pd.isnull(data_all_use.loc[:,col])))
-        data_all=data_all.loc[:,keep_bool]
-        logging.info("denan: cols:      rows=%s cols=%s" % data_all.shape)
-    if axis=='rows' or axis==0 or axis=='both':
-        data_all_use=data_all.copy()
-        keep_bool=[]
-        for rowi in range(len(data_all_use)):
-            if condi_rows=="any":
-                keep_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
-            if condi_rows=="all":
-                keep_bool.append(any(~pd.isnull(data_all_use.iloc[rowi,:])))
-        data_all=data_all.loc[keep_bool,:]
-        logging.info("denan: rows:      rows=%s cols=%s" % data_all.shape)
-    return data_all
 
 def plot_ROC(y_test,y_score,classes,lw=2,
              ax_roc=None,annotate=True,
@@ -758,7 +622,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
             data_preds_regress.to_csv(data_fh.replace("data_ml_","data_ml_regress_preds_"))
             data_regress_all=data_preds_regress.append(data_regress_train)
             data_regress_all.to_csv(data_fh.replace("data_ml_","data_ml_regress_all_"))
-            data_regress2data_fit(prj_dh,data_fit_key,data_regress_all)
+            data_regress2data_fit(prj_dh,data_fit_key,data_regress_all,col=y_coln_regress)
             return data_regress_all
             # except:
                 # logging.info("skipping: %s : requires more data" % basename(data_fit_key))
@@ -770,16 +634,16 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
         data_regress2data_fit(prj_dh,data_fit_key,data_regress_all)
         return data_regress_all
     
-def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all):
+def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all,col='FCA_norm'):
     from dms2dfe.lib.io_nums import str2num
     from dms2dfe.lib.io_mut_files import rescale_fitnessbysynonymous,class_fit
 
     data_fit=pd.read_csv("%s/%s" % (prj_dh,data_fit_key))
-    data_fit=data_fit.loc[:,["mutids","FCA"]].set_index("mutids",drop=True)
-    data_fit_infered=data_regress_all.reset_index().loc[:,["mutids","FCA"]].set_index("mutids",drop=True)
+    data_fit=data_fit.loc[:,["mutids",col]].set_index("mutids",drop=True)
+    data_fit_infered=data_regress_all.reset_index().loc[:,["mutids",col]].set_index("mutids",drop=True)
     for mutid in data_fit.index.values:
         if not mutid in data_fit_infered.index.values:
-            data_fit_infered.loc[mutid,"FCA"]=data_fit.loc[mutid,"FCA"]
+            data_fit_infered.loc[mutid,col]=data_fit.loc[mutid,col]
     
     data_fit_infered=pd.DataFrame(data_fit_infered.reset_index())
     # print data_fit_infered.columns
@@ -788,10 +652,10 @@ def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all):
     data_fit_infered.loc[:,'ref']=[mutid[0] for mutid in data_fit_infered.loc[:,"mutids"].tolist()]
     data_fit_infered.loc[:,'mut']=[mutid[-1] for mutid in data_fit_infered.loc[:,"mutids"].tolist()]
     data_fit_infered.loc[:,'refrefi']=[("%s%03d" % (mutid[0],str2num(mutid))) for mutid in data_fit_infered.loc[:,"mutids"].tolist()]
-    data_fit_infered.loc[:,'FCS']=data_fit_infered.loc[(data_fit_infered.loc[:,'ref']==data_fit_infered.loc[:,'mut']),'FCA']
+    data_fit_infered.loc[:,'FCS_norm']=data_fit_infered.loc[(data_fit_infered.loc[:,'ref']==data_fit_infered.loc[:,'mut']),col]
     # data_fit_infered.head()
     # data_fit_infered.to_csv("data_fit_infered")
-    data_fit_infered=rescale_fitnessbysynonymous(data_fit_infered)
+    data_fit_infered=rescale_fitnessbysynonymous(data_fit_infered,col_fit=col,col_fit_rescaled="FiA")
     data_fit_infered=class_fit(data_fit_infered)
     data_fit_infered.loc[:,'FiS']=\
     data_fit_infered.loc[(data_fit_infered.loc[:,'ref']==data_fit_infered.loc[:,'mut']),'FiA']
