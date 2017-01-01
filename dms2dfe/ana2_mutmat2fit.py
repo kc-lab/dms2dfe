@@ -13,7 +13,7 @@ from multiprocessing import Pool
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe import configure
-from dms2dfe.lib.io_mut_files import getusable_lbls_list,getusable_fits_list,mut_mat_cds2data_lbl,data_lbl2data_fit,repli2data_lbl_avg #,makemutids,mat_cds2mat_aas,getNS,collate_cctmr,repli2avg,class_fit,repli2data_lbl_avg
+from dms2dfe.lib.io_mut_files import getusable_lbls_list,getusable_fits_list,mut_mat_cds2data_lbl,data_lbl2data_fit,repli2data_lbl_avg,transform_data_lbl,transform_data_lbl_deseq #,makemutids,mat_cds2mat_aas,getNS,collate_cctmr,repli2avg,class_fit,repli2data_lbl_avg
 from dms2dfe.lib.global_vars import mut_types_form
 
 def main(prj_dh):
@@ -36,9 +36,11 @@ def main(prj_dh):
     cctmr=info.cctmr
     host=info.host
     cores=info.cores
+    transform_type=info.transform_type
     norm_type=info.norm_type
     fsta_len=info.fsta_len
     Ni_cutoff=int(info.Ni_cutoff)
+    rscript_fh=info.rscript_fh
     # SET global variables
 
     lbls=pd.read_csv(prj_dh+'/cfg/lbls')
@@ -64,15 +66,22 @@ def main(prj_dh):
         # pooled_mut_mat_cds2data_lbl(lbls_list[0])
     else:
         logging.info("already processed: mut_mat_cds2data_lbl")
-
-    repli2data_lbl_avg(prj_dh)
+    #TRANSFORM
+    logging.info("transforming frequencies")
+    if (transform_type=='rlog') or (transform_type=='vst'):
+        transform_data_lbl_deseq(prj_dh,transform_type,rscript_fh)
+    else:
+        transform_data_lbl(prj_dh,transform_type)
+    #FITNESS
     fits_pairs_list    =getusable_fits_list(prj_dh)    
     if len(fits_pairs_list)!=0:
         pool_data_lbl2data_fit=Pool(processes=int(cores)) 
         pool_data_lbl2data_fit.map(pooled_data_lbl2data_fit,
                                    fits_pairs_list)
         pool_data_lbl2data_fit.close(); pool_data_lbl2data_fit.join()
-        # pooled_data_lbl2data_fit(fits_pairs_list[0])
+        ## pooled_data_lbl2data_fit(fits_pairs_list[0])
+        # for fits_pairs in fits_pairs_list:
+        #     pooled_data_lbl2data_fit(fits_pairs)
     else:
         logging.info("already processed: data_lbl2data_fit")
     logging.shutdown()

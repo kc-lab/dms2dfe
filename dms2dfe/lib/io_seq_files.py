@@ -346,14 +346,14 @@ def getdepth_cds(sbam_fh,fsta_fh,
         cov=cov_cctmr1.reset_index(drop=True).astype(int)+cov_cctmr2.reset_index(drop=True).astype(int)
 
     # cov.to_csv("cov")
-    depth_cds=pd.DataFrame(columns=["1","2","3"])
+    depth_cds=pd.DataFrame(columns=["codonpos1","codonpos2","codonpos3"])
     for i in cov.index:
         if np.remainder(i,3)==1:
-            depth_cds.loc[np.ceil(i/3),"1"]=cov.loc[i,"cov"]
+            depth_cds.loc[np.ceil(i/3),"codonpos1"]=cov.loc[i,"cov"]
         elif np.remainder(i,3)==2:
-            depth_cds.loc[np.ceil(i/3),"2"]=cov.loc[i,"cov"]
+            depth_cds.loc[np.ceil(i/3),"codonpos2"]=cov.loc[i,"cov"]
         elif np.remainder(i,3)==0:
-            depth_cds.loc[np.ceil(i/3),"3"]=cov.loc[i,"cov"]
+            depth_cds.loc[np.ceil(i/3),"codonpos3"]=cov.loc[i,"cov"]
 
     depth_cds.loc[:,"depth_cds"]=depth_cds.T.mean()
     depth_cds.index.name='refi'

@@ -1,21 +1,23 @@
-varname,description,input,default
-host,Host name for assigning codon table [coli | yeast | sapiens],,coli
-Ni_cutoff,Cut off for frequency per mutant,,8
-Q_cutoff,Cut off for Phred score quality,,30
-norm_type,Type of normalization across samples [wild: wrt wild type | syn : wrt synonymous mutations | none : fold change serves as fitness],,none
-alignment_type,Alignment type [loc:local | glob:global],,loc
-cores,Number of cores to be used,,1
-clips,Optional: Clip upstream UPTO and downstream FROM codons (space delimited) rg. 10<SPACE>167,,
-fsta_fh,Optional: Path to reference fasta file,,found in project directory
-pdb_fh,Optional: Path to pdb file,,found in project directory
-active_sites,Optional: residue numbers of active sites (space delimited) eg. 68<SPACE>192,,
-cctmr,Optional: if reference sequence is concatamer (space delimited) eg. 1<SPACE>265<SPACE>268<SPACE>532,,
-trimmomatic_com,Optional: additional commands to pass to trmmomatic,,
-bowtie2_com,Optional: additional commands to pass to bowtie2,,
-dssp_fh,Optional: path to dssp module (dependencies),,
-trimmomatic_fh,Optional: path to trimmomatic source (.jar) file (dependencies),,
-bowtie2_fh,Optional: path to bowtie2 source file,,
-samtools_fh,Optional: path to samtools source file,,
-clustalo_fh,Optional: path to clustal omega source file,,
-msms_fh,Optional: path to MSMS source file (for calculation of residue depths),,
-rate4site_fh,Optional: path to rate4site source file (for calculation of conservation scores),,
+varname,input,default,options,description
+host,,coli,[coli | yeast | sapiens],Host name for assigning codon table
+Ni_cutoff,,3,,Lower cut off for frequency per mutant
+Q_cutoff,,30,,Lower cut off for Phred score quality
+transform_type,,log2,[log: log2  |  plog: log2 with pseudocount | rlog: regularised log2 (needs deseq)| vst: variance stabilizing transformation (needs DESeq2)],Type of transformation of frequecies of mutants
+norm_type,,none,[MLE: wrt MLE of synonymous mutations | GLM: by generalized linear modelling (needs DESeq2) | none : use raw fold changes],Type of normalization of fold changes
+alignment_type,,loc,[loc:local | glob:global],Alignment type
+cores,,2,,Number of cores to be used
+clips,,,,Optional: Clip upstream UPTO and downstream FROM codons (space delimited) rg. 10<SPACE>167
+fsta_fh,,found in project directory,,Optional: Path to reference fasta file
+pdb_fh,,found in project directory,,Optional: Path to pdb file
+active_sites,,,,Optional: residue numbers of active sites (space delimited) eg. 68<SPACE>192
+cctmr,,,,Optional: if reference sequence is concatamer (space delimited) eg. 1<SPACE>265<SPACE>268<SPACE>532
+trimmomatic_com,,,,Optional: additional commands to pass to trmmomatic
+bowtie2_com,,,,Optional: additional commands to pass to bowtie2
+dssp_fh,,,,Optional: path to dssp module (dependencies)
+trimmomatic_fh,,,,Optional: path to trimmomatic source (.jar) file (dependencies)
+bowtie2_fh,,,,Optional: path to bowtie2 source file
+samtools_fh,,,,Optional: path to samtools source file
+clustalo_fh,,,,Optional: path to clustal omega source file
+msms_fh,,,,Optional: path to MSMS source file (for calculation of residue depths)
+rate4site_fh,,,,Optional: path to rate4site source file (for calculation of conservation scores)
+rscript_fh,/usr/bin/Rscript,,,Optional: path to Rscript (for use of Deseq2)

@@ -8,6 +8,7 @@
 ``io_nums``
 ================================
 """
+import numpy as np
 
 def is_numeric(obj):
     """
@@ -27,3 +28,9 @@ def str2num(x):
     This extracts numbers from strings. eg. 114 from M114R.
     """
     return int(''.join(ele for ele in x if ele.isdigit()))
+
+def plog(x,p = 0.5):
+    return np.log2(x+p)
+
+def glog(x,l = 2):
+    return np.log((x+np.sqrt(x**2+l**2))/2)/np.log(l)
