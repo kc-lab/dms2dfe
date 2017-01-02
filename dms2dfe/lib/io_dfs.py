@@ -10,6 +10,8 @@
 """
 from os.path import basename,exists
 import pandas as pd
+import numpy as np
+from dms2dfe.lib.io_nums import is_numeric
 
 def set_index(data,col_index):
     if col_index in data:
@@ -59,7 +61,21 @@ def fhs2data_combo(fhs,cols,index,labels=None,col_sep=': '):
                 data_combo.loc[:,'%s%s%s' % (label,col_sep,col)]=data.loc[:,col]
     return data_combo
 
-def denan(data_all,axis,condi="any"):
+def rename_cols(df,names,renames=None,prefix=None,suffix=None):
+    if not prefix is None:
+        renames=[ "%s%s" % (prefix,s) for s in names]
+    if not suffix is None:    
+        renames=[ "%s%s" % (s,suffix) for s in names]
+    if not renames is None:
+        for i,name in enumerate(names):
+#             names=[renames[i] if s==names[i] else s for s in names]    
+            rename=renames[i]    
+            df.loc[:,rename]=df.loc[:,name]
+        df=df.drop(names,axis=1)
+        return df 
+
+
+def debad(data_all,axis,condi="any",bad=0):
     """
     This removes rows with any np.nan value/s.  
     condi: usage cols,rows = 'all any'
@@ -69,6 +85,8 @@ def denan(data_all,axis,condi="any"):
     :returns data_all: output dataframe.
     """
     import logging
+    if not ((is_numeric(bad)) or (bad in ['nan','null'])):
+        logging.error('bad not recognised: %s' % bad)        
     logging.info("denan: original: rows=%s cols=%s" % data_all.shape)
 
     if axis=='both':
@@ -83,9 +101,15 @@ def denan(data_all,axis,condi="any"):
         keep_bool=[]
         for col in data_all_use:
             if condi_cols=="any":
-                keep_bool.append(all(~pd.isnull(data_all_use.loc[:,col])))
+                if (bad=='nan') or (bad=='null'):
+                    keep_bool.append(all(~(pd.isnull(data_all_use.loc[:,col]))))
+                else:
+                    keep_bool.append(all(~(data_all_use.loc[:,col]==bad)))
             if condi_cols=="all":
-                keep_bool.append(any(~pd.isnull(data_all_use.loc[:,col])))
+                if (bad=='nan') or (bad=='null'):
+                    keep_bool.append(any(~(pd.isnull(data_all_use.loc[:,col]))))
+                else:
+                    keep_bool.append(any(~(data_all_use.loc[:,col]==bad)))
         data_all=data_all.loc[:,keep_bool]
         logging.info("denan: cols:      rows=%s cols=%s" % data_all.shape)
     if axis=='rows' or axis==0 or axis=='both':
@@ -93,30 +117,61 @@ def denan(data_all,axis,condi="any"):
         keep_bool=[]
         for rowi in range(len(data_all_use)):
             if condi_rows=="any":
-                keep_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
+                if (bad=='nan') or (bad=='null'):
+                    keep_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
+                else:
+                    keep_bool.append(all(~(data_all_use.iloc[rowi,:]==bad)))
             if condi_rows=="all":
-                keep_bool.append(any(~pd.isnull(data_all_use.iloc[rowi,:])))
+                if (bad=='nan') or (bad=='null'):
+                    keep_bool.append(any(~pd.isnull(data_all_use.iloc[rowi,:])))
+                else:
+                    keep_bool.append(any(~(data_all_use.iloc[rowi,:]==bad)))
         data_all=data_all.loc[keep_bool,:]
         logging.info("denan: rows:      rows=%s cols=%s" % data_all.shape)
     return data_all
 
-# def denanrows(data_all,condi="any"):
-#     """
-#     This removes rows with any np.nan value/s.  
+def denan(data_all,axis,condi="any"):
+    return debad(data_all,axis,condi="any",bad='nan')
+
+def denanrows(data_all):
+    return debad(data_all,axis=0,condi="any",bad='nan')
+
+    # """
+    # This removes rows with any np.nan value/s.  
+    # condi: usage cols,rows = 'all any'
     
-#     :param data_all: input dataframe.
-#     :param condi: conditions for deletion of rows ["any": if any element is nan ,default | "all" : if all elements are nan] 
-#     :returns data_all: output dataframe.
-#     """    
-    # keep_rows_bool=[]
-    # if "mutids" in data_all.columns.tolist():
-    #     data_all_use=data_all.drop("mutids",axis=1)
-    # else:
+    # :param data_all: input dataframe.
+    # :param condi: conditions for deletion of rows ["any": if any element is nan ,default | "all" : if all elements are nan | "any|all<SPACE>any|all" : condition for columns<SPACE>rows] 
+    # :returns data_all: output dataframe.
+    # """
+    # import logging
+    # logging.info("denan: original: rows=%s cols=%s" % data_all.shape)
+
+    # if axis=='both':
+    #     condi_cols=condi.split(' ')[0]
+    #     condi_rows=condi.split(' ')[1]
+    # if axis=='rows' or axis==0:
+    #     condi_rows=condi        
+    # if axis=='cols' or axis==1:
+    #     condi_cols=condi
+    # if axis=='cols' or axis==1 or axis=='both':
     #     data_all_use=data_all.copy()
-    # for rowi in range(len(data_all_use)):
-    #     if condi=="any":
-    #         keep_rows_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
-    #     if condi=="all":
-    #         keep_rows_bool.append(any(~pd.isnull(data_all_use.iloc[rowi,:])))
-    # data_all=data_all.loc[keep_rows_bool,:]
+    #     keep_bool=[]
+    #     for col in data_all_use:
+    #         if condi_cols=="any":
+    #             keep_bool.append(all(~pd.isnull(data_all_use.loc[:,col])))
+    #         if condi_cols=="all":
+    #             keep_bool.append(any(~pd.isnull(data_all_use.loc[:,col])))
+    #     data_all=data_all.loc[:,keep_bool]
+    #     logging.info("denan: cols:      rows=%s cols=%s" % data_all.shape)
+    # if axis=='rows' or axis==0 or axis=='both':
+    #     data_all_use=data_all.copy()
+    #     keep_bool=[]
+    #     for rowi in range(len(data_all_use)):
+    #         if condi_rows=="any":
+    #             keep_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
+    #         if condi_rows=="all":
+    #             keep_bool.append(any(~pd.isnull(data_all_use.iloc[rowi,:])))
+    #     data_all=data_all.loc[keep_bool,:]
+    #     logging.info("denan: rows:      rows=%s cols=%s" % data_all.shape)
     # return data_all

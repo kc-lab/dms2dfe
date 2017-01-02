@@ -14,6 +14,8 @@ from os import makedirs,stat
 import pandas as pd
 import numpy as np
 import matplotlib
+matplotlib.style.use('ggplot')
+matplotlib.rcParams['axes.unicode_minus']=False
 matplotlib.use('Agg') # no Xwindows
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec

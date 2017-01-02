@@ -26,6 +26,7 @@ from dms2dfe.lib.io_seq_files import getdepth_cds,getdepth_ref
 from dms2dfe.lib.io_data_files import getusable_lbls_list,getusable_fits_list,getusable_comparison_list
 from dms2dfe.lib.io_dfs import concat_cols,fhs2data_combo
 from dms2dfe.lib.io_nums import str2num,plog
+from dms2dfe.lib.io_stats import testcomparison,multipletests
 
 def makemutids(data_lbl,refis):
     """
@@ -316,11 +317,12 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,
     else :
         logging.warning("can not find lbl_mat_mut_cds_fh : %s" % (lbl_mat_mut_cds_fh))
 
-def get_data_lbl_reps(data_lbl_fn,data_lbl_type,repli,data_fit=None,data_lbl_col='NiA_tran'):
+def get_data_lbl_reps(data_lbl_fn,data_lbl_type,repli,info,data_fit=None,
+                      data_lbl_col='NiA_tran',type_form='aas',col_sep='.'):
     if data_lbl_fn in repli.index:
         for rep in repli.loc[data_lbl_fn,:]:
             if not pd.isnull(rep):
-                data_lbl_fh="%s/data_lbl/%s/%s" % (prj_dh,type_form,rep)
+                data_lbl_fh="%s/data_lbl/%s/%s" % (info.prj_dh,type_form,rep)
                 data_lbl=pd.read_csv(data_lbl_fh).set_index('mutids')
                 data_fit_col="%s%s%s%s%s" % (rep,col_sep,data_lbl_col,col_sep,data_lbl_type)
                 data_lbl_col="%s" % (data_lbl_col)
@@ -334,28 +336,45 @@ def get_data_lbl_type(data_fit,data_lbl_type,data_lbl_col='NiA_tran'):
     data_lbl_type_col="%s.%s" % (data_lbl_col,data_lbl_type)
     
     data_lbl_type_reps_cols=[c for c in data_fit if data_lbl_type_col in c]
-    print data_lbl_type_reps_cols
+    # print data_lbl_type_reps_cols
     data_fit.loc[:,"%s avg" % (data_lbl_type_col)]=data_fit.loc[:,data_lbl_type_reps_cols].T.mean()
     data_fit.loc[:,"%s std" % (data_lbl_type_col)]=data_fit.loc[:,data_lbl_type_reps_cols].T.std()
-    return data_fit
+    data_fit.loc[:,"%s" % (data_lbl_type_col)]=data_fit.loc[:,"%s avg" % (data_lbl_type_col)]
+    
+    return data_fit,data_lbl_type_reps_cols
 
 #data_lbl_fn.NiA_trans.ref
-def make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,prj_dh,data_lbl_col='NiA_tran',type_form='aas'):
-    repli=pd.read_csv('%s/cfg/repli' % prj_dh).set_index('varname')
+def make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,data_lbl_col='NiA_tran',type_form='aas',
+                 test='ztest',multitest='fdr_bh'):
+    repli=pd.read_csv('%s/cfg/repli' % info.prj_dh).set_index('varname')
     col_sep="."
     data_fit=None
     data_lbl_type='ref'
-    data_fit=get_data_lbl_reps(data_lbl_ref_fn,data_lbl_type,repli,data_fit=data_fit)
-    data_fit=get_data_lbl_type(data_fit,data_lbl_type)
+    data_fit=get_data_lbl_reps(data_lbl_ref_fn,data_lbl_type,repli,info,data_fit=data_fit)
+    data_fit,data_lbl_ref_reps_cols=get_data_lbl_type(data_fit,data_lbl_type)
     data_lbl_type='sel'
-    data_fit=get_data_lbl_reps(data_lbl_sel_fn,data_lbl_type,repli,data_fit=data_fit)
-    data_fit=get_data_lbl_type(data_fit,data_lbl_type)            
+    data_fit=get_data_lbl_reps(data_lbl_sel_fn,data_lbl_type,repli,info,data_fit=data_fit)
+    data_fit,data_lbl_sel_reps_cols=get_data_lbl_type(data_fit,data_lbl_type)            
 
     data_lbl_ref_col="%s.%s" % (data_lbl_col,'ref')
     data_lbl_sel_col="%s.%s" % (data_lbl_col,'sel')
 
-    data_fit.loc[:,'FCA']=data_fit.loc[:,data_lbl_sel_col]-data_fit.loc[:,data_lbl_ref_col] # fold change all
+    data_fit.loc[:,'FCA']=data_fit.loc[:,data_lbl_sel_col]-data_fit.loc[:,data_lbl_ref_col]
     data_fit.loc[:,'FCS']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCA']
+    #get zscores
+    col_test_pval="pval %s" % test
+    col_test_stat="stat %s" % test
+    col_multitest_pval="padj %s %s" % (test,multitest)
+    col_multitest_rjct="rejectH0 %s %s" % (test,multitest)
+
+    data_fit=testcomparison(data_fit,data_lbl_sel_reps_cols,data_lbl_ref_reps_cols,test='ztest')
+    data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_rjct],\
+    data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_pval],a1,a2=\
+    multipletests(data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_test_pval].as_matrix(),alpha=0.05, method=multitest)
+
+    data_fit.loc[:,'pval']=data_fit.loc[:,col_test_pval]
+    data_fit.loc[:,'stat']=data_fit.loc[:,col_test_stat]
+    data_fit.loc[:,'padj']=data_fit.loc[:,col_multitest_pval]    
     return data_fit
 
 def make_deseq2_annot(unsel,sel,data_lbl_col,prj_dh,type_form='aas'):
@@ -393,41 +412,63 @@ def make_deseq2_data(unsel,sel,data_deseq2_annot,data_lbl_col,prj_dh,type_form='
         data_lbl_all=fhs2data_combo(data_lbl_fhs,cols=[data_lbl_col],index='mutids',col_sep=col_sep)
         data_lbl_all.to_csv(data_deseq2_count_fh)
     else:
-        data_lbl_all=pd.read_csv(data_lbl_all_fh).set_index('mutids')
+        data_lbl_all=pd.read_csv(data_deseq2_count_fh).set_index('mutids')
     return data_lbl_all,data_deseq2_count_fh
 
-def make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,prj_dh,data_fit):
+def make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info):
     data_lbl_col='NiA_norm'
-    data_deseq2_annot,data_deseq2_annot_fh=make_deseq2_annot(data_lbl_ref_fn,data_lbl_sel_fn,data_lbl_col,prj_dh)
-    data_deseq2_count,data_lbl_all_fh=make_deseq2_data(data_lbl_ref_fn,data_lbl_sel_fn,data_deseq2_annot,data_lbl_col,prj_dh)
+    data_deseq2_annot,data_deseq2_annot_fh=make_deseq2_annot(data_lbl_ref_fn,data_lbl_sel_fn,data_lbl_col,info.prj_dh)
+    data_deseq2_count,data_deseq2_count_fh=make_deseq2_data(data_lbl_ref_fn,data_lbl_sel_fn,data_deseq2_annot,data_lbl_col,info.prj_dh)
     log_fh="%s.log" % data_deseq2_annot_fh
-    if not exists(log_fh):
+    data_deseq2_res_fh="%s.deseq2_res.csv" % data_deseq2_annot_fh
+    if not exists(data_deseq2_res_fh):
         deseq_fh="%s/deseq2.R" % (abspath(dirname(__file__)))
         with open(log_fh,'a') as log_f:
-            com='%s %s %s %s 2' % (rscript_fh,deseq_fh,data_lbl_all_fh,data_deseq2_annot_fh)
+            com='%s %s %s %s 2' % (info.rscript_fh,deseq_fh,data_deseq2_count_fh,data_deseq2_annot_fh)
 #             print com
             subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)  
-    data_deseq2_res_fh="%s.deseq2_res.csv" % data_deseq2_annot_fh
-    data_deseq2_res=pd.read_csv(data_deseq2_res_fh).set_index('Unnamed: 0')
+    try:
+        data_deseq2_res=pd.read_csv(data_deseq2_res_fh).set_index('Unnamed: 0')
+    except:
+        logging.error('check deseq2 log for more info: %s' % basename(log_fh))
     data_deseq2_res.index.name='mutids'
+#     baseMean	log2FoldChange	lfcSE	stat	pvalue	padj
+    test='Waldtest'
+    multitest='fdr_bh'              
+    col_test_pval="pval %s" % test
+    col_test_stat="stat %s" % test
+    col_multitest_pval="padj %s %s" % (test,multitest)
+
+    cols=data_deseq2_res.columns.tolist()
+    cols=[col_test_pval if s=='pvalue' else s for s in cols]
+    cols=[col_test_stat if s=='stat' else s for s in cols]
+    cols=[col_multitest_pval if s=='padj' else s for s in cols]
+    data_deseq2_res.columns=cols
+
+    data_deseq2_res.loc[:,'pval']=data_deseq2_res.loc[:,col_test_pval]
+    data_deseq2_res.loc[:,'stat']=data_deseq2_res.loc[:,col_test_stat]
+    data_deseq2_res.loc[:,'padj']=data_deseq2_res.loc[:,col_multitest_pval]    
+
     data_deseq2_res.loc[:,'FCA_norm']=data_deseq2_res.loc[:,'log2FoldChange']
+    #set wald as default stat
+    data_fit=data_fit.drop(['pval','stat','padj'],axis=1)
     data_fit=data_fit.join(data_deseq2_res)
     return data_fit
 
 def data_lbl2data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,type_forms=['aas']):
     for type_form in type_forms : # cds OR aas
-        data_fit_fh='%s/data_fit/%s/%s_WRT_%s' % (prj_dh,type_form,data_lbl_sel_fn,data_lbl_ref_fn)
+        data_fit_fh='%s/data_fit/%s/%s_WRT_%s' % (info.prj_dh,type_form,data_lbl_sel_fn,data_lbl_ref_fn)
         if not exists(data_fit_fh):
-            data_fit=make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,prj_dh,data_lbl_col='NiA_tran',type_form='aas')
-            if norm_type=='GLM':
-                data_fit=make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_lbl_col,prj_dh,data_fit)
-            elif (norm_type=='MLE') or (norm_type=='syn'):
+            data_fit=make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,data_lbl_col='NiA_tran',type_form='aas')
+            if info.norm_type=='GLM':
+                data_fit=make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info)
+            elif (info.norm_type=='MLE') or (info.norm_type=='syn'):
                 try:
                     gauss_mean, gauss_sdev = fit_gauss_params(data_fit.loc[:,'FCS'])
                     data_fit.loc[:,'FCA_norm']=(data_fit.loc[:,'FCA']-gauss_mean)/gauss_sdev
                 except:
                     logging.info("norm wrt syn: excepted: data_fit/%s/%s" % (type_form,data_fit_fn))
-            elif norm_type == 'none':
+            elif info.norm_type == 'none':
                 data_fit.loc[:,'FCA_norm']=data_fit.loc[:,'FCA']
             data_fit.loc[:,'FCS_norm']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCA_norm']
             data_fit=rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA")
@@ -463,7 +504,7 @@ def rescale_fitnessbysynonymous(data_fit,col_fit="FCA",col_fit_rescaled="FiA"):
     if not "refrefi" in data_fit.columns:
         from dms2dfe.lib.io_nums import str2num
         data_fit.loc[:,'refrefi']=\
-        [("%s%03d" % (mutid[0],str2num(mutid))) for mutid in data_fit.loc[:,"mutids"].tolist()]        
+        [("%s%03d" % (mutid[0],str2num(mutid))) for mutid in data_fit.reset_index().loc[:,"mutids"].tolist()]        
     for refrefi in data_fit.loc[:,"refrefi"].unique():
         subset=data_fit.loc[data_fit.loc[:,"refrefi"]==refrefi,:]
         FiW=float(subset.loc[subset.loc[:,"mut"]==subset.loc[:,"ref"],col_fit])

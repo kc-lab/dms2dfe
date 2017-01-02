@@ -274,15 +274,15 @@ def getusable_fits_list(prj_dh):
             for sel_lbl in sels :
                 if not pd.isnull(sel_lbl):
                     fit_lbl=sel_lbl+"_WRT_"+unsel_lbl
-                    if (not exists("%s/data_fit/%s/%s" % (prj_dh,'aas',fit_lbl))) \
-                    and (not exists("%s/data_fit/%s/%s" % (prj_dh,'cds',fit_lbl))):             
-                        if  ((exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',sel_lbl))) \
-                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',unsel_lbl)))) or \
-                            ((exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',sel_lbl))) \
-                        and (exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',unsel_lbl)))) : 
-                            fits_pairs_list.append([unsel_lbl,sel_lbl])
-                        else :
-                            logging.warning("data_lbl not present : %s or %s" % (sel_lbl,unsel_lbl))
+                    if (not exists("%s/data_fit/%s/%s" % (prj_dh,'aas',fit_lbl))):
+                    # and (not exists("%s/data_fit/%s/%s" % (prj_dh,'cds',fit_lbl))):             
+                        # if  ((exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',sel_lbl))) \
+                        # and (exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',unsel_lbl)))) or \
+                        #     ((exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',sel_lbl))) \
+                        # and (exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',unsel_lbl)))) : 
+                        fits_pairs_list.append([unsel_lbl,sel_lbl])
+                        # else :
+                        #     logging.warning("data_lbl not present : %s or %s" % (sel_lbl,unsel_lbl))
                     else :
                         logging.info("already processed: %s" % (fit_lbl))
         return fits_pairs_list

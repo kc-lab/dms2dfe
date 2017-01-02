@@ -6,15 +6,13 @@
 import sys
 import numpy as np
 from os.path import exists,splitext
-from os import makedirs,stat
-from Bio import SeqIO
+from os import makedirs
 import pandas as pd
 from multiprocessing import Pool
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe import configure
-from dms2dfe.lib.io_mut_files import getusable_lbls_list,getusable_fits_list,mut_mat_cds2data_lbl,data_lbl2data_fit,repli2data_lbl_avg,transform_data_lbl,transform_data_lbl_deseq #,makemutids,mat_cds2mat_aas,getNS,collate_cctmr,repli2avg,class_fit,repli2data_lbl_avg
-from dms2dfe.lib.global_vars import mut_types_form
+from dms2dfe.lib.io_mut_files import getusable_lbls_list,getusable_fits_list,mut_mat_cds2data_lbl,data_lbl2data_fit,transform_data_lbl,transform_data_lbl_deseq 
 
 def main(prj_dh):
     """
@@ -67,21 +65,22 @@ def main(prj_dh):
     else:
         logging.info("already processed: mut_mat_cds2data_lbl")
     #TRANSFORM
-    logging.info("transforming frequencies")
     if (transform_type=='rlog') or (transform_type=='vst'):
+        logging.info("transforming frequencies: %s" % transform_type)
         transform_data_lbl_deseq(prj_dh,transform_type,rscript_fh)
     else:
+        logging.info("transforming frequencies: %s" % transform_type)
         transform_data_lbl(prj_dh,transform_type)
     #FITNESS
     fits_pairs_list    =getusable_fits_list(prj_dh)    
     if len(fits_pairs_list)!=0:
-        pool_data_lbl2data_fit=Pool(processes=int(cores)) 
-        pool_data_lbl2data_fit.map(pooled_data_lbl2data_fit,
-                                   fits_pairs_list)
-        pool_data_lbl2data_fit.close(); pool_data_lbl2data_fit.join()
+        # pool_data_lbl2data_fit=Pool(processes=int(cores)) 
+        # pool_data_lbl2data_fit.map(pooled_data_lbl2data_fit,
+        #                            fits_pairs_list)
+        # pool_data_lbl2data_fit.close(); pool_data_lbl2data_fit.join()
         ## pooled_data_lbl2data_fit(fits_pairs_list[0])
-        # for fits_pairs in fits_pairs_list:
-        #     pooled_data_lbl2data_fit(fits_pairs)
+        for fits_pairs in fits_pairs_list:
+            pooled_data_lbl2data_fit(fits_pairs)
     else:
         logging.info("already processed: data_lbl2data_fit")
     logging.shutdown()
@@ -104,10 +103,11 @@ def pooled_data_lbl2data_fit(fits_list):
 
     :param fits_list: tuple with name (lbl) of input and selected samples.
     """
+    from dms2dfe.tmp import info
     unsel_lbl=fits_list[0]
     sel_lbl=fits_list[1]
     logging.info("processing : %s and %s" % (unsel_lbl,sel_lbl))
-    data_lbl2data_fit(unsel_lbl,sel_lbl,norm_type,prj_dh_global,cctmr_global,lbls,fsta_fh_global)
+    data_lbl2data_fit(unsel_lbl,sel_lbl,info)
 
 if __name__ == '__main__':
     main(sys.argv[1])
