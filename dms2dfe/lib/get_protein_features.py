@@ -31,6 +31,7 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(
 from dms2dfe.lib.global_vars import aas_21,aas_21_3letter,secstruc_lbls
 from dms2dfe.lib.io_dfs import set_index
 from dms2dfe.lib.io_mut_files import makemutids_fromprtseq
+from dms2dfe.lib.io_seq_files import cctmr_fasta2ref_fasta
 
 def getdssp_data(pdb_fh,dssp_fh):
     """
@@ -631,8 +632,7 @@ def concat_feats(data_feats_all,data_feats,col_index):
 
 
 def get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
-                      fsta_fh,host,
-                      data_out_fh):
+                      data_out_fh,info):
     if not exists(data_out_fh):
         from os.path import splitext
         from dms2dfe.lib.io_seq_files import fasta_nts2prt
@@ -643,8 +643,13 @@ def get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
         data_feats_sub=pd.read_csv(data_feats_sub_fh)
 
         #fsta_fh='/home/kclabws1/Documents/propro/writ/prjs/1_dms/data/GMR_dms2dfe_b161123_ml_improvement/miseq2/gmr_wt.fasta'
+        # if info.cctmr != 'nan':
+        #     cctmr=[int("%s" % i) for i in cctmr.split(" ")]
+        #     aas_len=cctmr[1]-1
+        #     fsta_fh=cctmr_fasta2ref_fasta(fsta_fh,cctmr)
 
-        prt_seq=fasta_nts2prt(fsta_fh,host=host).replace('*','X')
+        # prt_seq=fasta_nts2prt(fsta_fh,host=host).replace('*','X')
+        prt_seq=info.prt_seq
         data_feats_all=pd.DataFrame()
         for refi in range(1,len(prt_seq)+1):
             ref=prt_seq[refi-1]

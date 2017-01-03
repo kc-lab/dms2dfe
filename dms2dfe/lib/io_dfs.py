@@ -85,8 +85,11 @@ def debad(data_all,axis,condi="any",bad=0):
     :returns data_all: output dataframe.
     """
     import logging
+    
     if not ((is_numeric(bad)) or (bad in ['nan','null'])):
         logging.error('bad not recognised: %s' % bad)        
+    if isinstance(data_all, pd.Series):
+        data_all=pd.DataFrame(data_all)
     logging.info("denan: original: rows=%s cols=%s" % data_all.shape)
 
     if axis=='both':
@@ -131,7 +134,7 @@ def debad(data_all,axis,condi="any",bad=0):
     return data_all
 
 def denan(data_all,axis,condi="any"):
-    return debad(data_all,axis,condi="any",bad='nan')
+    return debad(data_all,axis,condi=condi,bad='nan')
 
 def denanrows(data_all):
     return debad(data_all,axis=0,condi="any",bad='nan')

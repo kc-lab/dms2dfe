@@ -59,6 +59,7 @@ def auto_find_missing_paths(prj_dh):
         configure.main(prj_dh,"deps")  
     # return 
 
+from dms2dfe.lib.io_seq_files import cctmr_fasta2ref_fasta
 def info2src(prj_dh):
     """
     This converts `.csv` configuration file to `.py` source file saved in `/tmp/`.
@@ -86,9 +87,16 @@ def info2src(prj_dh):
             logging.error('Path to file is missing. Check in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
             return None
 
+    if not pd.isnull(info.loc['cctmr','input']):
+        cctmr=info.loc['cctmr','input']
+        cctmr=[int("%s" % i) for i in cctmr.split(" ")]
+        # aas_len=cctmr[1]-1
+        fsta_fh=cctmr_fasta2ref_fasta(info.loc['fsta_fh','input'],cctmr)
+    else:
+        fsta_fh=info.loc['fsta_fh','input']
     info.loc['prj_dh','input']=abspath(prj_dh)
-    info.loc['fsta_id','input'],info.loc['fsta_seq','input'],info.loc['fsta_len','input']=get_fsta_feats(info.loc['fsta_fh','input'])
-    info.loc['prt_seq','input']=fasta_nts2prt(info.loc['fsta_fh','input'],host=info.loc['host','input'])
+    info.loc['fsta_id','input'],info.loc['fsta_seq','input'],info.loc['fsta_len','input']=get_fsta_feats(fsta_fh)
+    info.loc['prt_seq','input']=fasta_nts2prt(fsta_fh,host=info.loc['host','input'])
     info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     csv2src(prj_dh+"/cfg/info","%s/../tmp/info.py" % (abspath(dirname(__file__))))
     logging.info("configuration compiled: %s/cfg/info" % prj_dh)

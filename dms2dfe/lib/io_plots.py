@@ -4,10 +4,10 @@
 # This program is distributed under General Public License v. 3.  
 
 import matplotlib
-matplotlib.style.use('ggplot')
 matplotlib.rcParams['axes.unicode_minus']=False
 matplotlib.use('Agg') # no Xwindows
 import matplotlib.pyplot as plt
+plt.style.use('ggplot')
 
 import seaborn as sns
 import numpy as np

@@ -502,7 +502,8 @@ def get_RF_regress_metrics(data_regress_fh,data_dh='data_ml/',plot_dh='plots/'):
     get_RF_ci('regress',gcv2rfc(RF_regress),X_train,X_test,
                  y_test,y_pred,plot_fh=plot_fh)    
 
-def data_fit2ml(data_fit_key,prj_dh,data_feats):
+def data_fit2ml(data_fit_key,prj_dh,data_feats,
+                data_fit_col='FCA_norm',middle_percentile_skipped=0.2):
     """
     This runs the submodules to run classifier from fitness data (`data_fit`).
     
@@ -522,7 +523,8 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
     grid_search_classi_metrics_fh=data_fh.replace("data_ml_","data_ml_classi_metrics_")+'.pkl'
     grid_search_regress_metrics_fh=data_fh.replace("data_ml_","data_ml_regress_metrics_")+'.pkl'
 
-    y_coln_classi="FCA_norm"
+    # y_coln_classi="FCA_norm"
+    y_coln_classi=data_fit_col
     if not exists(grid_search_regress_fh):
         data_fit_fh="%s/%s" % (prj_dh,data_fit_key)
         data_fit=pd.read_csv(data_fit_fh)
@@ -531,7 +533,8 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
             if not exists(grid_search_classi_fh):
                 if not exists(data_fh.replace("data_ml_","data_ml_classi_train_")):
                     data_fit=y2classes(data_fit,y_coln_classi,
-                                       middle_percentile_skipped=0.20)
+                                       middle_percentile_skipped=middle_percentile_skipped
+                                      )
                     data_ml_mutids=list(data_fit.loc[:,'mutids'])                
                     y_coln_classi="classes"
                     data_fit=set_index(data_fit,"mutids")
@@ -570,15 +573,15 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
                         test_size=0.34,data_test=data_classi_test,data_out_fh=grid_search_classi_fh) #                     
                 get_RF_classi_metrics(grid_search_classi_fh,data_dh='data_ml/',plot_dh='plots/')
                 
-                # classi metrics
-                feature_importances_classi_fh="%s_%s_.csv" % (grid_search_classi_fh,'featimps')
-                feature_importances_classi=pd.read_csv(feature_importances_classi_fh)
-                X_cols_classi_metrics_selected=feature_importances_classi\
-                .sort_values(by='Importance',ascending=False).head(25).loc[:,'Feature'].tolist()
-                X_cols_classi_metrics=[col for col in X_cols_classi if col in X_cols_classi_metrics_selected]            
-                grid_search_classi,data_preds=run_RF_classi(data_classi_train,X_cols_classi_metrics,y_coln_classi,
-                        test_size=0.34,data_test=data_classi_test,data_out_fh=grid_search_classi_metrics_fh) 
-                get_RF_classi_metrics(grid_search_classi_metrics_fh,data_dh='data_ml/',plot_dh='plots/')
+                # # classi metrics
+                # feature_importances_classi_fh="%s_%s_.csv" % (grid_search_classi_fh,'featimps')
+                # feature_importances_classi=pd.read_csv(feature_importances_classi_fh)
+                # X_cols_classi_metrics_selected=feature_importances_classi\
+                # .sort_values(by='Importance',ascending=False).head(25).loc[:,'Feature'].tolist()
+                # X_cols_classi_metrics=[col for col in X_cols_classi if col in X_cols_classi_metrics_selected]            
+                # grid_search_classi,data_preds=run_RF_classi(data_classi_train,X_cols_classi_metrics,y_coln_classi,
+                #         test_size=0.34,data_test=data_classi_test,data_out_fh=grid_search_classi_metrics_fh) 
+                # get_RF_classi_metrics(grid_search_classi_metrics_fh,data_dh='data_ml/',plot_dh='plots/')
                 
             y_coln_classi="classes"
             feature_importances_classi_fh="%s_%s_.csv" % (grid_search_classi_fh,'featimps')
@@ -588,7 +591,8 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats):
             data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
             data_classi_train  =data_classi_train.set_index("mutids",drop=True)
             #regress
-            y_coln_regress="FCA_norm"
+            # y_coln_regress="FCA_norm"
+            y_coln_regress=data_fit_col
             data_regress_train=data_classi_train                
             data_regress_train=X_cols2binary(data_regress_train,[y_coln_classi])
             data_fit=set_index(data_fit,"mutids")

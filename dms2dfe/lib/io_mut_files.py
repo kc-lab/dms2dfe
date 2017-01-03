@@ -24,7 +24,7 @@ from dms2dfe.lib.global_vars import aas_21,cds_64,mut_types_form,mut_types_NorS
 from dms2dfe.lib.convert_seq import cds2aas
 from dms2dfe.lib.io_seq_files import getdepth_cds,getdepth_ref
 from dms2dfe.lib.io_data_files import getusable_lbls_list,getusable_fits_list,getusable_comparison_list
-from dms2dfe.lib.io_dfs import concat_cols,fhs2data_combo
+from dms2dfe.lib.io_dfs import concat_cols,fhs2data_combo,debad
 from dms2dfe.lib.io_nums import str2num,plog
 from dms2dfe.lib.io_stats import testcomparison,multipletests
 
@@ -176,45 +176,72 @@ def transform_data_lbl_deseq(prj_dh,transform_type,rscript_fh,type_form='aas'):
     if not exists(data_lbl_all_dh):
         makedirs(data_lbl_all_dh)
     data_lbl_all_fh='%s/%s.csv' % (data_lbl_all_dh,data_lbl_col)
+    # data_lbl_all=debad(data_lbl_all,axis=0,condi='any',bad='nan')
+    # #psudocount to avoid all zero error
+    # data_lbl_all=data_lbl_all.fillna(0)
+    # data_lbl_all=data_lbl_all+0.5 
     data_lbl_all.to_csv(data_lbl_all_fh)
-    data_deseq2_annot_fh='%s/%s_deseq2_annot.csv' % (data_lbl_all_dh,data_lbl_col)
-    log_fh="%s.log" % data_deseq2_annot_fh
-    if not exists(log_fh):
+
+    data_lbl_tran_col='NiA_tran'
+    data_lbl_all_tran_fh='%s/%s.csv' % (data_lbl_all_dh,data_lbl_tran_col)
+    if not exists(data_lbl_all_tran_fh):
+        data_lbl_all_tran=pd.DataFrame()
         repli=pd.read_csv('%s/cfg/repli' % prj_dh).set_index('varname')
-        data_deseq2_annot=pd.DataFrame(columns=['condition','type','number of lanes','total number of reads','exon counts'])
-        data_deseq2_annot.index.name='file'
         for avg in repli.index:
-            for rep in repli.loc[avg,:]:
-                if not pd.isnull(rep):
-                    data_deseq2_annot.loc["%s%s%s" % (rep,col_sep,data_lbl_col),'condition']=avg
-        data_deseq2_annot_index_all=["%s%s%s" % (basename(fh),col_sep,data_lbl_col) \
-                                     for fh in data_lbl_fhs if (basename(fh) not in repli.index)]
-        data_deseq2_annot_index_no_reps=[i for i in data_deseq2_annot_index_all if (i not in data_deseq2_annot.index)]
-        for idx in data_deseq2_annot_index_no_reps:
-            data_deseq2_annot.loc[idx,'condition']=idx
-        data_deseq2_annot.to_csv(data_deseq2_annot_fh)
-        deseq_fh="%s/deseq2.R" % (abspath(dirname(__file__)))
-        with open(log_fh,'a') as log_f:
-            subprocess.call('%s %s %s %s 1' % (rscript_fh,deseq_fh,data_lbl_all_fh,data_deseq2_annot_fh),
-                            shell=True,stdout=log_f, stderr=subprocess.STDOUT)  
-    if transform_type=='rlog':
-        data_lbl_all_tran_fh="%s.deseq2_rld.csv" % data_deseq2_annot_fh
-    elif transform_type=='vst':
-        data_lbl_all_tran_fh="%s.deseq2_vsd.csv" % data_deseq2_annot_fh
-    data_lbl_all=pd.read_csv(data_lbl_all_tran_fh).set_index('Unnamed: 0')
-    data_lbl_all.index.name='mutids'
-    data_lbl_col='NiA_tran'
-    data_lbl_all_fh='%s/%s.csv' % (data_lbl_all_dh,data_lbl_col)
-    data_lbl_all.to_csv(data_lbl_all_fh)
-    
-    for col in data_lbl_all:
+            avg_col="%s%s%s" % (avg,col_sep,data_lbl_col)
+            if transform_type=='rlog':
+                data_lbl_tran_fh="%s/%s.deseq2_annot.csv.deseq2_rld.csv" % (data_lbl_all_dh,avg_col)
+            elif transform_type=='vst':
+                data_lbl_tran_fh="%s/%s.deseq2_annot.csv.deseq2_vsd.csv" % (data_lbl_all_dh,avg_col)
+            if not exists(data_lbl_tran_fh):
+                data_deseq2_annot=pd.DataFrame(columns=['condition','type','number of lanes','total number of reads','exon counts'])
+                data_deseq2_annot.index.name='file'
+                data_deseq2_annot_fh='%s/%s.deseq2_annot.csv' % (data_lbl_all_dh,avg_col)
+                data_deseq2_count=pd.DataFrame()
+                data_deseq2_count_fh='%s/%s.deseq2_count.csv' % (data_lbl_all_dh,avg_col)
+                for rep in repli.loc[avg,:]:
+                    if not pd.isnull(rep):
+                        rep_col="%s%s%s" % (rep,col_sep,data_lbl_col)
+                        data_deseq2_annot.loc[rep_col,'condition']=rep
+                        if len(data_deseq2_count)==0:
+                            data_deseq2_count=pd.DataFrame(data_lbl_all.loc[:,rep_col].copy())
+                        else:
+                            data_deseq2_count.loc[:,rep_col]=data_lbl_all.loc[:,rep_col]
+                # data_deseq2_annot_index_all=["%s%s%s" % (basename(fh),col_sep,data_lbl_col) \
+                #                              for fh in data_lbl_fhs if (basename(fh) not in repli.index)]
+                # data_deseq2_annot_index_no_reps=[i for i in data_deseq2_annot_index_all if (i not in data_deseq2_annot.index)]
+                # for idx in data_deseq2_annot_index_no_reps:
+                #     data_deseq2_annot.loc[idx,'condition']=idx
+                data_deseq2_annot.to_csv(data_deseq2_annot_fh)
+                data_deseq2_count=debad(data_deseq2_count,axis=0,condi='any',bad='nan')
+                data_deseq2_count.to_csv(data_deseq2_count_fh)            
+                deseq_fh="%s/deseq2.R" % (abspath(dirname(__file__)))
+                log_fh="%s.log" % data_deseq2_annot_fh
+                with open(log_fh,'a') as log_f:
+                    deseq2_com='%s %s %s %s 1' % (rscript_fh,deseq_fh,data_deseq2_count_fh,data_deseq2_annot_fh)
+                    # print deseq2_com
+                    subprocess.call(deseq2_com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)              
+            data_lbl_tran=pd.read_csv(data_lbl_tran_fh).set_index('Unnamed: 0')
+            data_lbl_tran.index.name='mutids'
+            if len(data_lbl_all_tran)==0:
+                data_lbl_all_tran=data_lbl_tran.copy()
+            else:
+                data_lbl_all_tran=data_lbl_all_tran.join(data_lbl_tran)
+            # print data_lbl_all_tran.columns.tolist()
+            # print len(data_lbl_all_tran)
+        data_lbl_all_tran.to_csv(data_lbl_all_tran_fh)
+    else:        
+        data_lbl_all_tran=pd.read_csv(data_lbl_all_tran_fh).set_index('mutids')
+
+    data_lbl_tran_col='NiA_tran'    
+    for col in data_lbl_all_tran:
         data_lbl_fn,tmp=col.split('.')
         data_lbl_fh='%s/data_lbl/%s/%s' % (prj_dh,type_form,data_lbl_fn)
         data_lbl=pd.read_csv(data_lbl_fh).set_index('mutids')
-        if not data_lbl_col in data_lbl:
+        if not data_lbl_tran_col in data_lbl:
             data_lbl_cols=data_lbl.columns.tolist()
-            data_lbl=data_lbl.join(data_lbl_all.loc[:,col])
-            data_lbl.columns=data_lbl_cols+[data_lbl_col]
+            data_lbl=data_lbl.join(data_lbl_all_tran.loc[:,col])
+            data_lbl.columns=data_lbl_cols+[data_lbl_tran_col]
             data_lbl.index.name='mutids'
             data_lbl.to_csv(data_lbl_fh)
 
@@ -403,13 +430,14 @@ def make_deseq2_annot(unsel,sel,data_lbl_col,prj_dh,type_form='aas'):
         data_deseq2_annot=pd.read_csv(data_deseq2_annot_fh).set_index('file')
     return data_deseq2_annot,data_deseq2_annot_fh
 
-def make_deseq2_data(unsel,sel,data_deseq2_annot,data_lbl_col,prj_dh,type_form='aas'):
+def make_deseq2_count(unsel,sel,data_deseq2_annot,data_lbl_col,prj_dh,type_form='aas'):
     data_deseq2_count_dh='%s/data_fit/%s_all' % (prj_dh,type_form)
     data_deseq2_count_fh='%s/%s_WRT_%s.deseq2_count.csv' % (data_deseq2_count_dh,sel,unsel)
     if not exists(data_deseq2_count_fh):
         data_lbl_fhs=["%s/data_lbl/%s/%s" % (prj_dh,type_form,s.split('.')[0]) for s in data_deseq2_annot.index]
         col_sep="."
         data_lbl_all=fhs2data_combo(data_lbl_fhs,cols=[data_lbl_col],index='mutids',col_sep=col_sep)
+        data_lbl_all=debad(data_lbl_all,axis=0,condi='any',bad='nan')
         data_lbl_all.to_csv(data_deseq2_count_fh)
     else:
         data_lbl_all=pd.read_csv(data_deseq2_count_fh).set_index('mutids')
@@ -418,7 +446,7 @@ def make_deseq2_data(unsel,sel,data_deseq2_annot,data_lbl_col,prj_dh,type_form='
 def make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info):
     data_lbl_col='NiA_norm'
     data_deseq2_annot,data_deseq2_annot_fh=make_deseq2_annot(data_lbl_ref_fn,data_lbl_sel_fn,data_lbl_col,info.prj_dh)
-    data_deseq2_count,data_deseq2_count_fh=make_deseq2_data(data_lbl_ref_fn,data_lbl_sel_fn,data_deseq2_annot,data_lbl_col,info.prj_dh)
+    data_deseq2_count,data_deseq2_count_fh=make_deseq2_count(data_lbl_ref_fn,data_lbl_sel_fn,data_deseq2_annot,data_lbl_col,info.prj_dh)
     log_fh="%s.log" % data_deseq2_annot_fh
     data_deseq2_res_fh="%s.deseq2_res.csv" % data_deseq2_annot_fh
     if not exists(data_deseq2_res_fh):
@@ -497,7 +525,7 @@ def class_fit(data_fit_df,col_fit='FiA',zscore=False): #column of the data_fit
         data_fit_df.loc[data_fit_df.loc[:,col_fit]<=-2,    'class_fit']="deleterious"
     return data_fit_df
 
-def rescale_fitnessbysynonymous(data_fit,col_fit="FCA",col_fit_rescaled="FiA"):
+def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA"):
     if col_fit_rescaled in data_fit.columns:
         col_fit_rescaled_ori=col_fit_rescaled
         col_fit_rescaled    ="tmp"

@@ -58,7 +58,11 @@ def main(prj_dh):
     [col for col in data_feats if "Chirality" in col]+\
     [col for col in data_feats if "Offset from residue to the partner" in col]+\
     [col for col in data_feats if "Energy (kcal/mol) of " in col]+\
-    [col for col in data_feats if "Secondary structure" in col]
+    [col for col in data_feats if "Secondary structure" in col]+\
+	[col for col in data_feats if 'cosine of the angle between C=O of residue and C=O of previous residue' in col]+\
+	[col for col in data_feats if '$\Delta$(Molecular Polarizability) per substitution' in col]+\
+	[col for col in data_feats if '$\Delta$(Molecular weight (Da)) per substitution' in col]+\
+	[col for col in data_feats if '$\Delta$(Molecular Refractivity) per substitution' in col]
 
     for col in cols_del:
         del data_feats[col]

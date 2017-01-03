@@ -17,7 +17,8 @@ rownames(colData)
 head(countData)
 countData <- as.matrix(countData[,rownames(colData)])
 
-countData <- countData[ -which( is.na(countData), arr.ind=TRUE )[,"row"], ]
+#denanrows
+# countData <- countData[ -which( is.na(countData), arr.ind=TRUE )[,"row"], ]
 colData <- colData[,c("condition","type")]
 all(rownames(colData) %in% colnames(countData))
 countData <- countData[, rownames(colData)]

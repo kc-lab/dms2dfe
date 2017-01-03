@@ -14,7 +14,6 @@ from Bio import SeqIO
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe import configure
-#from dms2dfe.lib.io_seq_files import cctmr_fasta2ref_fasta
 #from dms2dfe.lib.io_data_files import convert2h5form
 from dms2dfe.lib.get_protein_features import get_data_feats_pos,get_data_feats_sub,get_data_feats_mut,get_data_feats_all
 # getdssp_data,pdb2dfromactivesite,get_consrv_score,get_residue_depth
@@ -56,8 +55,7 @@ def main(prj_dh):
     #FEATS ALL
     data_feats_all_fh="%s/data_feats/aas/data_feats_all" % prj_dh
     data_feats_all=get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
-                                      info.fsta_fh,info.host,
-                                     data_feats_all_fh)
+                                     data_feats_all_fh,info)
     #back compatibility
     feats_all_fh="%s/data_feats/aas/feats_all" % prj_dh
     if not data_feats_pos is None:
