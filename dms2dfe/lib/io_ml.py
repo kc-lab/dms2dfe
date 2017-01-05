@@ -17,7 +17,7 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import confusion_matrix,classification_report,regression
 
 from dms2dfe.lib.io_data_files import read_pkl,to_pkl
-from dms2dfe.lib.io_dfs import set_index,denan
+from dms2dfe.lib.io_dfs import set_index,denan,denanrows
 from dms2dfe.lib.io_nums import is_numeric
 from dms2dfe.lib.io_plots import saveplot,get_axlims
 
@@ -31,18 +31,9 @@ import seaborn as sns
 
 import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
-import logging
-logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
-
-def denanrows(data_all,condi="any"):
-    """
-    This removes rows with any np.nan value/s.  
-    
-    :param data_all: input dataframe.
-    :param condi: conditions for deletion of rows ["any": if any element is nan ,default | "all" : if all elements are nan] 
-    :returns data_all: output dataframe.
-    """
-    return denan(data_all,axis=0,condi="any")
+from dms2dfe.lib.io_strs import get_logger
+logging=get_logger()
+# logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
 def y2classes(data_combo,y_coln,classes=2,
              middle_percentile_skipped=0):
@@ -503,7 +494,8 @@ def get_RF_regress_metrics(data_regress_fh,data_dh='data_ml/',plot_dh='plots/'):
                  y_test,y_pred,plot_fh=plot_fh)    
 
 def data_fit2ml(data_fit_key,prj_dh,data_feats,
-                data_fit_col='FCA_norm',middle_percentile_skipped=0.2):
+                data_fit_col='FiA',data_fit_col_alt='FCA_norm',
+                middle_percentile_skipped=0.1):
     """
     This runs the submodules to run classifier from fitness data (`data_fit`).
     
@@ -528,25 +520,34 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
     if not exists(grid_search_regress_fh):
         data_fit_fh="%s/%s" % (prj_dh,data_fit_key)
         data_fit=pd.read_csv(data_fit_fh)
+        data_fit_col_muts=len(denanrows(data_fit.loc[:,data_fit_col]))
+        data_fit_col_alt_muts=len(denanrows(data_fit.loc[:,data_fit_col_alt]))        
+        if data_fit_col_muts<(0.8*data_fit_col_alt_muts):
+            logging.warning("using %s instead of %s: bcz %s << %s" % (data_fit_col_alt,data_fit_col,data_fit_col_muts,data_fit_col_alt_muts))
+            y_coln_classi=data_fit_col_alt
+            data_fit_col=data_fit_col_alt            
         if np.sum(~data_fit.loc[:,y_coln_classi].isnull())>10:
             logging.info("processing: %s" % data_fit_key)
             if not exists(grid_search_classi_fh):
                 if not exists(data_fh.replace("data_ml_","data_ml_classi_train_")):
+                    # print sum(~pd.isnull(data_fit.loc[:,y_coln_classi]))
                     data_fit=y2classes(data_fit,y_coln_classi,
-                                       middle_percentile_skipped=middle_percentile_skipped
-                                      )
+                                       middle_percentile_skipped=middle_percentile_skipped)
                     data_ml_mutids=list(data_fit.loc[:,'mutids'])                
                     y_coln_classi="classes"
+                    # print sum(~pd.isnull(data_fit.loc[:,y_coln_classi]))
                     data_fit=set_index(data_fit,"mutids")
                     data_feats=set_index(data_feats,"mutids")
                     X_cols_classi=data_feats.columns.tolist()
                     data_combo=pd.concat([data_feats,
                                           data_fit.loc[:,y_coln_classi]],axis=1)
+                    # print sum(~pd.isnull(data_combo.loc[:,y_coln_classi]))
                     data_combo.index.name='mutids'
                     data_ml=X_cols2binary(data_combo.drop(y_coln_classi,axis=1))
                     data_ml.loc[:,y_coln_classi]=data_combo.loc[:,y_coln_classi]
                     data_ml=rescalecols(data_ml)
                     data_classi_train=denan(data_ml,axis='both',condi='all any')
+                    # print sum(~pd.isnull(data_ml.loc[:,y_coln_classi]))
 
                     data_classi_train_mutids=list(data_classi_train.index.values)
                     data_classi_test_mutids=[mutid for mutid in data_ml_mutids if not mutid in data_classi_train_mutids]
@@ -556,7 +557,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
                     data_ml.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_classi_all_"),index=False)
                     data_classi_train.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_classi_train_"),index=False)
                     data_classi_test.reset_index().to_csv(data_fh.replace("data_ml_","data_ml_classi_test_"),index=False)
-                else:                
+                else:
                     data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
                     data_classi_test=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_test_"))
 
@@ -564,7 +565,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
                     data_classi_test  =data_classi_test.set_index("mutids",drop=True)
                     y_coln_classi="classes"
                 logging.info("number of mutants used for training = %d" % len(data_classi_train))
-                logging.info("this step would take a 10 to 15min to complete.")
+                # logging.info("this step would take a 10 to 15min to complete.")
 
                 X_cols_classi=data_classi_train.columns.tolist()
                 X_cols_classi.remove(y_coln_classi)
@@ -620,6 +621,8 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
             run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,
                             test_size=0.34,data_test=data_regress_test,data_out_fh=grid_search_regress_metrics_fh)
             get_RF_regress_metrics(grid_search_regress_metrics_fh,data_dh='data_ml/',plot_dh='plots/')
+
+            logging.info("number of mutants used for training = %d" % len(data_regress_train))
             grid_search_regress,data_preds_regress=\
             run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,
                             test_size=0,data_test=data_regress_test,data_out_fh=grid_search_regress_fh)

@@ -16,10 +16,13 @@ import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
 warnings.simplefilter(action = "ignore", category = DeprecationWarning)
 import logging
-logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
+from dms2dfe.lib.io_strs import make_pathable_string
+import datetime
+from dms2dfe.lib.io_strs import get_logger
+logging=get_logger()
+# logging.basicConfig(filename="dms2dfe_%s.log" % (make_pathable_string(str(datetime.datetime.now()))),level=logging.DEBUG)
 from dms2dfe import configure
 from dms2dfe.lib.io_ml import data_fit2ml
-from dms2dfe.lib.global_vars import mut_types_form
 
 def main(prj_dh):
     """
@@ -59,10 +62,11 @@ def main(prj_dh):
     [col for col in data_feats if "Offset from residue to the partner" in col]+\
     [col for col in data_feats if "Energy (kcal/mol) of " in col]+\
     [col for col in data_feats if "Secondary structure" in col]+\
-	[col for col in data_feats if 'cosine of the angle between C=O of residue and C=O of previous residue' in col]+\
-	[col for col in data_feats if '$\Delta$(Molecular Polarizability) per substitution' in col]+\
-	[col for col in data_feats if '$\Delta$(Molecular weight (Da)) per substitution' in col]+\
-	[col for col in data_feats if '$\Delta$(Molecular Refractivity) per substitution' in col]
+    [col for col in data_feats if 'cosine of the angle between C=O of residue and C=O of previous residue' in col]+\
+    [col for col in data_feats if '$\Delta$(Molecular Polarizability) per substitution' in col]+\
+    [col for col in data_feats if '$\Delta$(Molecular weight (Da)) per substitution' in col]+\
+    [col for col in data_feats if '$\Delta$(Molecular Refractivity) per substitution' in col]+\
+    ['bend']
 
     for col in cols_del:
         del data_feats[col]

@@ -96,7 +96,10 @@ def info2src(prj_dh):
         fsta_fh=info.loc['fsta_fh','input']
     info.loc['prj_dh','input']=abspath(prj_dh)
     info.loc['fsta_id','input'],info.loc['fsta_seq','input'],info.loc['fsta_len','input']=get_fsta_feats(fsta_fh)
-    info.loc['prt_seq','input']=fasta_nts2prt(fsta_fh,host=info.loc['host','input'])
+    host=info.loc['host','input']
+    if pd.isnull(host):
+	    host=info.loc['host','default']    	
+    info.loc['prt_seq','input']=fasta_nts2prt(fsta_fh,host=host)
     info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     csv2src(prj_dh+"/cfg/info","%s/../tmp/info.py" % (abspath(dirname(__file__))))
     logging.info("configuration compiled: %s/cfg/info" % prj_dh)

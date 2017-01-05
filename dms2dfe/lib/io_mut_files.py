@@ -24,7 +24,7 @@ from dms2dfe.lib.global_vars import aas_21,cds_64,mut_types_form,mut_types_NorS
 from dms2dfe.lib.convert_seq import cds2aas
 from dms2dfe.lib.io_seq_files import getdepth_cds,getdepth_ref
 from dms2dfe.lib.io_data_files import getusable_lbls_list,getusable_fits_list,getusable_comparison_list
-from dms2dfe.lib.io_dfs import concat_cols,fhs2data_combo,debad
+from dms2dfe.lib.io_dfs import concat_cols,fhs2data_combo,debad,set_index
 from dms2dfe.lib.io_nums import str2num,plog
 from dms2dfe.lib.io_stats import testcomparison,multipletests
 
@@ -147,7 +147,7 @@ def transform_data_lbl(prj_dh,transform_type,
     data_lbl_all_fh='%s/%s.csv' % (data_lbl_all_dh,data_lbl_col)
     data_lbl_all.to_csv(data_lbl_all_fh)
 
-    if transform_type=='log':
+    if transform_type=='log2':
         data_lbl_all=data_lbl_all.apply(np.log2)
     elif transform_type=='plog':
         data_lbl_all=data_lbl_all.apply(plog)
@@ -357,6 +357,20 @@ def get_data_lbl_reps(data_lbl_fn,data_lbl_type,repli,info,data_fit=None,
                     data_fit=data_lbl.loc[:,['ref','refi','mut']].copy()
                 data_fit.loc[:,data_fit_col]=data_lbl.loc[:,data_lbl_col]
         return data_fit
+    else:
+        rep=data_lbl_fn
+        data_lbl_fh="%s/data_lbl/%s/%s" % (info.prj_dh,type_form,rep)
+        if exists(data_lbl_fh):    
+            data_lbl=pd.read_csv(data_lbl_fh).set_index('mutids')
+            data_fit_col="%s%s%s%s%s" % (rep,col_sep,data_lbl_col,col_sep,data_lbl_type)
+            data_lbl_col="%s" % (data_lbl_col)
+            if data_fit is None:
+                data_fit=data_lbl.loc[:,['ref','refi','mut']].copy()
+            data_fit.loc[:,data_fit_col]=data_lbl.loc[:,data_lbl_col]
+            return data_fit
+        else:
+            logging.warning('does not exists: %s' % data_lbl_fn)
+
 
 
 def get_data_lbl_type(data_fit,data_lbl_type,data_lbl_col='NiA_tran'):
@@ -395,13 +409,18 @@ def make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,data_lbl_col='NiA_tran',t
     col_multitest_rjct="rejectH0 %s %s" % (test,multitest)
 
     data_fit=testcomparison(data_fit,data_lbl_sel_reps_cols,data_lbl_ref_reps_cols,test='ztest')
-    data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_rjct],\
-    data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_pval],a1,a2=\
-    multipletests(data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_test_pval].as_matrix(),alpha=0.05, method=multitest)
+    if not sum(~pd.isnull(data_fit.loc[:,col_test_pval]))==0:
+        data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_rjct],\
+        data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_pval],a1,a2=\
+        multipletests(data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_test_pval].as_matrix(),alpha=0.05, method=multitest)
 
-    data_fit.loc[:,'pval']=data_fit.loc[:,col_test_pval]
-    data_fit.loc[:,'stat']=data_fit.loc[:,col_test_stat]
-    data_fit.loc[:,'padj']=data_fit.loc[:,col_multitest_pval]    
+        data_fit.loc[:,'pval']=data_fit.loc[:,col_test_pval]
+        data_fit.loc[:,'stat']=data_fit.loc[:,col_test_stat]
+        data_fit.loc[:,'padj']=data_fit.loc[:,col_multitest_pval]    
+    else:
+        data_fit.loc[:,'pval']=np.nan
+        data_fit.loc[:,'stat']=np.nan
+        data_fit.loc[:,'padj']=np.nan
     return data_fit
 
 def make_deseq2_annot(unsel,sel,data_lbl_col,prj_dh,type_form='aas'):
@@ -460,7 +479,7 @@ def make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info):
     except:
         logging.error('check deseq2 log for more info: %s' % basename(log_fh))
     data_deseq2_res.index.name='mutids'
-#     baseMean	log2FoldChange	lfcSE	stat	pvalue	padj
+#     baseMean  log2FoldChange  lfcSE   stat    pvalue  padj
     test='Waldtest'
     multitest='fdr_bh'              
     col_test_pval="pval %s" % test
@@ -526,22 +545,25 @@ def class_fit(data_fit_df,col_fit='FiA',zscore=False): #column of the data_fit
     return data_fit_df
 
 def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA"):
-    if col_fit_rescaled in data_fit.columns:
-        col_fit_rescaled_ori=col_fit_rescaled
-        col_fit_rescaled    ="tmp"
-    if not "refrefi" in data_fit.columns:
-        from dms2dfe.lib.io_nums import str2num
-        data_fit.loc[:,'refrefi']=\
-        [("%s%03d" % (mutid[0],str2num(mutid))) for mutid in data_fit.reset_index().loc[:,"mutids"].tolist()]        
-    for refrefi in data_fit.loc[:,"refrefi"].unique():
-        subset=data_fit.loc[data_fit.loc[:,"refrefi"]==refrefi,:]
-        FiW=float(subset.loc[subset.loc[:,"mut"]==subset.loc[:,"ref"],col_fit])
-        for subseti in subset.index.values:
-            data_fit.loc[subseti,col_fit_rescaled]=data_fit.loc[subseti,col_fit]-FiW
-    if "tmp" in data_fit.columns:
-        data_fit.loc[:,col_fit_rescaled_ori]=data_fit.loc[:,"tmp"]
-        data_fit=data_fit.drop("tmp",axis=1)
-    return data_fit
+    if not sum(~pd.isnull(data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),col_fit]))==0:
+        data_fit=set_index(data_fit,'mutids')
+        if col_fit_rescaled in data_fit.columns:
+            col_fit_rescaled_ori=col_fit_rescaled
+            col_fit_rescaled    ="tmp"
+        if not "refrefi" in data_fit.columns:
+            data_fit.loc[:,'refrefi']=mutids_converter(data_fit.loc[:,'mutids'],'refrefi','aas')        
+        for refrefi in data_fit.loc[:,"refrefi"].unique():
+            data_fit_posi=data_fit.loc[data_fit.loc[:,"refrefi"]==refrefi,:]
+            FiS=float(data_fit_posi.loc[data_fit_posi.loc[:,"mut"]==data_fit_posi.loc[:,"ref"],col_fit])
+            for mutid in data_fit_posi.index:
+                data_fit.loc[mutid,col_fit_rescaled]=data_fit.loc[mutid,col_fit]-FiS
+        if "tmp" in data_fit.columns:
+            data_fit.loc[:,col_fit_rescaled_ori]=data_fit.loc[:,"tmp"]
+            data_fit=data_fit.drop("tmp",axis=1)
+        return data_fit
+    else:
+        data_fit.loc[:,col_fit_rescaled]=np.nan
+        return data_fit
 
 def class_comparison(data_comparison):
     """
