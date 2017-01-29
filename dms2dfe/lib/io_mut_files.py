@@ -147,10 +147,13 @@ def transform_data_lbl(prj_dh,transform_type,
     data_lbl_all_fh='%s/%s.csv' % (data_lbl_all_dh,data_lbl_col)
     data_lbl_all.to_csv(data_lbl_all_fh)
 
-    if transform_type=='log2':
+    if (transform_type=='log2') or (transform_type=='log'):
         data_lbl_all=data_lbl_all.apply(np.log2)
     elif transform_type=='plog':
         data_lbl_all=data_lbl_all.apply(plog)
+    else:
+        logging.error("trnaform_type not valid: %s" % transform_type)
+        sys.exist()
     data_lbl_col='NiA_tran'
     data_lbl_all_fh='%s/%s.csv' % (data_lbl_all_dh,data_lbl_col)
     data_lbl_all.to_csv(data_lbl_all_fh)
@@ -185,7 +188,8 @@ def transform_data_lbl_deseq(prj_dh,transform_type,rscript_fh,type_form='aas'):
     data_lbl_tran_col='NiA_tran'
     data_lbl_all_tran_fh='%s/%s.csv' % (data_lbl_all_dh,data_lbl_tran_col)
     if not exists(data_lbl_all_tran_fh):
-        data_lbl_all_tran=pd.DataFrame()
+        data_lbl_all_tran=pd.DataFrame(index=data_lbl_all.index)
+        data_lbl_all_tran.index.name='mutids'
         repli=pd.read_csv('%s/cfg/repli' % prj_dh).set_index('varname')
         for avg in repli.index:
             avg_col="%s%s%s" % (avg,col_sep,data_lbl_col)
@@ -229,7 +233,11 @@ def transform_data_lbl_deseq(prj_dh,transform_type,rscript_fh,type_form='aas'):
                 data_lbl_all_tran=data_lbl_all_tran.join(data_lbl_tran)
             # print data_lbl_all_tran.columns.tolist()
             # print len(data_lbl_all_tran)
-        data_lbl_all_tran.to_csv(data_lbl_all_tran_fh)
+        if len(data_lbl_all_tran.columns.tolist())>0:
+	        data_lbl_all_tran.to_csv(data_lbl_all_tran_fh)
+     	else:
+     		logging.error('transform_type can not be %s: no replicates found' % transform_type)
+     		sys.exit()
     else:        
         data_lbl_all_tran=pd.read_csv(data_lbl_all_tran_fh).set_index('mutids')
 
@@ -261,7 +269,12 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,
     """
     if stat(lbl_mat_mut_cds_fh).st_size != 0 :
         lbl_mat_cds=pd.read_csv(lbl_mat_mut_cds_fh) # get mat to df
-        lbl_mat_cds=lbl_mat_cds.set_index("ref_cd",drop=True) # make codons as the index
+        # print lbl_mat_mut_cds_fh
+        # print lbl_mat_cds.columns.tolist()
+        if 'ref_cd' in lbl_mat_cds:
+            lbl_mat_cds=lbl_mat_cds.set_index("ref_cd",drop=True) # make codons as the index
+        if 'ref' in lbl_mat_cds:
+            lbl_mat_cds=lbl_mat_cds.set_index("ref",drop=True) # make codons as the index
         if 'Unnamed: 0' in lbl_mat_cds.columns:
             del lbl_mat_cds['Unnamed: 0']
         lbl_mat_cds.columns.name='mut'
@@ -322,6 +335,7 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,
                         data_lbl=data_lbl.reset_index()
                         data_lbl.loc[:,'NiA_norm']=data_lbl.loc[:,'NiAcut']/data_lbl.loc[:,'depth_ref']*data_lbl.loc[:,'depth_ref'].max()
                     else:
+                    	logging.info('no depth information')
                         data_lbl.loc[:,'NiA_norm']=data_lbl.loc[:,'NiAcut']
                     #clip ends
                     if not clips is None:
@@ -329,18 +343,18 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,
                         # print cols
                         data_lbl.loc[(data_lbl.loc[:,'refi']<clips[0]),cols]=np.nan
                         data_lbl.loc[(data_lbl.loc[:,'refi']>clips[1]),cols]=np.nan
-                    data_lbl.reset_index().to_csv('%s/data_lbl/%s/%s' % (prj_dh,type_form,str(lbli)),index=False)
+                    data_lbl.to_csv('%s/data_lbl/%s/%s' % (prj_dh,type_form,str(lbli)))
                 else:
                     logging.error("len(data_lbl)/reflen is %d instead of 21 or 64" % (len(data_lbl)/(reflen/3)))
             else :
                 logging.info("already processed: %s" % (str(lbli)))
-        if not exists(prj_dh+"/data_mutmat"):
-            try:
-                makedirs(prj_dh+"/data_mutmat")
-            except :
-                logging.warning("race error data_mutmat")
-        lbl_mat_cds_out_fh='%s/data_mutmat/%s' % (prj_dh,basename(lbl_mat_mut_cds_fh))
-        lbl_mat_cds.to_csv(lbl_mat_cds_out_fh)
+        # if not exists(prj_dh+"/data_mutmat"):
+        #     try:
+        #         makedirs(prj_dh+"/data_mutmat")
+        #     except :
+        #         logging.warning("race error data_mutmat")
+        # lbl_mat_cds_out_fh='%s/data_mutmat/%s' % (prj_dh,basename(lbl_mat_mut_cds_fh))
+        # lbl_mat_cds.to_csv(lbl_mat_cds_out_fh)
     else :
         logging.warning("can not find lbl_mat_mut_cds_fh : %s" % (lbl_mat_mut_cds_fh))
 
@@ -350,7 +364,9 @@ def get_data_lbl_reps(data_lbl_fn,data_lbl_type,repli,info,data_fit=None,
         for rep in repli.loc[data_lbl_fn,:]:
             if not pd.isnull(rep):
                 data_lbl_fh="%s/data_lbl/%s/%s" % (info.prj_dh,type_form,rep)
-                data_lbl=pd.read_csv(data_lbl_fh).set_index('mutids')
+                data_lbl=pd.read_csv(data_lbl_fh)
+                data_lbl=set_index(data_lbl,'mutids')
+                
                 data_fit_col="%s%s%s%s%s" % (rep,col_sep,data_lbl_col,col_sep,data_lbl_type)
                 data_lbl_col="%s" % (data_lbl_col)
                 if data_fit is None:
@@ -360,6 +376,7 @@ def get_data_lbl_reps(data_lbl_fn,data_lbl_type,repli,info,data_fit=None,
     else:
         rep=data_lbl_fn
         data_lbl_fh="%s/data_lbl/%s/%s" % (info.prj_dh,type_form,rep)
+        # print info.prj_dh
         if exists(data_lbl_fh):    
             data_lbl=pd.read_csv(data_lbl_fh).set_index('mutids')
             data_fit_col="%s%s%s%s%s" % (rep,col_sep,data_lbl_col,col_sep,data_lbl_type)
@@ -375,7 +392,6 @@ def get_data_lbl_reps(data_lbl_fn,data_lbl_type,repli,info,data_fit=None,
 
 def get_data_lbl_type(data_fit,data_lbl_type,data_lbl_col='NiA_tran'):
     data_lbl_type_col="%s.%s" % (data_lbl_col,data_lbl_type)
-    
     data_lbl_type_reps_cols=[c for c in data_fit if data_lbl_type_col in c]
     # print data_lbl_type_reps_cols
     data_fit.loc[:,"%s avg" % (data_lbl_type_col)]=data_fit.loc[:,data_lbl_type_reps_cols].T.mean()
@@ -408,7 +424,7 @@ def make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,data_lbl_col='NiA_tran',t
     col_multitest_pval="padj %s %s" % (test,multitest)
     col_multitest_rjct="rejectH0 %s %s" % (test,multitest)
 
-    data_fit=testcomparison(data_fit,data_lbl_sel_reps_cols,data_lbl_ref_reps_cols,test='ztest')
+    data_fit=testcomparison(data_fit,data_lbl_sel_reps_cols,data_lbl_ref_reps_cols,test=test)
     if not sum(~pd.isnull(data_fit.loc[:,col_test_pval]))==0:
         data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_rjct],\
         data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_pval],a1,a2=\
@@ -429,16 +445,23 @@ def make_deseq2_annot(unsel,sel,data_lbl_col,prj_dh,type_form='aas'):
     data_deseq2_annot_dh='%s/data_fit/%s_all' % (prj_dh,type_form)
     data_deseq2_annot_fh='%s/%s_WRT_%s.deseq2_annot.csv' % (data_deseq2_annot_dh,sel,unsel)
     if not exists(data_deseq2_annot_fh):
-        data_deseq2_annot=pd.DataFrame(columns=['condition','type','number of lanes','total number of reads','exon counts'])
+        data_deseq2_annot=pd.DataFrame(columns=['condition','type','number of lanes',
+                                                'total number of reads','exon counts'])
         data_deseq2_annot.index.name='file'
         if unsel in repli.index:
             for rep in repli.loc[unsel,:]:
                 if not pd.isnull(rep):
                     data_deseq2_annot.loc["%s%s%s" % (rep,col_sep,data_lbl_col),'condition']='ref'
+        else:
+            data_deseq2_annot.loc["%s%s%s" % (unsel,col_sep,data_lbl_col),'condition']='ref'
+            
         if sel in repli.index:
             for rep in repli.loc[sel,:]:
                 if not pd.isnull(rep):
                     data_deseq2_annot.loc["%s%s%s" % (rep,col_sep,data_lbl_col),'condition']='sel'
+        else:
+            data_deseq2_annot.loc["%s%s%s" % (sel,col_sep,data_lbl_col),'condition']='sel'
+
         if not exists(data_deseq2_annot_dh):
             try:
                 makedirs(data_deseq2_annot_dh)
@@ -464,8 +487,14 @@ def make_deseq2_count(unsel,sel,data_deseq2_annot,data_lbl_col,prj_dh,type_form=
 
 def make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info):
     data_lbl_col='NiA_norm'
-    data_deseq2_annot,data_deseq2_annot_fh=make_deseq2_annot(data_lbl_ref_fn,data_lbl_sel_fn,data_lbl_col,info.prj_dh)
-    data_deseq2_count,data_deseq2_count_fh=make_deseq2_count(data_lbl_ref_fn,data_lbl_sel_fn,data_deseq2_annot,data_lbl_col,info.prj_dh)
+    data_deseq2_annot,data_deseq2_annot_fh=make_deseq2_annot(data_lbl_ref_fn,data_lbl_sel_fn,
+                                                             data_lbl_col,info.prj_dh)
+    data_deseq2_count,data_deseq2_count_fh=make_deseq2_count(data_lbl_ref_fn,data_lbl_sel_fn,
+                                                             data_deseq2_annot,data_lbl_col,info.prj_dh)
+    data_deseq2_count=set_index(data_deseq2_count,'mutids')
+    if len(data_deseq2_count.columns)==2:
+    	logging.error('transform_type can not be GLM: no replicates found')
+    	sys.exit()
     log_fh="%s.log" % data_deseq2_annot_fh
     data_deseq2_res_fh="%s.deseq2_res.csv" % data_deseq2_annot_fh
     if not exists(data_deseq2_res_fh):
@@ -514,7 +543,8 @@ def data_lbl2data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,type_forms=['aas']):
                     gauss_mean, gauss_sdev = fit_gauss_params(data_fit.loc[:,'FCS'])
                     data_fit.loc[:,'FCA_norm']=(data_fit.loc[:,'FCA']-gauss_mean)/gauss_sdev
                 except:
-                    logging.info("norm wrt syn: excepted: data_fit/%s/%s" % (type_form,data_fit_fn))
+                    logging.error("norm wrt syn: excepted: data_fit/%s/%s" % (type_form,basename(data_fit_fh)))
+                    sys.exit()
             elif info.norm_type == 'none':
                 data_fit.loc[:,'FCA_norm']=data_fit.loc[:,'FCA']
             data_fit.loc[:,'FCS_norm']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCA_norm']
@@ -550,8 +580,10 @@ def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="Fi
         if col_fit_rescaled in data_fit.columns:
             col_fit_rescaled_ori=col_fit_rescaled
             col_fit_rescaled    ="tmp"
-        if not "refrefi" in data_fit.columns:
-            data_fit.loc[:,'refrefi']=mutids_converter(data_fit.loc[:,'mutids'],'refrefi','aas')        
+        if not "refrefi" in data_fit:
+            data_fit.loc[:,'refrefi']\
+            =mutids_converter(data_fit.reset_index().loc[:,'mutids'],
+                              'refrefi','aas')        
         for refrefi in data_fit.loc[:,"refrefi"].unique():
             data_fit_posi=data_fit.loc[data_fit.loc[:,"refrefi"]==refrefi,:]
             FiS=float(data_fit_posi.loc[data_fit_posi.loc[:,"mut"]==data_fit_posi.loc[:,"ref"],col_fit])
@@ -594,7 +626,7 @@ def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
     :param prj_dh: path to project directory.
     """    
     logging.info("processing: ctrl, test : %s %s" % (lbl_ctrl,lbl_test))
-    for type_form in mut_types_form : # get aas or cds
+    for type_form in ['aas']:#stitch mut_types_form : # get aas or cds
         data_fit_ctrl_fhs=glob("%s/data_fit/%s/%s_WRT*" % (prj_dh,type_form,lbl_ctrl))
         data_fit_ctrl_keys=[basename(fh) for fh in data_fit_ctrl_fhs]
         data_fit_test_fhs=glob("%s/data_fit/%s/%s_WRT*" % (prj_dh,type_form,lbl_test))
@@ -603,23 +635,32 @@ def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
             for ctrli in data_fit_ctrl_keys :
                 for testi in data_fit_test_keys :       
                     data_comparison_fh='%s/data_comparison/%s/%s_VERSUS_%s' % (prj_dh,type_form,testi,ctrli)
-                    if data_comparison_fh.count("inferred")!=1:
-                        # print data_comparison_fh
-                        data_fit_ctrl=pd.read_csv("%s/data_fit/%s/%s" % (prj_dh,type_form,ctrli))
-                        data_fit_test=pd.read_csv("%s/data_fit/%s/%s" % (prj_dh,type_form,testi))                    
-                        data_comparison=concat_cols(data_fit_test,data_fit_ctrl,'mutids',
-                                ['mut','ref','FiA',"class_fit"],['FiA',"class_fit"],
-                                '_test','_ctrl')
-                        
-                        data_comparison.loc[:,"Fi_ctrl"]=data_comparison.loc[:,"FiA_ctrl"]
-                        data_comparison.loc[:,"Fi_test"]=data_comparison.loc[:,"FiA_test"]
-    #                     data_comparison.to_csv("test_comparison")
-                        data_comparison=class_comparison(data_comparison) # get class fit rel
-                        if not exists('%s/data_comparison/%s' % (prj_dh,type_form)):
-                            try:
-                                makedirs('%s/data_comparison/%s' % (prj_dh,type_form))
-                            except:
-                                logging.info("race error data_comparison")
-                        data_comparison.reset_index().to_csv(data_comparison_fh,index=False) # store                    
+                    if not exists(data_comparison_fh):
+                        if data_comparison_fh.count("inferred")!=1:
+                            # print data_comparison_fh
+                            # if 'inferred' in data_comparison_fh:
+                            #     print ">>>>%s" % data_comparison_fh
+                            data_fit_ctrl_fh="%s/data_fit/%s/%s" % (prj_dh,type_form,ctrli)
+                            data_fit_ctrl=pd.read_csv(data_fit_ctrl_fh)
+                            data_fit_test_fh="%s/data_fit/%s/%s" % (prj_dh,type_form,testi)
+                            data_fit_test=pd.read_csv(data_fit_test_fh)
+                            # print data_fit_test_fh
+                            data_comparison=concat_cols(data_fit_test,data_fit_ctrl,'mutids',
+                                    ['mut','ref','FiA',"class_fit",'padj'],['FiA',"class_fit",'padj'],
+                                    '_test','_ctrl')
+
+                            data_comparison.loc[:,"Fi_ctrl"]=data_comparison.loc[:,"FiA_ctrl"]
+                            data_comparison.loc[:,"Fi_test"]=data_comparison.loc[:,"FiA_test"]
+                            data_comparison.loc[((data_comparison.loc[:,"padj_ctrl"]<0.05) \
+                             & (data_comparison.loc[:,"padj_test"]<0.05)),'Significant']=True
+                            data_comparison.loc[pd.isnull(data_comparison.loc[:,'Significant']),'Significant']=False
+        #                     data_comparison.to_csv("test_comparison")
+                            data_comparison=class_comparison(data_comparison) # get class fit rel
+                            if not exists('%s/data_comparison/%s' % (prj_dh,type_form)):
+                                try:
+                                    makedirs('%s/data_comparison/%s' % (prj_dh,type_form))
+                                except:
+                                    logging.info("race error data_comparison")
+                            data_comparison.reset_index().to_csv(data_comparison_fh,index=False) # store                    
         else:
             logging.warning("do not exist: data_fit/%s/%s & data_fit/%s/%s" % (type_form,lbl_ctrl,type_form,lbl_test))

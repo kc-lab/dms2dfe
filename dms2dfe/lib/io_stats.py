@@ -45,3 +45,12 @@ def get_r2(data,xcol,ycol,log=None):
     else:
         logging.error("one/both cols are empty")
         return 0
+
+from sklearn.metrics import regression
+from scipy.stats import linregress
+def get_regression_metrics(y_test,y_score):
+    slope, intercept, r, p_value, std_err = linregress(y_test,y_score)
+    # r=np.sqrt(regression.r2_score(y_test,y_score))
+    rmse=np.sqrt(regression.mean_absolute_error(y_test,y_score))
+    result="$r$=%0.2f\nRMSE=%0.2f" % (r,rmse)
+    return result,r,rmse

@@ -104,32 +104,32 @@ def main(prj_dh):
 #                 logging.warning("can not find sequencing data to get coverage")
 
 #plot data_lbl
-    plot_type="repli"
-    logging.info("processing: plot type: %s" % plot_type)
-    plot_data_lbl_repli(prj_dh,lim_min=np.log2(Ni_cutoff))
+    # plot_type="repli"
+    # logging.info("processing: plot type: %s" % plot_type)
+    # plot_data_lbl_repli(prj_dh,lim_min=np.log2(Ni_cutoff))
     
-    plot_type="heatmap"
-    cbar_label="Frequency ($N_{i}$)"
-    logging.info("processing: plot type: %s" % plot_type)    
-    data_lbls=glob("%s/data_lbl/aas/*" % prj_dh)+glob("%s/data_lbl/cds/*" % prj_dh)
-    data_lbls= [basename(fh) for fh in data_lbls]
-    if len(data_lbls)!=0:
-        for data_lbli in np.unique(data_lbls):
-            for type_form in mut_types_form:
-                if not exists("%s/plots/%s" % (prj_dh,type_form)):
-                    makedirs("%s/plots/%s" % (prj_dh,type_form))
-                data_lbl_fh = "%s/data_lbl/%s/%s" % (prj_dh,type_form,data_lbli)
-                if exists(data_lbl_fh):
-                    data_lbl=pd.read_csv(data_lbl_fh)
-                    if "Unnamed: 0" in data_lbl.columns:
-                        data_lbl=data_lbl.drop("Unnamed: 0", axis=1)
-                    #heatmaps
-                    plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_lbli)
-                    if not exists(plot_fh):
-                        plot_data_fit_heatmap(data_lbl,type_form,col='NiAcutlog',cmap="Blues",\
-                                                        center=None,data_feats=data_feats,plot_fh=plot_fh,cbar_label=cbar_label)
-                    else:
-                        logging.info("already processed: %s" % basename(plot_fh))
+    # plot_type="heatmap"
+    # cbar_label="Frequency ($N_{i}$)"
+    # logging.info("processing: plot type: %s" % plot_type)    
+    # data_lbls=glob("%s/data_lbl/aas/*" % prj_dh)+glob("%s/data_lbl/cds/*" % prj_dh)
+    # data_lbls= [basename(fh) for fh in data_lbls]
+    # if len(data_lbls)!=0:
+    #     for data_lbli in np.unique(data_lbls):
+    #         for type_form in mut_types_form:
+    #             if not exists("%s/plots/%s" % (prj_dh,type_form)):
+    #                 makedirs("%s/plots/%s" % (prj_dh,type_form))
+    #             data_lbl_fh = "%s/data_lbl/%s/%s" % (prj_dh,type_form,data_lbli)
+    #             if exists(data_lbl_fh):
+    #                 data_lbl=pd.read_csv(data_lbl_fh)
+    #                 if "Unnamed: 0" in data_lbl.columns:
+    #                     data_lbl=data_lbl.drop("Unnamed: 0", axis=1)
+    #                 #heatmaps
+    #                 plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_lbli)
+    #                 if not exists(plot_fh):
+    #                     plot_data_fit_heatmap(data_lbl,type_form,col='NiAcutlog',cmap="Blues",\
+    #                                                     center=None,data_feats=data_feats,plot_fh=plot_fh,cbar_label=cbar_label)
+    #                 else:
+    #                     logging.info("already processed: %s" % basename(plot_fh))
 
 #plot data_fit
     data_fits=glob("%s/data_fit/aas/*" % prj_dh)+glob("%s/data_fit/cds/*" % prj_dh)
@@ -156,65 +156,65 @@ def main(prj_dh):
                         data_fit=data_fit.drop("Unnamed: 0", axis=1)
 
                     if len(data_fit.loc[:,"FiA"].unique())>10:
-                        if  ("NiAunsel" in data_fit.columns.tolist()) and \
-                            (len(data_fit.loc[:,"NiAunsel"].unique())>10) and \
-                            (len(data_fit.loc[:,"NiAsel"].unique())>10):
+                        # if  ("NiAunsel" in data_fit.columns.tolist()) and \
+                        #     (len(data_fit.loc[:,"NiAunsel"].unique())>10) and \
+                        #     (len(data_fit.loc[:,"NiAsel"].unique())>10):
 
-                            logging.info("processing: %s/%s" % (type_form,data_fiti))
+                        #     logging.info("processing: %s/%s" % (type_form,data_fiti))
 
-                            plot_type="scatter"
-                            logging.info("processing: plot type: %s" % plot_type)    
-                            plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
-                            if not exists(plot_fh):
-                                plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=plot_fh)
-                            else:
-                                logging.info("already processed: %s" % basename(plot_fh))
+                        #     plot_type="scatter"
+                        #     logging.info("processing: plot type: %s" % plot_type)    
+                        #     plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
+                        #     if not exists(plot_fh):
+                        #         plot_data_fit_scatter(data_fit,norm_type,Ni_cutoff,plot_fh=plot_fh)
+                        #     else:
+                        #         logging.info("already processed: %s" % basename(plot_fh))
 
-                        plot_type="dfe"
-                        logging.info("processing: plot type: %s" % plot_type)    
-                        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
-                        if not exists(plot_fh):
-                            plot_data_fit_dfe(data_fit,norm_type,axvspan_min=0,axvspan_max=0,plot_fh=plot_fh)
-                        else:
-                            logging.info("already processed: %s" % basename(plot_fh))
-                        
-                        plot_type="heatmap"
-                        logging.info("processing: plot type: %s" % plot_type)    
-                        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
-                        if not exists(plot_fh):
-                            if "_inferred" in basename(plot_fh):
-                                cbar_label="Fitness scores ($F_{i}$)"
-                            else:
-                                cbar_label="Log fold change ($FC_{i}$)"
-                            plot_data_fit_heatmap(data_fit,type_form,col='FiA',data_feats=data_feats,\
-                                                  plot_fh=plot_fh,cbar_label=cbar_label)
-                        else:
-                            logging.info("already processed: %s" % basename(plot_fh))
-                        
-                        plot_type="clustermap_rows"
-                        logging.info("processing: plot type: %s" % plot_type)    
-                        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
-                        if not exists(plot_fh):
-                            plot_data_fit_clustermap(data_fit,type_form,col='FiA',plot_fh=plot_fh)
-                        else:
-                            logging.info("already processed: %s" % basename(plot_fh))
-
-                        # plot_type="clustermap_rows_cols"
+                        # plot_type="dfe"
+                        # logging.info("processing: plot type: %s" % plot_type)    
                         # plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
                         # if not exists(plot_fh):
-                        #     ax=plot_data_fit_clustermap(data_fit,type_form,col='FiA',col_cluster=True)
-                        #     ax.savefig(plot_fh+".pdf",format='pdf')                        
-                        #     ax.savefig(plot_fh);plt.clf();plt.close()
+                        #     plot_data_fit_dfe(data_fit,norm_type,axvspan_min=0,axvspan_max=0,plot_fh=plot_fh)
+                        # else:
+                        #     logging.info("already processed: %s" % basename(plot_fh))
+                        
+                        # plot_type="heatmap"
+                        # logging.info("processing: plot type: %s" % plot_type)    
+                        # plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
+                        # if not exists(plot_fh):
+                        #     if "_inferred" in basename(plot_fh):
+                        #         cbar_label="Fitness scores ($F_{i}$)"
+                        #     else:
+                        #         cbar_label="Log fold change ($FC_{i}$)"
+                        #     plot_data_fit_heatmap(data_fit,type_form,col='FiA',data_feats=data_feats,\
+                        #                           plot_fh=plot_fh,cbar_label=cbar_label)
+                        # else:
+                        #     logging.info("already processed: %s" % basename(plot_fh))
+                        
+                        # plot_type="clustermap_rows"
+                        # logging.info("processing: plot type: %s" % plot_type)    
+                        # plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
+                        # if not exists(plot_fh):
+                        #     plot_data_fit_clustermap(data_fit,type_form,col='FiA',plot_fh=plot_fh)
                         # else:
                         #     logging.info("already processed: %s" % basename(plot_fh))
 
-                        plot_type="sub_matrix"
-                        logging.info("processing: plot type: %s" % plot_type)    
-                        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
-                        if not exists(plot_fh):
-                            ax=plot_sub_matrix(data_fit,type_form,col='FiA',plot_fh=plot_fh)
-                        else:
-                            logging.info("already processed: %s" % basename(plot_fh))
+                        # # plot_type="clustermap_rows_cols"
+                        # # plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
+                        # # if not exists(plot_fh):
+                        # #     ax=plot_data_fit_clustermap(data_fit,type_form,col='FiA',col_cluster=True)
+                        # #     ax.savefig(plot_fh+".pdf",format='pdf')                        
+                        # #     ax.savefig(plot_fh);plt.clf();plt.close()
+                        # # else:
+                        # #     logging.info("already processed: %s" % basename(plot_fh))
+
+                        # plot_type="sub_matrix"
+                        # logging.info("processing: plot type: %s" % plot_type)    
+                        # plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
+                        # if not exists(plot_fh):
+                        #     ax=plot_sub_matrix(data_fit,type_form,col='FiA',plot_fh=plot_fh)
+                        # else:
+                        #     logging.info("already processed: %s" % basename(plot_fh))
                        
                         plot_type="pdb"
                         logging.info("processing: plot type: %s" % plot_type)    
@@ -235,38 +235,38 @@ def main(prj_dh):
         logging.info("already processed")
     plot_pdb_chimera_fhs_f.close()
 
-# data_comparison    
-    data_comparisons=glob("%s/data_comparison/aas/*" % prj_dh)+glob("%s/data_comparison/cds/*" % prj_dh)
-    data_comparisons= [basename(fh) for fh in data_comparisons]
-    if len(data_comparisons)!=0:
-        for data_comparisoni in np.unique(data_comparisons):
-            for type_form in mut_types_form:
-                if type_form=="aas":
-                    if not exists("%s/plots/%s" % (prj_dh,type_form)):
-                        makedirs("%s/plots/%s" % (prj_dh,type_form))
-                    data_comparison_fh = "%s/data_comparison/%s/%s" % (prj_dh,type_form,data_comparisoni)
-                    try:
-                        data_comparison=pd.read_csv(data_comparison_fh)
-                    except:
-                        logging.info("skipping: %s" % basename(data_comparison_fh))
-                        continue
+# # data_comparison    
+#     data_comparisons=glob("%s/data_comparison/aas/*" % prj_dh)+glob("%s/data_comparison/cds/*" % prj_dh)
+#     data_comparisons= [basename(fh) for fh in data_comparisons]
+#     if len(data_comparisons)!=0:
+#         for data_comparisoni in np.unique(data_comparisons):
+#             for type_form in mut_types_form:
+#                 if type_form=="aas":
+#                     if not exists("%s/plots/%s" % (prj_dh,type_form)):
+#                         makedirs("%s/plots/%s" % (prj_dh,type_form))
+#                     data_comparison_fh = "%s/data_comparison/%s/%s" % (prj_dh,type_form,data_comparisoni)
+#                     try:
+#                         data_comparison=pd.read_csv(data_comparison_fh)
+#                     except:
+#                         logging.info("skipping: %s" % basename(data_comparison_fh))
+#                         continue
 
-                    if "Unnamed: 0" in data_comparison.columns:
-                        data_comparison=data_comparison.drop("Unnamed: 0", axis=1)
-                    #bar   
-                    plot_type="bar"
-                    classes=["negative","robust","positive"]
-                    plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_comparisoni) 
-                    if not exists(plot_fh):
-                        ax=plot_data_comparison_bar(data_comparison,plot_fh=plot_fh,index=classes)
-                    else:
-                        logging.info("already processed: %s" % basename(plot_fh))
-                    plot_type="violin"
-                    plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_comparisoni) 
-                    if not exists(plot_fh):
-                        plot_data_comparison_violin(data_comparison,plot_fh=plot_fh)
-                    else:
-                        logging.info("already processed: %s" % basename(plot_fh))
+#                     if "Unnamed: 0" in data_comparison.columns:
+#                         data_comparison=data_comparison.drop("Unnamed: 0", axis=1)
+#                     #bar   
+#                     plot_type="bar"
+#                     classes=["negative","robust","positive"]
+#                     plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_comparisoni) 
+#                     if not exists(plot_fh):
+#                         ax=plot_data_comparison_bar(data_comparison,plot_fh=plot_fh,index=classes)
+#                     else:
+#                         logging.info("already processed: %s" % basename(plot_fh))
+#                     plot_type="violin"
+#                     plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_comparisoni) 
+#                     if not exists(plot_fh):
+#                         plot_data_comparison_violin(data_comparison,plot_fh=plot_fh)
+#                     else:
+#                         logging.info("already processed: %s" % basename(plot_fh))
 
     try:
         chimera_dh=guess_chimera_path()[0]

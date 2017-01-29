@@ -88,6 +88,7 @@ def info2src(prj_dh):
             return None
 
     if not pd.isnull(info.loc['cctmr','input']):
+        
         cctmr=info.loc['cctmr','input']
         cctmr=[int("%s" % i) for i in cctmr.split(" ")]
         # aas_len=cctmr[1]-1
@@ -98,8 +99,8 @@ def info2src(prj_dh):
     info.loc['fsta_id','input'],info.loc['fsta_seq','input'],info.loc['fsta_len','input']=get_fsta_feats(fsta_fh)
     host=info.loc['host','input']
     if pd.isnull(host):
-	    host=info.loc['host','default']    	
-    info.loc['prt_seq','input']=fasta_nts2prt(fsta_fh,host=host)
+        host=info.loc['host','default']    	
+    info.loc['prt_seq','input']=fasta_nts2prt(fsta_fh,host=host).replace('*','X')
     info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     csv2src(prj_dh+"/cfg/info","%s/../tmp/info.py" % (abspath(dirname(__file__))))
     logging.info("configuration compiled: %s/cfg/info" % prj_dh)

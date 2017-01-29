@@ -278,7 +278,10 @@ def fasta_nts2prt(fsta_fh,host='coli',fsta_prt_fh=None):
         fsta_prt_fh="%s_prt%s" % (splitext(fsta_fh)[0],splitext(fsta_fh)[1])
     fsta_prt_f = open(fsta_prt_fh, "w")
     fsta_seq_prt=cds2aas(fsta_seq,host,stop_codon='*')
-    fsta_data_prt = SeqRecord.SeqRecord(Seq.Seq(fsta_seq_prt,IUPAC.protein), id = splitext(basename(fsta_fh))[0]+'_prt', description='')
+    fsta_seq_prt_id=splitext(basename(fsta_fh))[0]+'_prt'
+    # print fsta_seq_prt
+    # print fsta_seq_prt_id
+    fsta_data_prt = SeqRecord.SeqRecord(Seq.Seq(fsta_seq_prt,IUPAC.protein), id = fsta_seq_prt_id, description='')
     SeqIO.write(fsta_data_prt, fsta_prt_f, "fasta")
     fsta_prt_f.close()
     return fsta_seq_prt
@@ -407,6 +410,7 @@ def getdepth_ref(sbam_fh,fsta_fh,
 
     depth_ref=data_mut.join(depth_ref)
     depth_ref.loc[:,'depth_ref']=depth_ref.loc[:,"depth_cds"] - depth_ref.loc[:,"depth_mut"] 
+    depth_ref.loc[(depth_ref.loc[:,'depth_ref']<0),'depth_ref']=1
     depth_ref_fh="%s.depth_ref" % sbam_fh
     depth_ref.to_csv(depth_ref_fh)
     if not data_out_fh is None:

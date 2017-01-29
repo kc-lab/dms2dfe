@@ -9,6 +9,7 @@
 ================================
 """
 from os.path import abspath,dirname,exists,basename
+from os import makedirs
 
 from sklearn.cross_validation import train_test_split,KFold
 from sklearn.preprocessing import LabelEncoder,label_binarize
@@ -215,9 +216,10 @@ def plot_importances(feature_importances,plot_fh=None,data_out_fh=None):
         feature_importances.to_csv(data_out_fh)
     return feature_importances
 
+import forestci as fci
+from dms2dfe.lib.io_stats import get_regression_metrics
 def get_RF_ci(RF_type,RF_classi,X_train,X_test,y_test,y_score,
                 classes=['yes','no'],plot_fh=None):
-    import forestci as fci
     # calculate inbag and unbiased variance
     inbag = fci.calc_inbag(X_train.shape[0], RF_classi)
     V_IJ_unbiased = fci.random_forest_error(RF_classi,inbag, X_train,
@@ -253,8 +255,8 @@ def get_RF_ci(RF_type,RF_classi,X_train,X_test,y_test,y_score,
         ax.set_ylim(ylim)
         ax.set_xlabel('Test')
         ax.set_ylabel('Predicted')
-        results="$R^{2}$=%0.2f\nRMSE=%0.2f" % (np.sqrt(regression.r2_score(y_test,y_score)),
-             regression.mean_absolute_error(y_test,y_score))
+        results,_,_=get_regression_metrics(y_test,y_score)
+        logging.info(results.replace('\n',' '))
         ax.text(0, 1, results,
             horizontalalignment='left',
             verticalalignment='top',
@@ -369,6 +371,7 @@ def gcv2rfc(gridcv):
     classi.n_estimators=gridcv.param_grid['n_estimators'][0]
     classi.estimators_=gridcv.best_estimator_.estimators_
     return classi
+    
 def get_RF_classi_metrics(data_classi_fh,data_dh='data_ml/',plot_dh='plots/'):
     data_classi=read_pkl(data_classi_fh)
     RF_classi=data_classi['RF_classi']
@@ -494,7 +497,7 @@ def get_RF_regress_metrics(data_regress_fh,data_dh='data_ml/',plot_dh='plots/'):
                  y_test,y_pred,plot_fh=plot_fh)    
 
 def data_fit2ml(data_fit_key,prj_dh,data_feats,
-                data_fit_col='FiA',data_fit_col_alt='FCA_norm',
+                data_fit_col='FCA_norm',data_fit_col_alt='FCA_norm',
                 middle_percentile_skipped=0.1):
     """
     This runs the submodules to run classifier from fitness data (`data_fit`).
@@ -519,6 +522,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
     y_coln_classi=data_fit_col
     if not exists(grid_search_regress_fh):
         data_fit_fh="%s/%s" % (prj_dh,data_fit_key)
+        logging.info('processing: %s' % (basename(data_fit_fh)))
         data_fit=pd.read_csv(data_fit_fh)
         data_fit_col_muts=len(denanrows(data_fit.loc[:,data_fit_col]))
         data_fit_col_alt_muts=len(denanrows(data_fit.loc[:,data_fit_col_alt]))        
@@ -651,7 +655,10 @@ def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all,col='FCA_norm'):
     for mutid in data_fit.index.values:
         if not mutid in data_fit_infered.index.values:
             data_fit_infered.loc[mutid,col]=data_fit.loc[mutid,col]
-    
+            data_fit_infered.loc[mutid,'inferred']=False
+        else:
+            data_fit_infered.loc[mutid,'inferred']=True
+
     data_fit_infered=pd.DataFrame(data_fit_infered.reset_index())
     # print data_fit_infered.columns
     # str2num()
@@ -670,4 +677,155 @@ def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all,col='FCA_norm'):
     data_fit_infered.to_csv("%s/%s_inferred" % (prj_dh,data_fit_key))
     
     
+def data_combo2ml(data_combo,data_out_fh,
+                data_combo_col='$\\Delta$(FCA_norm)',
+                middle_percentile_skipped=0.1,col_idx='mutids',
+                ):
+    """
+    This runs the submodules to run classifier from fitness data (`data_combo`).
     
+    :param basename(data_out_fh): in the form <data_combo>/<aas/cds>/<name of file>.
+    :param prj_dh: path to project directory.
+    :param data_feats: dataframe with features.
+    :param y_coln: column name of column with classes (ys). 
+    """
+    # col_idx='mutids'
+    # data_combo_col='$\\Delta$(FCA_norm)'
+
+    data_dh="%s" % (dirname(data_out_fh))
+    plot_dh="%s" % (data_dh.replace('/plots','/data_ml'))
+    for dh in [plot_dh,data_dh]:
+        if not exists(dh):
+            makedirs(dh)
+    plot_classi_fh="%s/fig_ml_classi_%s.pdf" % (plot_dh,basename(data_out_fh))
+    plot_regress_fh="%s/fig_ml_regress_%s.pdf" % (plot_dh,basename(data_out_fh))
+    data_fh="%s/data_ml_%s" % (data_dh,basename(data_out_fh))    
+    grid_search_classi_fh=data_fh.replace("data_ml_","data_ml_classi_")+'.pkl'
+    grid_search_regress_fh=data_fh.replace("data_ml_","data_ml_regress_")+'.pkl'
+    grid_search_classi_metrics_fh=data_fh.replace("data_ml_","data_ml_classi_metrics_")+'.pkl'
+    grid_search_regress_metrics_fh=data_fh.replace("data_ml_","data_ml_regress_metrics_")+'.pkl'
+
+    # y_coln_classi="FCA_norm"
+    y_coln_classi=data_combo_col
+    if not exists(grid_search_regress_fh):
+#         data_combo_col_muts=len(denanrows(data_combo.loc[:,data_combo_col]))
+#         data_combo_col_alt_muts=len(denanrows(data_combo.loc[:,data_combo_col_alt]))        
+#         if data_combo_col_muts<(0.8*data_combo_col_alt_muts):
+#             logging.warning("using %s instead of %s: bcz %s << %s" % (data_combo_col_alt,data_combo_col,data_combo_col_muts,data_combo_col_alt_muts))
+#             y_coln_classi=data_combo_col_alt
+#             data_combo_col=data_combo_col_alt            
+        if np.sum(~data_combo.loc[:,y_coln_classi].isnull())>10:
+            logging.info("processing: %s" % basename(data_out_fh))
+            if not exists(grid_search_classi_fh):
+                if not exists(data_fh.replace("data_ml_","data_ml_classi_train_")):
+                    data_ml=y2classes(data_combo,y_coln_classi,
+                                       middle_percentile_skipped=middle_percentile_skipped)
+                    data_ml=data_ml.drop(y_coln_classi,axis=1)
+                    X_cols_classi=data_ml.columns.tolist()
+                    y_coln_classi="classes"
+                    X_cols_classi=data_ml.columns.tolist().remove(y_coln_classi)
+                    data_ml_mutids=list(data_ml.loc[:,'mutids'])
+                    # print sum(~pd.isnull(data_combo.loc[:,y_coln_classi]))
+                    data_combo=set_index(data_combo,"mutids")
+                    data_ml=set_index(data_ml,"mutids")
+                    # data_feats=set_index(data_feats,"mutids")
+                    # data_combo=pd.concat([data_feats,
+                    #                       data_combo.loc[:,y_coln_classi]],axis=1)
+                    # print sum(~pd.isnull(data_combo.loc[:,y_coln_classi]))
+                    # data_combo.index.name='mutids'
+                    y=data_ml.loc[:,y_coln_classi]
+                    data_ml=X_cols2binary(data_ml.drop(y_coln_classi,axis=1))
+                    data_ml.loc[:,y_coln_classi]=y#60data_ml.loc[:,y_coln_classi]
+                    data_ml=rescalecols(data_ml)
+                    data_classi_train=denan(data_ml,axis='both',condi='all any')
+                    # print sum(~pd.isnull(data_ml.loc[:,y_coln_classi]))
+
+                    data_classi_train_mutids=list(data_classi_train.index.values)
+                    data_classi_test_mutids=[mutid for mutid in data_ml_mutids if not mutid in data_classi_train_mutids]
+                    data_classi_test=data_ml.loc[data_classi_test_mutids,:]
+
+                    data_combo.to_csv(data_fh.replace("data_ml_","data_ml_combo_"))
+                    data_ml.to_csv(data_fh.replace("data_ml_","data_ml_classi_all_"))
+                    data_classi_train.to_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
+                    data_classi_test.to_csv(data_fh.replace("data_ml_","data_ml_classi_test_"))
+                else:
+                    data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
+                    data_classi_test=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_test_"))
+
+                    data_classi_train  =data_classi_train.set_index(col_idx,drop=True)
+                    data_classi_test  =data_classi_test.set_index(col_idx,drop=True)
+                    y_coln_classi="classes"
+                logging.info("number of mutants used for training = %d" % len(data_classi_train))
+                # logging.info("this step would take a 10 to 15min to complete.")
+
+                X_cols_classi=data_classi_train.columns.tolist()
+                X_cols_classi.remove(y_coln_classi)
+                # classi
+                grid_search_classi,data_preds=run_RF_classi(data_classi_train,X_cols_classi,y_coln_classi,
+                        test_size=0.34,data_test=data_classi_test,data_out_fh=grid_search_classi_fh) #                     
+                get_RF_classi_metrics(grid_search_classi_fh,data_dh=data_dh,plot_dh=plot_dh)
+
+                # # classi metrics
+                # feature_importances_classi_fh="%s_%s_.csv" % (grid_search_classi_fh,'featimps')
+                # feature_importances_classi=pd.read_csv(feature_importances_classi_fh)
+                # X_cols_classi_metrics_selected=feature_importances_classi\
+                # .sort_values(by='Importance',ascending=False).head(25).loc[:,'Feature'].tolist()
+                # X_cols_classi_metrics=[col for col in X_cols_classi if col in X_cols_classi_metrics_selected]            
+                # grid_search_classi,data_preds=run_RF_classi(data_classi_train,X_cols_classi_metrics,y_coln_classi,
+                #         test_size=0.34,data_test=data_classi_test,data_out_fh=grid_search_classi_metrics_fh) 
+                # get_RF_classi_metrics(grid_search_classi_metrics_fh,data_dh=data_dh,plot_dh=plot_dh)
+
+            y_coln_classi="classes"
+            feature_importances_classi_fh="%s_%s_.csv" % (grid_search_classi_fh,'featimps')
+            feature_importances_classi=pd.read_csv(feature_importances_classi_fh)
+            data_classi_test=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_test_"))
+            data_classi_test  =data_classi_test.set_index(col_idx,drop=True)
+            data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
+            data_classi_train  =data_classi_train.set_index(col_idx,drop=True)
+            #regress
+            # y_coln_regress="FCA_norm"
+            y_coln_regress=data_combo_col
+            data_regress_train=data_classi_train                
+            data_regress_train=X_cols2binary(data_regress_train,[y_coln_classi])
+            data_combo=set_index(data_combo,col_idx)
+            data_regress_train.loc[:,y_coln_regress]=\
+            data_combo.loc[data_classi_train.index.values,y_coln_regress]
+            data_regress_train=denan(data_regress_train,axis='both',condi='all any')
+            data_regress_test=data_classi_test                
+            if y_coln_classi in data_regress_test.columns.tolist(): 
+                data_regress_test=data_regress_test.drop(y_coln_classi,axis=1)
+            else:
+                data_regress_test=denan(data_regress_test,axis='both',condi='all any')
+                data_regress_test=X_cols2binary(data_regress_test,[y_coln_classi])
+            data_regress_test=denan(data_regress_test,axis='both',condi='all any')
+            X_cols_regress_class_fit=[]
+            X_cols_regress_selected=feature_importances_classi\
+            .sort_values(by='Importance',ascending=False).head(25).loc[:,'Feature'].tolist()
+            X_cols_regress=[col for col in X_cols_regress_class_fit+X_cols_regress_selected\
+                            if col in data_regress_test.columns.tolist()]
+            if y_coln_regress in X_cols_regress:
+                X_cols_regress.remove(y_coln_regress)
+            data_regress_train.to_csv(data_fh.replace("data_ml_","data_ml_regress_train_"))
+            data_regress_test.to_csv(data_fh.replace("data_ml_","data_ml_regress_test_"))
+            # try:
+            grid_search_regress_metrics,data_preds_regress_metrics=\
+            run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,
+                            test_size=0.34,data_test=data_regress_test,data_out_fh=grid_search_regress_metrics_fh)
+            get_RF_regress_metrics(grid_search_regress_metrics_fh,data_dh=data_dh,plot_dh=plot_dh)
+
+            logging.info("number of mutants used for training = %d" % len(data_regress_train))
+            # grid_search_regress,data_preds_regress=\
+            # run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,
+            #                 test_size=0,data_test=data_regress_test,data_out_fh=grid_search_regress_fh)
+            # data_preds_regress.to_csv(data_fh.replace("data_ml_","data_ml_regress_preds_"))
+            # data_regress_all=data_preds_regress.append(data_regress_train)
+            # data_regress_all.to_csv(data_fh.replace("data_ml_","data_ml_regress_all_"))
+            # return data_regress_all
+            # except:
+                # logging.info("skipping: %s : requires more data" % basename(basename(data_out_fh)))
+        else:
+            logging.info("skipping %s: requires more samples %d<10" %\
+                            (basename(data_out_fh),np.sum(~data_combo.loc[:,data_combo_col].isnull())))
+    else:
+        data_regress_all=pd.read_csv(data_fh.replace("data_ml_","data_ml_regress_all_"))
+        return data_regress_all

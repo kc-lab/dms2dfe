@@ -39,7 +39,7 @@ def convertstr2format(col,form):
 def make_pathable_string(s):
     return s.replace(" ","_").replace("$","").replace("\\","")\
             .replace("(","").replace(")","")\
-            .replace("{","").replace("}","").replace("-","")\
+            .replace("{","").replace("}","").replace("%","_")\
             .replace(":","").replace("^","").replace("+","").replace("'","").replace("\"","")\
             .replace("\n","_").replace("\t","_")
 
@@ -60,3 +60,33 @@ def get_logger(argv=None):
         logging.getLogger('').addHandler(console)
     # logging.info('#START')
     return logging
+            
+def linebreaker(l,break_pt=16):
+    l_out=[]
+    for i in l:
+        if len(i)>break_pt:
+            i_words=i.split(' ')
+            i_out=''
+            line_len=0
+            for w in i_words:
+                line_len+=len(w)+1
+                if i_words.index(w)==0:
+                    i_out=w
+                elif line_len>break_pt:
+                    line_len=0
+                    i_out="%s\n%s" % (i_out,w)
+                else:
+                    i_out="%s %s" % (i_out,w)
+            l_out.append(i_out)    
+#             l_out.append("%s\n%s" % (i[:break_pt],i[break_pt:]))
+        else:
+            l_out.append(i)
+    return l_out
+
+def splitlabel(label,splitby=' ',ctrl='__'):
+    splits=label.split(splitby)
+    if len(splits)==2:
+        return splits
+    elif len(splits)==1:
+
+        return splits+[ctrl]

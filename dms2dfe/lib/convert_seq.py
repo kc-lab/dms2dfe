@@ -51,6 +51,8 @@ def cds2aas(cds_str,host,stop_codon='X') :
     coding_dna = Seq(cds_str, generic_dna)
     #aas=''
     if len(coding_dna)%3 != 0 :
+        # logging.error('len(coding_dna)%3 != 0')
+        # print coding_dna
         return False
     elif "coli" in host :
             aas=str(coding_dna.translate(table=11)) # http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi

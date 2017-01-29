@@ -15,9 +15,7 @@ from multiprocessing import Pool
 import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
 warnings.simplefilter(action = "ignore", category = DeprecationWarning)
-import logging
-from dms2dfe.lib.io_strs import make_pathable_string
-import datetime
+# import logging
 from dms2dfe.lib.io_strs import get_logger
 logging=get_logger()
 # logging.basicConfig(filename="dms2dfe_%s.log" % (make_pathable_string(str(datetime.datetime.now()))),level=logging.DEBUG)
@@ -77,12 +75,12 @@ def main(prj_dh):
                      if (not "inferred" in basename(fh)) and ("_WRT_" in basename(fh))]
     data_fit_keys = np.unique(data_fit_keys)
     if len(data_fit_keys)!=0:
-        pooled_io_ml(data_fit_keys[0])
+        # pooled_io_ml(data_fit_keys[0])
         # # for data_fit_key in data_fit_keys:
         # #     pooled_io_ml(data_fit_key)
-        # pool_io_ml=Pool(processes=int(cores)) 
-        # pool_io_ml.map(pooled_io_ml,data_fit_keys)
-        # pool_io_ml.close(); pool_io_ml.join()
+        pool_io_ml=Pool(processes=int(cores)) 
+        pool_io_ml.map(pooled_io_ml,data_fit_keys)
+        pool_io_ml.close(); pool_io_ml.join()
     else:
         logging.info("already processed")
     logging.shutdown()

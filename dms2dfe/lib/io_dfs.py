@@ -12,6 +12,8 @@ from os.path import basename,exists
 import pandas as pd
 import numpy as np
 from dms2dfe.lib.io_nums import is_numeric
+from dms2dfe.lib.io_strs import get_logger
+logging=get_logger()
 
 def set_index(data,col_index):
     if col_index in data:
@@ -39,6 +41,12 @@ def concat_cols(df1,df2,idx_col,df1_cols,df2_cols,
     combo.index.name=idx_col
     return combo
 
+def del_Unnamed(df):
+    cols_del=[c for c in df.columns if 'Unnamed' in c]
+    for c in cols_del:
+        del df[c]
+    return df
+
 def get_colmin(data):
     data=data.T
     colmins=[]
@@ -61,6 +69,8 @@ def fhs2data_combo(fhs,cols,index,labels=None,col_sep=': '):
                 for col in cols:
                     data_combo.loc[:,'%s%s%s' % (label,col_sep,col)]=data.loc[:,col]    
         return data_combo
+    else:
+        logging.error('no fhs found: len(fhs)=0')
 
 def rename_cols(df,names,renames=None,prefix=None,suffix=None):
     if not prefix is None:
@@ -140,42 +150,8 @@ def denan(data_all,axis,condi="any"):
 def denanrows(data_all):
     return debad(data_all,axis=0,condi="any",bad='nan')
 
-    # """
-    # This removes rows with any np.nan value/s.  
-    # condi: usage cols,rows = 'all any'
-    
-    # :param data_all: input dataframe.
-    # :param condi: conditions for deletion of rows ["any": if any element is nan ,default | "all" : if all elements are nan | "any|all<SPACE>any|all" : condition for columns<SPACE>rows] 
-    # :returns data_all: output dataframe.
-    # """
-    # import logging
-    # logging.info("denan: original: rows=%s cols=%s" % data_all.shape)
-
-    # if axis=='both':
-    #     condi_cols=condi.split(' ')[0]
-    #     condi_rows=condi.split(' ')[1]
-    # if axis=='rows' or axis==0:
-    #     condi_rows=condi        
-    # if axis=='cols' or axis==1:
-    #     condi_cols=condi
-    # if axis=='cols' or axis==1 or axis=='both':
-    #     data_all_use=data_all.copy()
-    #     keep_bool=[]
-    #     for col in data_all_use:
-    #         if condi_cols=="any":
-    #             keep_bool.append(all(~pd.isnull(data_all_use.loc[:,col])))
-    #         if condi_cols=="all":
-    #             keep_bool.append(any(~pd.isnull(data_all_use.loc[:,col])))
-    #     data_all=data_all.loc[:,keep_bool]
-    #     logging.info("denan: cols:      rows=%s cols=%s" % data_all.shape)
-    # if axis=='rows' or axis==0 or axis=='both':
-    #     data_all_use=data_all.copy()
-    #     keep_bool=[]
-    #     for rowi in range(len(data_all_use)):
-    #         if condi_rows=="any":
-    #             keep_bool.append(all(~pd.isnull(data_all_use.iloc[rowi,:])))
-    #         if condi_rows=="all":
-    #             keep_bool.append(any(~pd.isnull(data_all_use.iloc[rowi,:])))
-    #     data_all=data_all.loc[keep_bool,:]
-    #     logging.info("denan: rows:      rows=%s cols=%s" % data_all.shape)
-    # return data_all
+def reorderbydf(df2,df1):
+    df3=pd.DataFrame()
+    for idx,row in df1.iterrows():
+        df3=df3.append(df2.loc[idx,:])
+    return df3
