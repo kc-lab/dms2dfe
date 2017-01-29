@@ -27,8 +27,8 @@ def saveplot(plot_fh,form='both',
             if print_fh:
                 print plot_out_fh
             plt.savefig(plot_out_fh,format=form,
-            	transparent=transparent,
-            	dpi=300)
+                transparent=transparent,
+                dpi=300)
         if tight_layout:
             plt.tight_layout()
         if plot_fh!=None:
