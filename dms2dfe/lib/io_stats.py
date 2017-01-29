@@ -54,3 +54,70 @@ def get_regression_metrics(y_test,y_score):
     rmse=np.sqrt(regression.mean_absolute_error(y_test,y_score))
     result="$r$=%0.2f\nRMSE=%0.2f" % (r,rmse)
     return result,r,rmse
+
+from dms2dfe.lib.io_ml import denanrows
+from scipy.stats import wilcoxon
+from numpy import asarray,compress
+def get_wilcoxon_direction(data,col_x,col_y):
+    data=denanrows(data.loc[:,[col_x,col_y]])
+    x=data.loc[:,col_x]
+    y=data.loc[:,col_y]
+    if y is None:
+        d = x
+    else:
+        x, y = map(asarray, (x, y))
+        if len(x) != len(y):
+            raise ValueError('Unequal N in wilcoxon.  Aborting.')
+        d = x - y
+
+    d = compress(np.not_equal(d, 0), d, axis=-1)
+
+    count = len(d)
+    if count < 10:
+        logging.info("Warning: sample size too small for normal approximation.")
+    r = stats.rankdata(abs(d))
+    r_plus = np.sum((d > 0) * r, axis=0)
+    r_minus = np.sum((d < 0) * r, axis=0)
+    if r_plus>r_minus: 
+        return 'negative' 
+    if r_minus>r_plus: 
+        return 'positive'
+    
+def get_wilcoxon(data,col_ctrl,col_test,side='both',denan=True):
+    if denan:
+        data=denanrows(data.loc[:,[col_ctrl,col_test]])
+    ranksum,pval=wilcoxon(data.loc[:,col_ctrl],data.loc[:,col_test],
+#                           zero_method = "wilcox",
+                         )
+#     print "ranksum=%d; pval=%d" % (ranksum,pval)
+    if side=='both':
+        return pval
+    else:
+        pval=pval/2
+        side_detected=get_wilcoxon_direction(data,col_ctrl,col_test)
+        if side=='one':
+            return pval,side_detected
+    #         print side_detected
+        else:
+            if side==side_detected:
+                return pval
+            elif side!=side_detected:
+                return 1-pval
+
+def pval2stars(pval,ns=True,numeric=False):
+    if not numeric:
+        if pval < 0.0001:
+            return "****"
+        elif (pval < 0.001):
+            return "***"
+        elif (pval < 0.01):
+            return "**"
+        elif (pval < 0.05):
+            return "*"
+        else:
+            if ns:
+                return "ns"
+            else:
+                return "p = %.2g" % pval
+    else:
+        return "p = %.2g" % pval
