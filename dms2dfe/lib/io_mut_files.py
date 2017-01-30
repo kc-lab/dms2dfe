@@ -594,7 +594,9 @@ def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="Fi
             data_fit=data_fit.drop("tmp",axis=1)
         return data_fit
     else:
+    	logging.info('no synonymous mutations available')
         data_fit.loc[:,col_fit_rescaled]=np.nan
+        # data_fit.loc[:,col_fit_rescaled]
         return data_fit
 
 def class_comparison(data_comparison):

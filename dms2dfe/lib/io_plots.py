@@ -13,6 +13,30 @@ import seaborn as sns
 import numpy as np
 
 from dms2dfe.lib.io_dfs import debad,denanrows
+# import seaborn as sns
+
+def get_rgb_colors(series,cmap='Greens',res=10):
+    series=(series-series.min())/(series.max()-series.min())*10
+    series=series.astype(int)
+    # print series
+    try:
+        series=[i[0] for i in series.values]
+    except:
+        series=series.tolist()
+    # import seaborn as sns
+    color_palette=sns.color_palette(cmap, res)
+    colors=[]
+    for i in series:
+        for ci in range(1,len(color_palette)+1):
+            if i==ci:
+                colors.append(color_palette[ci-1])
+                break
+            elif i==0: #nans
+                colors.append((1,1,1))
+                break
+    if len(series)==len(colors):
+        return colors
+
 
 def saveplot(plot_fh,form='both',
             transparent=False,
