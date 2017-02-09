@@ -171,7 +171,6 @@ def plot_data_fit_heatmap(data_fit,type_form,col,
                                (data_fit.loc[:,'refi']<=refi_lims[1])),:]
     refi_min=data_fit.loc[:,'refi'].min()
     refi_max=data_fit.loc[:,'refi'].max()
-    print refi_min,refi_max
     data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
     refis=[str2num(i) for i in data_fit_heatmap.columns.tolist()]
     refis=np.sort(refis)
@@ -179,6 +178,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,
 
     if len(refi_lims)==2:
         data_fit_heatmap2=data_fit_heatmap.copy()        
+        xoff=np.min([str2num(mutid) for mutid in data_fit_heatmap2.columns.tolist()])       
     else:
         data_fit_heatmap2=pd.DataFrame(index=data_fit_heatmap.index)
         for i in range(1,refis[-1]+1):
@@ -186,41 +186,32 @@ def plot_data_fit_heatmap(data_fit,type_form,col,
                 data_fit_heatmap2.loc[:,i]=np.nan
             else :
                 data_fit_heatmap2.loc[:,refrefis.loc[i,"refrefi"]]=data_fit_heatmap.loc[:,refrefis.loc[i,"refrefi"]]
-
+        xoff=1
     data_syn_locs=data_fit.loc[(data_fit.loc[:,"ref"]==data_fit.loc[:,"mut"]),["mutids","ref",'refi']]
     data_nan_locs=data_fit.loc[pd.isnull(data_fit.loc[:,col]),["mutids","ref","mut",'refi']]
 
     if "aas" in type_form:
-        data_syn_locs["muti"]=[20-aas_21.index(i)+0.15 for i in data_syn_locs["ref"]]
-        data_nan_locs["muti"]=[20-aas_21.index(i)+0.15 for i in data_nan_locs["mut"]]
+        data_syn_locs["muti"]=[20-aas_21.index(i) for i in data_syn_locs["ref"]]
+        data_nan_locs["muti"]=[20-aas_21.index(i) for i in data_nan_locs["mut"]]
 
     if "cds" in type_form:
         cds_64.sort()
-        data_syn_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_syn_locs["ref"]]
-        data_nan_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_nan_locs["mut"]]
+        data_syn_locs["muti"]=[63-cds_64.index(i) for i in data_syn_locs["ref"]]
+        data_nan_locs["muti"]=[63-cds_64.index(i) for i in data_nan_locs["mut"]]
 
-    # fig=
     plt.figure(figsize=figsize,dpi=400)      
-    # fig=plt.figure(figsize=(40, 6),dpi=500)      
     gs = gridspec.GridSpec(3, 1,height_ratios=[1,1,32])
 
     ax_all=plt.subplot(gs[:])
-    # ax_all.set_axis_off()
     sns.set(font_scale=2)
     ax = plt.subplot(gs[2])
     print data_fit_heatmap2.shape
-    # print data_fit_heatmap2
-    result=sns.heatmap(data_fit_heatmap2,cmap=cmap,ax=ax,
+    sns.heatmap(data_fit_heatmap2,cmap=cmap,ax=ax,
         vmin=cbar_lims[0],vmax=cbar_lims[1]
         )
 
     ax.set_xlabel('Residue positions',fontdict={'size': fontsize})
     ax.set_ylabel('Mutation to',fontdict={'size': fontsize})
-    # cbar=ax.figure.colorbar(ax.collections[0])
-    # if cbar_label==None:
-    #     cbar.set_label(("$%s$" % col),fontdict={'size': fontsize})
-    # else:
-    #     cbar.set_label(("%s" % cbar_label),fontdict={'size': fontsize})
 
     if xticklabels=="seq":
         ax.set_xticklabels(data_fit_heatmap2.columns.tolist(),rotation=90)
@@ -236,17 +227,22 @@ def plot_data_fit_heatmap(data_fit,type_form,col,
     
     data_syn_locs=data_syn_locs.reset_index(drop=True)
     for i in data_syn_locs.reset_index().index.values:
-        ax.text(data_syn_locs.loc[i,"refi"]-refi_min,
-            data_syn_locs.loc[i,"muti"],
+        ax.text(data_syn_locs.loc[i,"refi"]-xoff+0.5,
+            data_syn_locs.loc[i,"muti"]+0.66,
             r"$\plus$",
-                fontsize=fontsize*0.5,fontweight='bold')#,color='g')
+                fontsize=fontsize*0.5,fontweight='bold',
+                ha='center',
+                va='center',                
+                )#,color='g')
 
     data_nan_locs=data_nan_locs.reset_index(drop=True)
     for i in data_nan_locs.index.values:
-        ax.text(data_nan_locs.loc[i,"refi"]-refi_min,
-            data_nan_locs.loc[i,"muti"],
+        ax.text(data_nan_locs.loc[i,"refi"]-xoff+0.5,
+            data_nan_locs.loc[i,"muti"]+0.33,
             r"$\otimes$",
                 fontsize=fontsize*0.5,fontweight='bold',
+                ha='center',
+                va='center',                
                 )
 
     if not data_feats is None: 
@@ -277,7 +273,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,
             # ticks=True
             )
     if cbar_label!=None:
-        loc=[(refi_max-refi_min)*1.075,-1]
+        loc=[(refi_max-refi_min)*1.1,-1]
         ax.text(loc[0],loc[1],cbar_label,va='top',ha='center',
                fontsize=fontsize)        
     if note_text==True:

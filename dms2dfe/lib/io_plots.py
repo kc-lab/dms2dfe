@@ -262,15 +262,43 @@ def heatmap(data,label_suffix=None,
                    )
     return data
 
-def plot_contourf(x,y,z,xlabel=None,ylabel=None,
-                scatter=False,contour=False,annot_fit_land=True,
+def annot_corners(labels,X,Y,ax,space=-0.2,fontsize=18):
+    # x_min=np.min(X)
+    # x_max=np.max(X)
+    # x_len=x_max-x_min
+    # y_min=np.min(Y)
+    # y_max=np.max(Y)
+    # y_len=y_max-y_min
+    xlims,ylims=get_axlims(X,Y,space=space)
+    
+    # x_lim=(x_min+space*0.3*x_len,x_max-space*3.5*x_len)
+    # y_lim=(y_min+space*1.2*y_len,y_max-space*0.8*y_len)
+    
+    labeli=0
+    for x in xlims:
+        for y in ylims:
+#             print [i,j]
+            ax.text(x,y,labels[labeli],
+                color='k',
+                # ax.annotate(labels[labeli], xy=(i, j), xytext=(i, j),
+                fontsize=fontsize,
+                ha='center',
+                va='center',
+                # bbox=dict(facecolor='none',edgecolor='none',alpha=1),
+                )
+            labeli+=1
+    return ax
+
+def plot_contourf(x,y,z,contourlevels=15,xlabel=None,ylabel=None,
+                scatter=False,contour=False,
+                annot_fit_land=True,
                 cmap="coolwarm",cbar=True,cbar_label="",
                 a=0.5,vmin=None,vmax=None,interp='linear',#'nn',
                 fig=None,ax=None,plot_fh=None):
     from matplotlib.mlab import griddata
     xi=get_linspace(x)
     yi=get_linspace(y)
-    zi = griddata(x, y, z, xi, yi, interp='linear')#interp) #interp)
+    zi = griddata(x, y, z, xi, yi, interp=interp)#interp) #interp)
     
     if fig==None:
         fig=plt.figure(figsize=[6,3])
@@ -284,8 +312,10 @@ def plot_contourf(x,y,z,xlabel=None,ylabel=None,
         vmin=abs(zi).min()
     #print vmin
     if contour:
-        CS = ax.contour(xi, yi, zi, 15, linewidths=0.5, colors='k',alpha=a)
-    CS = ax.contourf(xi, yi, zi, 15, cmap=cmap,
+        CS = ax.contour(xi, yi, zi, contourlevels, linewidths=0.5, colors='k',alpha=a)
+    print contourlevels
+    CS = ax.contourf(xi, yi, zi, contourlevels, 
+                      cmap=cmap,
                       vmax=vmax, vmin=vmin)
     if cbar:
         # colorbar_ax = fig.add_axes([0.55, 0.15, 0.035, 0.5]) #[left, bottom, width, height]
@@ -306,28 +336,6 @@ def plot_contourf(x,y,z,xlabel=None,ylabel=None,
         fig.savefig(plot_fh,format="pdf")
     return ax
 
-def annot_corners(labels,X,Y,ax,space=0.15,fontsize=18):
-    x_min=np.min(X)
-    x_max=np.max(X)
-    x_len=x_max-x_min
-    y_min=np.min(Y)
-    y_max=np.max(Y)
-    y_len=y_max-y_min
-    x_lim=(x_min+space*0.3*x_len,x_max-space*3.5*x_len)
-    y_lim=(y_min+space*1.2*y_len,y_max-space*0.8*y_len)
-    
-    labeli=0
-    for i in x_lim:
-        for j in y_lim:
-#             print [i,j]
-            ax.annotate(labels[labeli], xy=(i, j), xytext=(i, j),
-                        fontsize=fontsize,color='black',
-                        ha='center',
-                        va='center',
-                        bbox=dict(facecolor='none',edgecolor='none',alpha=1),
-                       )
-            labeli+=1
-    return ax
 
 def get_linspace(x,n=100):
     return np.linspace(np.min(x),np.max(x),n)
@@ -337,6 +345,8 @@ def get_grid(x,y,n=100):
 
 def scatter_colorby_groups(data,x_col,y_col,group_col,contour_col,
                            scatter_groups=True,contourf=False,
+                           contourlevels=15,
+                           contourinterp='nn',
                            scatter_groups_order=None,scatter_groups_cmap='YlGn',
                            ms=10,
                            cbar=True,cbar_label="",cbar_min=None,cbar_max=None,
@@ -384,8 +394,11 @@ def scatter_colorby_groups(data,x_col,y_col,group_col,contour_col,
             colorbar_ax = fig.add_axes([0.55, 0.15, 0.035, 0.8]) #[left, bottom, width, height]
             colorbar_ax2=fig.colorbar(s, cax=colorbar_ax)
             colorbar_ax2.set_label(cbar_label)
+    # print contourf     
     if contourf:
+        print contourlevels
         plot_contourf(data.loc[:,x_col],data.loc[:,y_col],data.loc[:,contour_col],
+                     contourlevels,interp=contourinterp,
                       vmin=cbar_min,vmax=cbar_max,
                       cbar=cbar,cbar_label=cbar_label,
               xlabel=x_col,ylabel=y_col,fig=fig,ax=ax
@@ -459,9 +472,15 @@ def correlate(data_all,cols,cols_lables,linear_reg=False,median_reg=False,color=
 #     print plot_fh
     return ax
 
-def scatter(data_all,x_col,y_col,x_err_col,y_err_col,groups_cols,contour_cols,
+def scatter(data_all,x_col,y_col,
+    x_err_col,y_err_col,
+    groups_cols,contour_cols,
             ctrl=None,x_ctrl=None,y_ctrl=None,ctrl_label=None,
-            errorbar=True,scatter=True,scatter_groups=False,contourf=False,ms=10,
+            errorbar=True,scatter=True,scatter_groups=False,
+            contourf=False,
+            contourlevels=10,
+            contourinterp='nn',
+            ms=10,
             scatter_color="gray",scatter_alpha=0.5,
             scatter_groups_order=None,
             scatter_groups_cmap='YlGn',
@@ -509,12 +528,30 @@ def scatter(data_all,x_col,y_col,x_err_col,y_err_col,groups_cols,contour_cols,
     if ctrl:
         scatter_colorby_control(ax,x_ctrl,y_ctrl,x_lim,y_lim,
                                 ctrl_label,zorder_span=0,zorder_label=3)
-    for i in range(len(groups_cols)):
-        group_col = groups_cols[i]        
+    for i in range(len(contour_cols)):
+        # group_col = groups_cols[i]        
         contour_col = contour_cols[i]        
         ax=scatter_colorby_groups(data,x_col,y_col,
-                                  group_col=group_col,contour_col=contour_col,
-                                  scatter_groups=scatter_groups,contourf=contourf,
+                                  group_col=None,
+                                  contour_col=contour_col,
+                                  scatter_groups=scatter_groups,
+                                  contourf=contourf,
+                                  contourlevels=contourlevels,
+                                  contourinterp=contourinterp,
+                                  scatter_groups_order=scatter_groups_order,
+                                  scatter_groups_cmap=scatter_groups_cmap,
+                                  scatter_groups_legend=scatter_groups_legend,
+                                  ms=ms,
+                                  cbar=cbar,cbar_label=cbar_label,cbar_min=cbar_min,cbar_max=cbar_max,
+                                  cmap=cmap,
+                                  ax=ax,fig=fig)
+    for i in range(len(groups_cols)):
+        group_col = groups_cols[i]        
+        ax=scatter_colorby_groups(data,x_col,y_col,
+                                  group_col=group_col,
+                                  contour_col=None,
+                                  scatter_groups=scatter_groups,
+                                  contourf=contourf,
                                   scatter_groups_order=scatter_groups_order,
                                   scatter_groups_cmap=scatter_groups_cmap,
                                   scatter_groups_legend=scatter_groups_legend,

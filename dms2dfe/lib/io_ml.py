@@ -18,7 +18,7 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import confusion_matrix,classification_report,regression
 
 from dms2dfe.lib.io_data_files import read_pkl,to_pkl
-from dms2dfe.lib.io_dfs import set_index,denan,denanrows
+from dms2dfe.lib.io_dfs import set_index,denan,denanrows,del_Unnamed
 from dms2dfe.lib.io_nums import is_numeric
 from dms2dfe.lib.io_plots import saveplot,get_axlims
 
@@ -545,6 +545,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
                     X_cols_classi=data_feats.columns.tolist()
                     data_combo=pd.concat([data_feats,
                                           data_fit.loc[:,y_coln_classi]],axis=1)
+                    data_combo=del_Unnamed(data_combo)
                     # print sum(~pd.isnull(data_combo.loc[:,y_coln_classi]))
                     data_combo.index.name='mutids'
                     data_ml=X_cols2binary(data_combo.drop(y_coln_classi,axis=1))
@@ -645,36 +646,34 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
         data_regress2data_fit(prj_dh,data_fit_key,data_regress_all)
         return data_regress_all
     
-def data_regress2data_fit(prj_dh,data_fit_key,data_regress_all,col='FCA_norm'):
-    from dms2dfe.lib.io_nums import str2num
-    from dms2dfe.lib.io_mut_files import rescale_fitnessbysynonymous,class_fit
+def data_regress2data_fit(prj_dh,data_fit_key,
+                          data_regress_all,col='FCA_norm'):
+    # from dms2dfe.lib.io_nums import str2num
+    from dms2dfe.lib.io_mut_files import rescale_fitnessbysynonymous,class_fit,mutids_converter
 
     data_fit=pd.read_csv("%s/%s" % (prj_dh,data_fit_key))
     data_fit=data_fit.loc[:,["mutids",col]].set_index("mutids",drop=True)
-    data_fit_infered=data_regress_all.reset_index().loc[:,["mutids",col]].set_index("mutids",drop=True)
-    for mutid in data_fit.index.values:
-        if not mutid in data_fit_infered.index.values:
-            data_fit_infered.loc[mutid,col]=data_fit.loc[mutid,col]
-            data_fit_infered.loc[mutid,'inferred']=False
-        else:
-            data_fit_infered.loc[mutid,'inferred']=True
+    data_fit_combo=data_fit.copy()
+    data_fit_inferred=data_regress_all.reset_index().loc[:,["mutids",col]].set_index("mutids",drop=True)
+    data_mutids_common=denanrows(data_fit.join(data_fit_inferred.loc[:,col],rsuffix='_inferred'))
+    data_mutids_common=data_mutids_common.loc[(data_mutids_common.loc[:,data_mutids_common.columns[0]]!=data_mutids_common.loc[:,data_mutids_common.columns[1]]),:]
 
-    data_fit_infered=pd.DataFrame(data_fit_infered.reset_index())
-    # print data_fit_infered.columns
-    # str2num()
-    data_fit_infered.loc[:,'refi']=[str2num(mutid) for mutid in data_fit_infered.loc[:,"mutids"].tolist()]
-    data_fit_infered.loc[:,'ref']=[mutid[0] for mutid in data_fit_infered.loc[:,"mutids"].tolist()]
-    data_fit_infered.loc[:,'mut']=[mutid[-1] for mutid in data_fit_infered.loc[:,"mutids"].tolist()]
-    data_fit_infered.loc[:,'refrefi']=[("%s%03d" % (mutid[0],str2num(mutid))) for mutid in data_fit_infered.loc[:,"mutids"].tolist()]
-    data_fit_infered.loc[:,'FCS_norm']=data_fit_infered.loc[(data_fit_infered.loc[:,'ref']==data_fit_infered.loc[:,'mut']),col]
-    # data_fit_infered.head()
-    # data_fit_infered.to_csv("data_fit_infered")
-    data_fit_infered=rescale_fitnessbysynonymous(data_fit_infered,col_fit=col,col_fit_rescaled="FiA")
-    data_fit_infered=class_fit(data_fit_infered)
-    data_fit_infered.loc[:,'FiS']=\
-    data_fit_infered.loc[(data_fit_infered.loc[:,'ref']==data_fit_infered.loc[:,'mut']),'FiA']
-    data_fit_infered=data_fit_infered.sort_values(by="refi",axis=0)
-    data_fit_infered.to_csv("%s/%s_inferred" % (prj_dh,data_fit_key))
+    for m in data_fit_combo.index.tolist():
+        if pd.isnull(data_fit.loc[m,col]):
+            if m in data_fit_inferred.index.tolist():
+                data_fit_combo.loc[m,'inferred']=True
+                data_fit_combo.loc[m,col]=data_fit_inferred.loc[m,col]
+        else:
+            data_fit_combo.loc[m,'inferred']=False
+    for c in ['refi','ref','mut','refrefi']:
+        data_fit_combo.loc[:,c]=mutids_converter(data_fit_combo.index.tolist(), c, 'aas')
+
+    data_fit_combo=rescale_fitnessbysynonymous(data_fit_combo,col_fit=col,col_fit_rescaled="FiA")
+    data_fit_combo=class_fit(data_fit_combo)
+    data_fit_combo.loc[:,'FiS']=\
+    data_fit_combo.loc[(data_fit_combo.loc[:,'ref']==data_fit_combo.loc[:,'mut']),'FiA']
+    data_fit_combo=data_fit_combo.sort_values(by="refi",axis=0)
+    data_fit_combo.to_csv("%s/%s_inferred" % (prj_dh,data_fit_key))
     
     
 def data_combo2ml(data_combo,data_out_fh,

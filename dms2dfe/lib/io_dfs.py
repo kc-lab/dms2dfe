@@ -72,6 +72,20 @@ def fhs2data_combo(fhs,cols,index,labels=None,col_sep=': '):
     else:
         logging.error('no fhs found: len(fhs)=0')
 
+def fhs2data_combo_appended(fhs, cols=None,labels=None,labels_coln='labels'):
+    if labels is None:
+        labels=[basename(fh) for fh in fhs]
+    if len(fhs)>0:
+        data_all=pd.DataFrame(columns=cols)
+        for fhi,fh in enumerate(fhs):
+            label=labels[fhi]
+            data=pd.read_csv(fh)
+            data.loc[:,labels_coln]=label
+            if not cols is None:
+                data=data.loc[:,cols]
+            data_all=data_all.append(data)
+        return data_all
+
 def rename_cols(df,names,renames=None,prefix=None,suffix=None):
     if not prefix is None:
         renames=[ "%s%s" % (prefix,s) for s in names]
