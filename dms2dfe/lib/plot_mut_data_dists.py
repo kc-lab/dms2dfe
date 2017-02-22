@@ -168,12 +168,16 @@ def plot_data_comparison_multiviolin(prj_dh,data_fits,col,
             print result
             print ax.get_ylim()[0]+(ax.get_ylim()[1]-ax.get_ylim()[0])*0.05
             ax.text(col_testi,ax.get_ylim()[0]+(ax.get_ylim()[1]-ax.get_ylim()[0])*0.05,
-                    result,ha='center')
+                    result,ha='center',color='b',
+                    bbox=dict(facecolor='w', edgecolor='none', 
+                    # boxstyle='round',
+                    alpha=0.6,)
+                    )
         # data_all.to_csv('test1.csv')
     if plot_fh!=None:
         plt.savefig(plot_fh,format='pdf')
         plt.clf();plt.close()
-    return data_comparison,data_all
+    return ax,data_comparison,data_all
 
 def annotatesigni(ax,x1,x2,y_max,s,space=0,lift=None):
     if lift==None:

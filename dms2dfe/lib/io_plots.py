@@ -140,6 +140,7 @@ def plot_scatter_reg(data_all,cols,
                      logscale=False,
                      results=True,
                      results_n=False,
+                     results_RMSE=True,
                      space=0.2,figsize=[2,2],
                      ax=None,plot_fh=None):
     if ax==None:
@@ -160,6 +161,8 @@ def plot_scatter_reg(data_all,cols,
     results,_,_=get_regression_metrics(data_all.loc[:,cols[0]],data_all.loc[:,cols[1]])
     if results_n:
         results='%s\nn=%s' % (results,len(denanrows(data_all.loc[:,cols])))
+    if not results_RMSE:
+        results=results.split('\n')[0]
     if results:
         ax.text(0, 1, results,
             horizontalalignment='left',
@@ -263,28 +266,17 @@ def heatmap(data,label_suffix=None,
     return data
 
 def annot_corners(labels,X,Y,ax,space=-0.2,fontsize=18):
-    # x_min=np.min(X)
-    # x_max=np.max(X)
-    # x_len=x_max-x_min
-    # y_min=np.min(Y)
-    # y_max=np.max(Y)
-    # y_len=y_max-y_min
     xlims,ylims=get_axlims(X,Y,space=space)
-    
-    # x_lim=(x_min+space*0.3*x_len,x_max-space*3.5*x_len)
-    # y_lim=(y_min+space*1.2*y_len,y_max-space*0.8*y_len)
     
     labeli=0
     for x in xlims:
         for y in ylims:
-#             print [i,j]
             ax.text(x,y,labels[labeli],
                 color='k',
-                # ax.annotate(labels[labeli], xy=(i, j), xytext=(i, j),
                 fontsize=fontsize,
                 ha='center',
                 va='center',
-                # bbox=dict(facecolor='none',edgecolor='none',alpha=1),
+                bbox=dict(facecolor='w',edgecolor='none',alpha=0.4),
                 )
             labeli+=1
     return ax
@@ -294,6 +286,7 @@ def plot_contourf(x,y,z,contourlevels=15,xlabel=None,ylabel=None,
                 annot_fit_land=True,
                 cmap="coolwarm",cbar=True,cbar_label="",
                 a=0.5,vmin=None,vmax=None,interp='linear',#'nn',
+                xlog=False,
                 fig=None,ax=None,plot_fh=None):
     from matplotlib.mlab import griddata
     xi=get_linspace(x)
@@ -313,7 +306,6 @@ def plot_contourf(x,y,z,contourlevels=15,xlabel=None,ylabel=None,
     #print vmin
     if contour:
         CS = ax.contour(xi, yi, zi, contourlevels, linewidths=0.5, colors='k',alpha=a)
-    print contourlevels
     CS = ax.contourf(xi, yi, zi, contourlevels, 
                       cmap=cmap,
                       vmax=vmax, vmin=vmin)
@@ -331,6 +323,10 @@ def plot_contourf(x,y,z,contourlevels=15,xlabel=None,ylabel=None,
     if annot_fit_land:
         labels=["$F,cB$","$F,B$","$cF,cB$","$cF,B$"]
         # labels=["$F,B$","$F,cB$","$cF,B$","$cF,cB$"]
+        if xlog:
+            # x=np.log2(x)+1
+            # x=x-1.5
+            x=x/1.61
         ax=annot_corners(labels,x,y,ax,fontsize=15)
     if plot_fh!=None:
         fig.savefig(plot_fh,format="pdf")
@@ -352,6 +348,7 @@ def scatter_colorby_groups(data,x_col,y_col,group_col,contour_col,
                            cbar=True,cbar_label="",cbar_min=None,cbar_max=None,
                            cmap="Blues",scatter_groups_alpha=0.8,
                            scatter_groups_legend=True,legend_loc='out',
+                           xlog=False,
                            fig=None,ax=None,zorder=2):
     if ax==None:
         fig=plt.figure(figsize=[3,3],dpi=300)
@@ -401,7 +398,8 @@ def scatter_colorby_groups(data,x_col,y_col,group_col,contour_col,
                      contourlevels,interp=contourinterp,
                       vmin=cbar_min,vmax=cbar_max,
                       cbar=cbar,cbar_label=cbar_label,
-              xlabel=x_col,ylabel=y_col,fig=fig,ax=ax
+              xlabel=x_col,ylabel=y_col,fig=fig,ax=ax,
+                      xlog=xlog,
              )        
     return ax 
 
@@ -542,8 +540,10 @@ def scatter(data_all,x_col,y_col,
                                   scatter_groups_cmap=scatter_groups_cmap,
                                   scatter_groups_legend=scatter_groups_legend,
                                   ms=ms,
-                                  cbar=cbar,cbar_label=cbar_label,cbar_min=cbar_min,cbar_max=cbar_max,
+                                  cbar=cbar,cbar_label=cbar_label,
+                                  cbar_min=cbar_min,cbar_max=cbar_max,
                                   cmap=cmap,
+                                  xlog=xlog,
                                   ax=ax,fig=fig)
     for i in range(len(groups_cols)):
         group_col = groups_cols[i]        
@@ -600,3 +600,9 @@ def scatter(data_all,x_col,y_col,
         ax.set_title(title)
     saveplot(plot_fh,form='both')
     return ax
+
+def get_cbarlims(data_plot,mn=0.25,mx=0.75,log=False):
+    if log:
+        data_plot=data_plot.apply(np.log10)
+    return  float(pd.DataFrame(data_plot.unstack()).dropna().quantile(mn)),\
+            float(pd.DataFrame(data_plot.unstack()).dropna().quantile(mx))

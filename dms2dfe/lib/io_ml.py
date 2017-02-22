@@ -127,7 +127,8 @@ def binary2classes(y_pred,classes):
 
 def plot_ROC(y_test,y_score,classes,lw=2,
              ax_roc=None,annotate=True,
-            get_auc=False,reference_line=True,plot_fh=None):
+            get_auc=False,
+            reference_line=True,plot_fh=None):
     """
     This plots ROC curve.
     
@@ -151,6 +152,7 @@ def plot_ROC(y_test,y_score,classes,lw=2,
             if len(np.unique(tpr))>10:
                 mean_tpr += np.interp(mean_fpr, fpr, tpr)
                 mean_tpr[0] = 0.0
+
                 ax_roc.plot(fpr, tpr,lw=lw)#, label="%s (AUC=%.2f)" % (classes[classi],auc(fpr,tpr)))
                 ax_roc.annotate("%s (AUC=%.2f)" % (classes[classi],auc(fpr,tpr)), xy=(2, 1), xytext=(2, 1))
                 classes_to_plot.append(classi)
@@ -173,7 +175,6 @@ def plot_ROC(y_test,y_score,classes,lw=2,
         auc_score=1-auc(fpr,tpr)
     else:
         auc_score=auc(fpr,tpr)
-
     if annotate:
         ax_roc.annotate("AUC = %.2f" % auc_score, 
                     xy=(0.45, 0), xytext=(0.45, 0))
@@ -261,6 +262,12 @@ def get_RF_ci(RF_type,RF_classi,X_train,X_test,y_test,y_score,
             horizontalalignment='left',
             verticalalignment='top',
             transform=ax.transAxes)
+        data_regress=pd.DataFrame({'y_test':y_test,
+                                    'y_pred':y_score,
+                                    'err':np.sqrt(V_IJ_unbiased)
+                                    })
+        if not plot_fh is None:
+            data_regress.to_csv('%s.csv' % plot_fh)
     ax.grid(True)
     saveplot(plot_fh)
     
@@ -498,6 +505,7 @@ def get_RF_regress_metrics(data_regress_fh,data_dh='data_ml/',plot_dh='plots/'):
 
 def data_fit2ml(data_fit_key,prj_dh,data_feats,
                 data_fit_col='FCA_norm',data_fit_col_alt='FCA_norm',
+                # data_fit_col='FiA',data_fit_col_alt='FiA',
                 middle_percentile_skipped=0.1):
     """
     This runs the submodules to run classifier from fitness data (`data_fit`).
@@ -667,14 +675,14 @@ def data_regress2data_fit(prj_dh,data_fit_key,
             data_fit_combo.loc[m,'inferred']=False
     for c in ['refi','ref','mut','refrefi']:
         data_fit_combo.loc[:,c]=mutids_converter(data_fit_combo.index.tolist(), c, 'aas')
-
-    data_fit_combo=rescale_fitnessbysynonymous(data_fit_combo,col_fit=col,col_fit_rescaled="FiA")
+    if col=='FCA_norm':
+        data_fit_combo=rescale_fitnessbysynonymous(data_fit_combo,col_fit=col,col_fit_rescaled="FiA")
     data_fit_combo=class_fit(data_fit_combo)
     data_fit_combo.loc[:,'FiS']=\
     data_fit_combo.loc[(data_fit_combo.loc[:,'ref']==data_fit_combo.loc[:,'mut']),'FiA']
     data_fit_combo=data_fit_combo.sort_values(by="refi",axis=0)
     data_fit_combo.to_csv("%s/%s_inferred" % (prj_dh,data_fit_key))
-    
+    return data_fit_combo
     
 def data_combo2ml(data_combo,data_out_fh,
                 data_combo_col='$\\Delta$(FCA_norm)',

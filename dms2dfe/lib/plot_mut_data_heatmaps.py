@@ -300,6 +300,8 @@ def plot_clustermap(data_fit_heatmap,
                     col_cluster_label='',row_cluster_label='',
                     col_colors=None,row_colors=None,
                     xlabel='Wild type',ylabel='Mutation',
+                    vmin=None, vmax=None,
+                    cax_pos=[],#[.20, .2, .01, .45]
                     figsize=[5,5],
                     plot_fh=None):
     """
@@ -313,10 +315,11 @@ def plot_clustermap(data_fit_heatmap,
 #     data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
     plt.figure()
 #     ax1=plt.subplot(121)
-    print cmap  
+    print vmin  
     ax=sns.clustermap(data_fit_heatmap.fillna(0),method='average', metric='euclidean',\
                       col_cluster=col_cluster,row_cluster=row_cluster,
                       col_colors=col_colors,row_colors=row_colors,
+                      vmin=vmin, vmax=vmax,
 #                       row_colors_ratio=0.01,
 #                       cbar_kws={'vertical'},
                       cmap=cmap,
@@ -347,7 +350,12 @@ def plot_clustermap(data_fit_heatmap,
 #                                           rotation=90)
     ax.ax_heatmap.set_xticklabels(ax.ax_heatmap.get_xticklabels(),rotation=0)
     ax.ax_heatmap.set_yticklabels(ax.ax_heatmap.get_yticklabels(),rotation=0)
+    if len(cax_pos)==4:
+        ax.cax.set_position(cax_pos)
+        # ax.cax.set_position([.20, .2, .01, .45])
+    # plt.axis('equal')
     if plot_fh!=None:
+        # saveplot(plot_fh)
         plt.savefig(plot_fh,format='pdf')
         plt.clf();plt.close()
     return ax
