@@ -46,13 +46,20 @@ def get_r2(data,xcol,ycol,log=None):
         logging.error("one/both cols are empty")
         return 0
 
-from sklearn.metrics import regression
-from scipy.stats import linregress
-def get_regression_metrics(y_test,y_score):
-    slope, intercept, r, p_value, std_err = linregress(y_test,y_score)
-    # r=np.sqrt(regression.r2_score(y_test,y_score))
+def get_regression_metrics(y_test,y_score,
+                            reg_type='lin',
+                            res_rmse=True):
+    from scipy.stats import linregress,spearmanr
+    from sklearn.metrics import regression
     rmse=np.sqrt(regression.mean_absolute_error(y_test,y_score))
-    result="$r$=%0.2f\nRMSE=%0.2f" % (r,rmse)
+    if reg_type=='lin':
+        slope, intercept, r, p_value, std_err = linregress(y_test,y_score)
+        result="$r$=%0.2f" % (r)
+    elif reg_type=='rank':
+        r, p_value= spearmanr(y_test,y_score)
+        result="$\rho$=%0.2f" % (r)
+    if res_rmse:
+        result="%s\nRMSE=%0.2f" % (result,rmse)        
     return result,r,rmse
 
 from dms2dfe.lib.io_ml import denanrows

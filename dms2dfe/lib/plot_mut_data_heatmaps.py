@@ -301,7 +301,8 @@ def plot_clustermap(data_fit_heatmap,
                     col_colors=None,row_colors=None,
                     xlabel='Wild type',ylabel='Mutation',
                     vmin=None, vmax=None,
-                    cax_pos=[],#[.20, .2, .01, .45]
+                    cax_pos=[],#[.20, .2, .01, .45] #rt=[0.775, .2, .02, .45]
+                    cax_label='',
                     figsize=[5,5],
                     plot_fh=None):
     """
@@ -314,9 +315,12 @@ def plot_clustermap(data_fit_heatmap,
     import seaborn as sns
 #     data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
     plt.figure()
-#     ax1=plt.subplot(121)
+
+    # ax1=plt.subplot(121)
+    # ax2=plt.subplot(122)
     print vmin  
-    ax=sns.clustermap(data_fit_heatmap.fillna(0),method='average', metric='euclidean',\
+    ax=sns.clustermap(data_fit_heatmap.fillna(0),
+                    method='average', metric='euclidean',
                       col_cluster=col_cluster,row_cluster=row_cluster,
                       col_colors=col_colors,row_colors=row_colors,
                       vmin=vmin, vmax=vmax,
@@ -336,13 +340,22 @@ def plot_clustermap(data_fit_heatmap,
                           col_cluster_label.replace(' ','\n'),
                           va='bottom')
     if row_cluster_label!='':    
-        ax.ax_heatmap.text(ax.ax_heatmap.get_xlim()[0]-1,ax.ax_heatmap.get_ylim()[1],
-                              '%s' % (r'$\downarrow$'),
-                              va='bottom')
-        ax.ax_heatmap.text(ax.ax_heatmap.get_xlim()[0],ax.ax_heatmap.get_ylim()[1]+1,
+        # ax.ax_heatmap.text(ax.ax_heatmap.get_xlim()[0]-1,ax.ax_heatmap.get_ylim()[1],
+        #                       '%s' % (r'$\downarrow$'),
+        #                       va='bottom')
+        # ax.ax_heatmap.text(ax.ax_heatmap.get_xlim()[0],ax.ax_heatmap.get_ylim()[1]+1,
+        #                   row_cluster_label.replace(' ','\n'),
+        #                   va='bottom',
+        #                   ha='right')
+        ax.ax_heatmap.text(ax.ax_heatmap.get_xlim()[0]-1,ax.ax_heatmap.get_ylim()[0]-1,
+                              '%s' % (r'$\uparrow$'),
+                              va='bottom',
+                              ha='center',)
+        ax.ax_heatmap.text(ax.ax_heatmap.get_xlim()[0],ax.ax_heatmap.get_ylim()[0]-3,
                           row_cluster_label.replace(' ','\n'),
                           va='bottom',
                           ha='right')
+
 
 #         if not col_cluster:
 #             ax.ax_heatmap.set_xticks(range(1,len(data_fit_heatmap.columns),20),rotation=90)
@@ -350,12 +363,22 @@ def plot_clustermap(data_fit_heatmap,
 #                                           rotation=90)
     ax.ax_heatmap.set_xticklabels(ax.ax_heatmap.get_xticklabels(),rotation=0)
     ax.ax_heatmap.set_yticklabels(ax.ax_heatmap.get_yticklabels(),rotation=0)
-    if len(cax_pos)==4:
-        ax.cax.set_position(cax_pos)
         # ax.cax.set_position([.20, .2, .01, .45])
-    # plt.axis('equal')
+    # plot_margin = 0.25
+
+    # x0, x1, y0, y1 = plt.axis()
+    # plt.axis((x0 - plot_margin,
+    #           x1 + plot_margin,
+    #           y0 - plot_margin,
+    #           y1 + plot_margin))
+    # plt.subplots_adjust(left=0, bottom=0, right=0.5, top=0.5, wspace=0, hspace=0)
+    if len(cax_pos)==4:
+        ax.fig.subplots_adjust(right=0.65)
+        ax.cax.set_position(cax_pos)
+        ax.cax.set_xlabel(cax_label)
     if plot_fh!=None:
         # saveplot(plot_fh)
         plt.savefig(plot_fh,format='pdf')
+        # plt.savefig(plot_fh+'.svg',format='svg')
         plt.clf();plt.close()
     return ax

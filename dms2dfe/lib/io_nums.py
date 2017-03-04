@@ -9,6 +9,7 @@
 ================================
 """
 import numpy as np
+import pandas as pd 
 
 def is_numeric(obj):
     """
@@ -34,3 +35,9 @@ def plog(x,p = 0.5):
 
 def glog(x,l = 2):
     return np.log((x+np.sqrt(x**2+l**2))/2)/np.log(l)
+
+def float2int(x):
+    if not pd.isnull(x):
+        if is_numeric(x):
+            x=int(x)
+    return x    

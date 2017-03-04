@@ -138,6 +138,7 @@ def plot_scatter_reg(data_all,cols,
                      ms_scatter=20,
                      color_line='k',
                      logscale=False,
+                     std=False,
                      results=True,
                      results_n=False,
                      results_RMSE=True,
@@ -155,6 +156,11 @@ def plot_scatter_reg(data_all,cols,
                 scatter_kws={"color":color_scatter,
                             's':ms_scatter},
                 ax=ax)
+    # if std:
+    #     ax.scatter(data_all.loc[:,cols[0]],data_all.loc[:,cols[1]],
+    #                # s=ms, 
+    #                c=data_all.loc[:,group_col],cmap=cmap,edgecolor='none',
+    #                       alpha=scatter_groups_alpha,zorder=zorder)
 
     # r, _ = stats.pearsonr(data_all.loc[:,cols[0]],
     #                      data_all.loc[:,cols[1]])
