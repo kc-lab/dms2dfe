@@ -157,12 +157,12 @@ def get_mut_cds(qry_alind,fsta_seq,list_mut_cds_fh,Q_cutoff) :
                         mut_cd = [qry_alind.qname,str(qry_cdi+qry_cdi_offset),str(cds_64.index(qry_cd)),str(ref_cd),str(qry_cd)]
                         if not pd.isnull(mut_cd).any() :
                             list_mut_cds_fh.write("\t".join(mut_cd)+"\n")
-                        else :
-                            logging.error("%s @ if not pd.isnull" % qry_alind.qname)
-        else :
-            logging.error("%s @ if np.remainder(qry_seq_len,3)" % qry_alind.qname)
-    else :
-        logging.error("%s @ if len(ref_seq)==len(qry_seq)" % qry_alind.qname)
+    #                     else :
+    #                         logging.error("%s @ if not pd.isnull" % qry_alind.qname)
+    #     else :
+    #         logging.error("%s @ if np.remainder(qry_seq_len,3)" % qry_alind.qname)
+    # else :
+    #     logging.error("%s @ if len(ref_seq)==len(qry_seq)" % qry_alind.qname)
         
 def sam2mutmat(sbam_fh,fsta_id,fsta_seqlen,fsta_seq,cds_ref,Q_cutoff,prj_dh):        
     """

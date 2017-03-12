@@ -362,6 +362,7 @@ def run_RF_classi(data_all,X_cols,y_coln,
     data={'RF_classi':grid_search,
           'X_train':X_train,
           'X_test':X_test,
+          'y_train':y_train,
           'y_test':y_test,
           'y_score':grid_search.predict_proba(X_test),
           'classes':classes,
@@ -473,6 +474,7 @@ def run_RF_regress(data_all,X_cols,y_coln,
     data={'RF_regress':grid_search,
           'X_train':X_train,
           'X_test':X_test,
+          'y_train':y_train,
           'y_test':y_test,
           'X_cols':X_cols,
           'features':X_cols,
@@ -648,7 +650,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
                 # logging.info("skipping: %s : requires more data" % basename(data_fit_key))
         else:
             logging.info("skipping %s: requires more samples %d<10" %\
-                            (data_fit_key,np.sum(~data_fit.loc[:,y_coln].isnull())))
+                            (data_fit_key,np.sum(~data_fit.loc[:,y_coln_classi].isnull())))
     else:
         data_regress_all=pd.read_csv(data_fh.replace("data_ml_","data_ml_regress_all_"))
         data_regress2data_fit(prj_dh,data_fit_key,data_regress_all)

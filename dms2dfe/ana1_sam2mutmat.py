@@ -17,7 +17,7 @@ import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
 
-def main(prj_dh):
+def main(prj_dh,test=False):
     """
     This module processes alignment (.sam file)  and produces codon level mutation matrix of frequencies of mutations in the respective sample.
     
@@ -61,10 +61,12 @@ def main(prj_dh):
             log_f.close()
             
     if len(sbam_fhs)!=0:
-        # pooled(sbam_fhs[1])
-        pool=Pool(processes=int(cores)) # TODO : get it from xls
-        pool.map(pooled, sbam_fhs)
-        pool.close(); pool.join()                
+        if test:
+            pooled(sbam_fhs[0])
+        else:
+            pool=Pool(processes=int(cores)) # T : get it from xls
+            pool.map(pooled, sbam_fhs)
+            pool.close(); pool.join()                
     else:
         logging.info("already processed")  
     logging.shutdown()
@@ -79,4 +81,12 @@ def pooled(sbam_fh):
     sam2mutmat(sbam_fh,fsta_id,fsta_seqlen,fsta_seq,cds_ref,Q_cutoff,prj_dh_global)    
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    if len(sys.argv)==3:
+        if sys.argv[2]=='test':
+            test=True
+        else:
+            test=False
+    else:
+        test=False
+
+    main(sys.argv[1],test=test)

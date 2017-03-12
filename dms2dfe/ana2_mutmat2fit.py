@@ -14,7 +14,7 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(
 from dms2dfe import configure
 from dms2dfe.lib.io_mut_files import getusable_lbls_list,getusable_fits_list,mut_mat_cds2data_lbl,data_lbl2data_fit,transform_data_lbl,transform_data_lbl_deseq 
 
-def main(prj_dh):
+def main(prj_dh,test=False):
     """
     This modules converts mutation matrices (.mat files produced in upstream ana1_sam2mutmat module) and calculates the fitness values for samples.
     The output data is saved in `data_fit` format as described in :ref:`io`.
@@ -58,10 +58,12 @@ def main(prj_dh):
 
     lbls_list=getusable_lbls_list(prj_dh)
     if len(lbls_list)!=0:
-        pool_mut_mat_cds2data_lbl=Pool(processes=int(cores)) 
-        pool_mut_mat_cds2data_lbl.map(pooled_mut_mat_cds2data_lbl,lbls_list)
-        pool_mut_mat_cds2data_lbl.close(); pool_mut_mat_cds2data_lbl.join()
-        # pooled_mut_mat_cds2data_lbl(lbls_list[0])
+        if test:
+            pooled_mut_mat_cds2data_lbl(lbls_list[0])
+        else:
+            pool_mut_mat_cds2data_lbl=Pool(processes=int(cores)) 
+            pool_mut_mat_cds2data_lbl.map(pooled_mut_mat_cds2data_lbl,lbls_list)
+            pool_mut_mat_cds2data_lbl.close(); pool_mut_mat_cds2data_lbl.join()
     else:
         logging.info("already processed: mut_mat_cds2data_lbl")
     #TRANSFORM
@@ -74,13 +76,15 @@ def main(prj_dh):
     #FITNESS
     fits_pairs_list    =getusable_fits_list(prj_dh)    
     if len(fits_pairs_list)!=0:
-        # pool_data_lbl2data_fit=Pool(processes=int(cores)) 
-        # pool_data_lbl2data_fit.map(pooled_data_lbl2data_fit,
-        #                            fits_pairs_list)
-        # pool_data_lbl2data_fit.close(); pool_data_lbl2data_fit.join()
-        for fits_pairs in fits_pairs_list:
-            pooled_data_lbl2data_fit(fits_pairs)
-        ## pooled_data_lbl2data_fit(fits_pairs_list[0])
+        if test:
+            pooled_data_lbl2data_fit(fits_pairs_list[0])      
+            # for fits_pairs in fits_pairs_list:
+            #     pooled_data_lbl2data_fit(fits_pairs)
+        else:
+            pool_data_lbl2data_fit=Pool(processes=int(cores)) 
+            pool_data_lbl2data_fit.map(pooled_data_lbl2data_fit,
+                                       fits_pairs_list)
+            pool_data_lbl2data_fit.close(); pool_data_lbl2data_fit.join()
     else:
         logging.info("already processed: data_lbl2data_fit")
     logging.shutdown()
@@ -107,7 +111,17 @@ def pooled_data_lbl2data_fit(fits_list):
     unsel_lbl=fits_list[0]
     sel_lbl=fits_list[1]
     logging.info("processing : %s and %s" % (unsel_lbl,sel_lbl))
-    data_lbl2data_fit(unsel_lbl,sel_lbl,info)
-
+    try:
+        data_lbl2data_fit(unsel_lbl,sel_lbl,info)
+    except:
+        logging.error("check logs for %s and %s" % (unsel_lbl,sel_lbl))
+        
 if __name__ == '__main__':
-    main(sys.argv[1])
+    if len(sys.argv)==3:
+        if sys.argv[2]=='test':
+            test=True
+        else:
+            test=False
+    else:
+        test=False
+    main(sys.argv[1],test=test)

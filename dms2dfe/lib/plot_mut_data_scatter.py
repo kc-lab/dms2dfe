@@ -209,6 +209,10 @@ def plot_scatter_mutilayered(data_all,xcol,ycol,
     if repel_sub>repel:
         repel_sub=repel
     print repel_sub
+    print data_all_sub.columns
+    # data_all_sub=denanrows(data_all_sub)
+    data_all_sub=data_all_sub.loc[denanrows(data_all_sub.loc[:,[xcol,ycol]]).index.tolist(),:]
+    print data_all_sub.shape
     ax2,_,_,_=plot_sc(data_all_sub,ax2,xcol,ycol,
                heads=[mutids2subid(i) for i in mutids_heads],tails=[mutids2subid(i) for i in mutids_tails],
                repel=repel_sub,

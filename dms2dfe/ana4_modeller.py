@@ -22,7 +22,7 @@ logging=get_logger()
 from dms2dfe import configure
 from dms2dfe.lib.io_ml import data_fit2ml
 
-def main(prj_dh):
+def main(prj_dh,test=False):
     """
     This modules trains a Random Forest classifier with given data in `data_fit` format.
     
@@ -75,12 +75,14 @@ def main(prj_dh):
                      if (not "inferred" in basename(fh)) and ("_WRT_" in basename(fh))]
     data_fit_keys = np.unique(data_fit_keys)
     if len(data_fit_keys)!=0:
-        # pooled_io_ml(data_fit_keys[0])
-        # for data_fit_key in data_fit_keys:
-        #     pooled_io_ml(data_fit_key)
-        pool_io_ml=Pool(processes=int(cores)) 
-        pool_io_ml.map(pooled_io_ml,data_fit_keys)
-        pool_io_ml.close(); pool_io_ml.join()
+        if test:
+            # pooled_io_ml(data_fit_keys[0])
+            for data_fit_key in data_fit_keys:
+                pooled_io_ml(data_fit_key)
+        else:
+            pool_io_ml=Pool(processes=int(cores)) 
+            pool_io_ml.map(pooled_io_ml,data_fit_keys)
+            pool_io_ml.close(); pool_io_ml.join()
     else:
         logging.info("already processed")
     logging.shutdown()
@@ -94,4 +96,11 @@ def pooled_io_ml(data_fit_key):
     data_fit2ml(data_fit_key,prj_dh_global,data_feats)
     
 if __name__ == '__main__':
-    main(sys.argv[1])
+    if len(sys.argv)==3:
+        if sys.argv[2]=='test':
+            test=True
+        else:
+            test=False
+    else:
+        test=False
+    main(sys.argv[1],test=test)
