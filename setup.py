@@ -35,7 +35,7 @@ setup(
 name='dms2dfe',
 author='Rohan Dandage',
 author_email='rraadd_8@hotmail.com,rohan@igib.in',
-version='0.1.0',
+version='1.0.0',
 url='https://github.com/rraadd88/dms2dfe',
 download_url='https://github.com/rraadd88/dms2dfe/archive/master.zip',
 description='Pipeline to analyse Deep Mutational Scanning (DMS) experiments in terms of Distribution of Fitness Effects (DFE)',
@@ -57,4 +57,7 @@ keywords=['bioinformatics','Deep sequencing','molecular evolution'],
 packages=find_packages(),
 package_data={'': ['dms2dfe/tmp','dms2dfe/cfg']},
 include_package_data=True,
+entry_points={
+    'console_scripts': ['dms2dfe = dms2dfe.pipeline:main',],
+    },
 )

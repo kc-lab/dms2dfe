@@ -540,7 +540,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
             logging.warning("using %s instead of %s: bcz %s << %s" % (data_fit_col_alt,data_fit_col,data_fit_col_muts,data_fit_col_alt_muts))
             y_coln_classi=data_fit_col_alt
             data_fit_col=data_fit_col_alt            
-        if np.sum(~data_fit.loc[:,y_coln_classi].isnull())>10:
+        if np.sum(~data_fit.loc[:,y_coln_classi].isnull())>100:
             logging.info("processing: %s" % data_fit_key)
             if not exists(grid_search_classi_fh):
                 if not exists(data_fh.replace("data_ml_","data_ml_classi_train_")):
@@ -686,155 +686,191 @@ def data_regress2data_fit(prj_dh,data_fit_key,
     data_fit_combo.to_csv("%s/%s_inferred" % (prj_dh,data_fit_key))
     return data_fit_combo
     
-def data_combo2ml(data_combo,data_out_fh,
-                data_combo_col='$\\Delta$(FCA_norm)',
-                middle_percentile_skipped=0.1,col_idx='mutids',
+def make_cls_input(data_combo,y_coln_cls,middle_percentile_skipped):
+    data_ml=y2classes(data_combo,y_coln_cls,
+                       middle_percentile_skipped=middle_percentile_skipped)
+    data_ml=data_ml.drop(y_coln_cls,axis=1)
+    X_cols_cls=data_ml.columns.tolist()
+    y_coln_cls="classes"
+    X_cols_cls=data_ml.columns.tolist().remove(y_coln_cls)
+    data_ml_mutids=list(data_ml.loc[:,'mutids'])
+    # print sum(~pd.isnull(data_combo.loc[:,y_coln_cls]))
+    data_combo=set_index(data_combo,"mutids")
+    data_ml=set_index(data_ml,"mutids")
+    # data_feats=set_index(data_feats,"mutids")
+    # data_combo=pd.concat([data_feats,
+    #                       data_combo.loc[:,y_coln_cls]],axis=1)
+    # print sum(~pd.isnull(data_combo.loc[:,y_coln_cls]))
+    # data_combo.index.name='mutids'
+    y=data_ml.loc[:,y_coln_cls]
+    data_ml=X_cols2binary(data_ml.drop(y_coln_cls,axis=1))
+    data_ml.loc[:,y_coln_cls]=y#60data_ml.loc[:,y_coln_cls]
+    data_ml=rescalecols(data_ml)
+    data_cls_train=denan(data_ml,axis='both',condi='all any')
+    # print sum(~pd.isnull(data_ml.loc[:,y_coln_cls]))
+
+    data_cls_train_mutids=list(data_cls_train.index.values)
+    data_cls_tests_mutids=[mutid for mutid in data_ml_mutids if not mutid in data_cls_train_mutids]
+    data_cls_tests=data_ml.loc[data_cls_tests_mutids,:]
+    return data_combo,data_ml,data_cls_train,data_cls_tests
+
+def make_reg_input(data_cls_train,data_cls_tests,
+                    feature_importances_cls,
+                    y_coln_reg,
+                    y_coln_cls="classes",
+                    topNfeats=25
+                    ):
+    data_reg_train=data_cls_train.copy()
+    data_reg_train=X_cols2binary(data_reg_train,[y_coln_cls])
+    data_combo=set_index(data_combo,col_idx)
+    data_reg_train.loc[:,y_coln_reg]=\
+    data_combo.loc[data_cls_train.index.values,y_coln_reg]
+    data_reg_train=denan(data_reg_train,axis='both',condi='all any')
+    data_reg_tests=data_cls_tests                
+    if y_coln_cls in data_reg_tests.columns.tolist(): 
+        data_reg_tests=data_reg_tests.drop(y_coln_cls,axis=1)
+    else:
+        data_reg_tests=denan(data_reg_tests,axis='both',condi='all any')
+        data_reg_tests=X_cols2binary(data_reg_tests,[y_coln_cls])
+    data_reg_tests=denan(data_reg_tests,axis='both',condi='all any')
+    X_cols_top=feature_importances_cls\
+    .sort_values(by='Importance',ascending=False).head(topNfeats).loc[:,'Feature'].tolist()
+    X_cols_reg=[col for col in X_cols_top\
+                    if col in data_reg_tests.columns.tolist()]
+    data_reg_train=data_reg_train.loc[:,X_cols_reg]
+    data_reg_tests=data_reg_tests.loc[:,X_cols_reg]
+    return data_reg_train,data_reg_tests
+
+def data_combo2ml(data_combo,data_fn,
+                  data_dh,plots_dh,
+                ycoln,col_idx,
+                ml_type='both'
+                middle_percentile_skipped=0.1,
+                force=False,
                 ):
     """
     This runs the submodules to run classifier from fitness data (`data_combo`).
     
-    :param basename(data_out_fh): in the form <data_combo>/<aas/cds>/<name of file>.
-    :param prj_dh: path to project directory.
+    :param basename(data_fn): in the form <data_combo>/<aas/cds>/<name of file>.
     :param data_feats: dataframe with features.
     :param y_coln: column name of column with classes (ys). 
+    :param ml_type: classi | both
     """
-    # col_idx='mutids'
-    # data_combo_col='$\\Delta$(FCA_norm)'
-
-    data_dh="%s" % (dirname(data_out_fh))
-    plot_dh="%s" % (data_dh.replace('/plots','/data_ml'))
     for dh in [plot_dh,data_dh]:
         if not exists(dh):
             makedirs(dh)
-    plot_classi_fh="%s/fig_ml_classi_%s.pdf" % (plot_dh,basename(data_out_fh))
-    plot_regress_fh="%s/fig_ml_regress_%s.pdf" % (plot_dh,basename(data_out_fh))
-    data_fh="%s/data_ml_%s" % (data_dh,basename(data_out_fh))    
-    grid_search_classi_fh=data_fh.replace("data_ml_","data_ml_classi_")+'.pkl'
-    grid_search_regress_fh=data_fh.replace("data_ml_","data_ml_regress_")+'.pkl'
-    grid_search_classi_metrics_fh=data_fh.replace("data_ml_","data_ml_classi_metrics_")+'.pkl'
-    grid_search_regress_metrics_fh=data_fh.replace("data_ml_","data_ml_regress_metrics_")+'.pkl'
+    plot_cls_fh="%s/plot_ml_cls_%s.pdf" % (plot_dh,basename(data_fn))
+    plot_reg_fh="%s/plot_ml_reg_%s.pdf" % (plot_dh,basename(data_fn))
+    data_combo_fh="%s/%s.input_raw" % (data_dh,basename(data_fn))
+    data_fh="%s/%s.input" % (data_dh,basename(data_fn))
+    data_cls_train_fh="%s/%s.cls.train" % (data_dh,basename(data_fn))
+    data_cls_tests_fh="%s/%s.cls.tests" % (data_dh,basename(data_fn))
+    data_reg_train_fh="%s/%s.cls.train" % (data_dh,basename(data_fn))
+    data_reg_tests_fh="%s/%s.cls.tests" % (data_dh,basename(data_fn))    
+    pkld_cls_fh='%s/%s.cls.pkl' % (data_dh,data_fn)
+    pkld_reg_fh='%s/%s.reg.pkl' % (data_dh,data_fn)
+    pkld_cls_metrics_fh='%s/%s.cls.metrics.pkl' % (data_dh,data_fn)
+    pkld_reg_metrics_fh='%s/%s.reg.metrics.pkl' % (data_dh,data_fn)
 
-    # y_coln_classi="FCA_norm"
-    y_coln_classi=data_combo_col
-    if not exists(grid_search_regress_fh):
-#         data_combo_col_muts=len(denanrows(data_combo.loc[:,data_combo_col]))
-#         data_combo_col_alt_muts=len(denanrows(data_combo.loc[:,data_combo_col_alt]))        
-#         if data_combo_col_muts<(0.8*data_combo_col_alt_muts):
-#             logging.warning("using %s instead of %s: bcz %s << %s" % (data_combo_col_alt,data_combo_col,data_combo_col_muts,data_combo_col_alt_muts))
-#             y_coln_classi=data_combo_col_alt
-#             data_combo_col=data_combo_col_alt            
-        if np.sum(~data_combo.loc[:,y_coln_classi].isnull())>10:
-            logging.info("processing: %s" % basename(data_out_fh))
-            if not exists(grid_search_classi_fh):
-                if not exists(data_fh.replace("data_ml_","data_ml_classi_train_")):
-                    data_ml=y2classes(data_combo,y_coln_classi,
-                                       middle_percentile_skipped=middle_percentile_skipped)
-                    data_ml=data_ml.drop(y_coln_classi,axis=1)
-                    X_cols_classi=data_ml.columns.tolist()
-                    y_coln_classi="classes"
-                    X_cols_classi=data_ml.columns.tolist().remove(y_coln_classi)
-                    data_ml_mutids=list(data_ml.loc[:,'mutids'])
-                    # print sum(~pd.isnull(data_combo.loc[:,y_coln_classi]))
-                    data_combo=set_index(data_combo,"mutids")
-                    data_ml=set_index(data_ml,"mutids")
-                    # data_feats=set_index(data_feats,"mutids")
-                    # data_combo=pd.concat([data_feats,
-                    #                       data_combo.loc[:,y_coln_classi]],axis=1)
-                    # print sum(~pd.isnull(data_combo.loc[:,y_coln_classi]))
-                    # data_combo.index.name='mutids'
-                    y=data_ml.loc[:,y_coln_classi]
-                    data_ml=X_cols2binary(data_ml.drop(y_coln_classi,axis=1))
-                    data_ml.loc[:,y_coln_classi]=y#60data_ml.loc[:,y_coln_classi]
-                    data_ml=rescalecols(data_ml)
-                    data_classi_train=denan(data_ml,axis='both',condi='all any')
-                    # print sum(~pd.isnull(data_ml.loc[:,y_coln_classi]))
+    y_coln_cls=ycoln
+    y_coln_reg=ycoln
 
-                    data_classi_train_mutids=list(data_classi_train.index.values)
-                    data_classi_test_mutids=[mutid for mutid in data_ml_mutids if not mutid in data_classi_train_mutids]
-                    data_classi_test=data_ml.loc[data_classi_test_mutids,:]
+    if np.sum(~data_combo.loc[:,y_coln_cls].isnull())>50:
+        logging.error("skipping %s: need more data: %d<50" %\
+                        (data_fn,np.sum(~data_combo.loc[:,data_combo_col].isnull())))
+        return False
 
-                    data_combo.to_csv(data_fh.replace("data_ml_","data_ml_combo_"))
-                    data_ml.to_csv(data_fh.replace("data_ml_","data_ml_classi_all_"))
-                    data_classi_train.to_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
-                    data_classi_test.to_csv(data_fh.replace("data_ml_","data_ml_classi_test_"))
-                else:
-                    data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
-                    data_classi_test=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_test_"))
-
-                    data_classi_train  =data_classi_train.set_index(col_idx,drop=True)
-                    data_classi_test  =data_classi_test.set_index(col_idx,drop=True)
-                    y_coln_classi="classes"
-                logging.info("number of mutants used for training = %d" % len(data_classi_train))
-                # logging.info("this step would take a 10 to 15min to complete.")
-
-                X_cols_classi=data_classi_train.columns.tolist()
-                X_cols_classi.remove(y_coln_classi)
-                # classi
-                grid_search_classi,data_preds=run_RF_classi(data_classi_train,X_cols_classi,y_coln_classi,
-                        test_size=0.34,data_test=data_classi_test,data_out_fh=grid_search_classi_fh) #                     
-                get_RF_classi_metrics(grid_search_classi_fh,data_dh=data_dh,plot_dh=plot_dh)
-
-                # # classi metrics
-                # feature_importances_classi_fh="%s_%s_.csv" % (grid_search_classi_fh,'featimps')
-                # feature_importances_classi=pd.read_csv(feature_importances_classi_fh)
-                # X_cols_classi_metrics_selected=feature_importances_classi\
-                # .sort_values(by='Importance',ascending=False).head(25).loc[:,'Feature'].tolist()
-                # X_cols_classi_metrics=[col for col in X_cols_classi if col in X_cols_classi_metrics_selected]            
-                # grid_search_classi,data_preds=run_RF_classi(data_classi_train,X_cols_classi_metrics,y_coln_classi,
-                #         test_size=0.34,data_test=data_classi_test,data_out_fh=grid_search_classi_metrics_fh) 
-                # get_RF_classi_metrics(grid_search_classi_metrics_fh,data_dh=data_dh,plot_dh=plot_dh)
-
-            y_coln_classi="classes"
-            feature_importances_classi_fh="%s_%s_.csv" % (grid_search_classi_fh,'featimps')
-            feature_importances_classi=pd.read_csv(feature_importances_classi_fh)
-            data_classi_test=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_test_"))
-            data_classi_test  =data_classi_test.set_index(col_idx,drop=True)
-            data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
-            data_classi_train  =data_classi_train.set_index(col_idx,drop=True)
-            #regress
-            # y_coln_regress="FCA_norm"
-            y_coln_regress=data_combo_col
-            data_regress_train=data_classi_train                
-            data_regress_train=X_cols2binary(data_regress_train,[y_coln_classi])
-            data_combo=set_index(data_combo,col_idx)
-            data_regress_train.loc[:,y_coln_regress]=\
-            data_combo.loc[data_classi_train.index.values,y_coln_regress]
-            data_regress_train=denan(data_regress_train,axis='both',condi='all any')
-            data_regress_test=data_classi_test                
-            if y_coln_classi in data_regress_test.columns.tolist(): 
-                data_regress_test=data_regress_test.drop(y_coln_classi,axis=1)
+    logging.info("processing: %s" % data_fn)
+    if ml_type=='classi':
+        if not exists(pkld_cls_fh):
+            if not exists(data_cls_train_fh):
+                data_combo,data_ml,data_cls_train,data_cls_tests=make_cls_input(data_combo,y_coln_cls,                                                                                middle_percentile_skipped=middle_percentile_skipped)
+                data_combo.to_csv(data_combo_fh)
+                data_ml.to_csv(data_fh)
+                data_cls_train.to_csv(data_cls_train_fh)
+                data_cls_tests.to_csv(data_cls_tests_fh)
             else:
-                data_regress_test=denan(data_regress_test,axis='both',condi='all any')
-                data_regress_test=X_cols2binary(data_regress_test,[y_coln_classi])
-            data_regress_test=denan(data_regress_test,axis='both',condi='all any')
-            X_cols_regress_class_fit=[]
-            X_cols_regress_selected=feature_importances_classi\
-            .sort_values(by='Importance',ascending=False).head(25).loc[:,'Feature'].tolist()
-            X_cols_regress=[col for col in X_cols_regress_class_fit+X_cols_regress_selected\
-                            if col in data_regress_test.columns.tolist()]
-            if y_coln_regress in X_cols_regress:
-                X_cols_regress.remove(y_coln_regress)
-            data_regress_train.to_csv(data_fh.replace("data_ml_","data_ml_regress_train_"))
-            data_regress_test.to_csv(data_fh.replace("data_ml_","data_ml_regress_test_"))
-            # try:
-            grid_search_regress_metrics,data_preds_regress_metrics=\
-            run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,
-                            test_size=0.34,data_test=data_regress_test,data_out_fh=grid_search_regress_metrics_fh)
-            get_RF_regress_metrics(grid_search_regress_metrics_fh,data_dh=data_dh,plot_dh=plot_dh)
-
-            logging.info("number of mutants used for training = %d" % len(data_regress_train))
-            # grid_search_regress,data_preds_regress=\
-            # run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,
-            #                 test_size=0,data_test=data_regress_test,data_out_fh=grid_search_regress_fh)
-            # data_preds_regress.to_csv(data_fh.replace("data_ml_","data_ml_regress_preds_"))
-            # data_regress_all=data_preds_regress.append(data_regress_train)
-            # data_regress_all.to_csv(data_fh.replace("data_ml_","data_ml_regress_all_"))
-            # return data_regress_all
-            # except:
-                # logging.info("skipping: %s : requires more data" % basename(basename(data_out_fh)))
+                data_cls_train=pd.read_csv(data_cls_train_fh)
+                data_cls_tests=pd.read_csv(data_cls_tests_fh)
+                data_cls_train  =data_cls_train.set_index(col_idx,drop=True)
+                data_cls_tests  =data_cls_tests.set_index(col_idx,drop=True)
+                y_coln_cls="classes"
+            logging.info("cls: train set = %d" % len(data_cls_train))
+            X_cols_cls=data_cls_train.columns.tolist()
+            X_cols_cls.remove(y_coln_cls)
+            # cls
+            pkld_cls,data_preds=run_RF_classi(data_cls_train,X_cols_cls,y_coln_cls,
+                    test_size=0.34,data_out_fh=pkld_cls_fh) #                     
+            get_RF_cls_metrics(pkld_cls_fh,data_dh=data_dh,plot_dh=plot_dh)
         else:
-            logging.info("skipping %s: requires more samples %d<10" %\
-                            (basename(data_out_fh),np.sum(~data_combo.loc[:,data_combo_col].isnull())))
-    else:
-        data_regress_all=pd.read_csv(data_fh.replace("data_ml_","data_ml_regress_all_"))
-        return data_regress_all
+            logging.info('already exists: %s' % basename(pkld_cls_fh))
+    
+    if ml_type=='both':
+        if not exists(pkld_reg_fh):
+            if not exists('%s.train' % data_fh): 
+                data_cls_tests=pd.read_csv(data_cls_train_fh)
+                data_cls_tests  =data_cls_tests.set_index(col_idx,drop=True)
+                data_cls_train=pd.read_csv(data_cls_tests_fh)
+                data_cls_train  =data_cls_train.set_index(col_idx,drop=True)
+                feature_importances_cls_fh="%s_%s_.csv" % (pkld_cls_fh,'featimps')
+                feature_importances_cls=pd.read_csv(feature_importances_cls_fh)
+                data_reg_train,data_reg_tests=make_reg_input(data_cls_train,data_cls_tests,
+                                            feature_importances_cls,
+                                            y_coln_reg,
+                                            y_coln_cls="classes",
+                                            topNfeats=25)       
+                data_reg_train.to_csv(data_reg_train_fh)
+                data_reg_tests.to_csv(data_reg_tests_fh)
+            else:
+                data_reg_train=pd.read_csv(data_cls_train_fh)
+                data_reg_tests=pd.read_csv(data_cls_tests_fh)
+                data_reg_train  =data_reg_train.set_index(col_idx,drop=True)
+                data_reg_tests  =data_reg_tests.set_index(col_idx,drop=True)
+            logging.info("reg: train set = %d" % len(data_reg_train))
+            X_cols_reg=data_reg_train.columns.tolist().remove(y_coln_reg)
+
+            pkld_reg_metrics,data_preds_reg_metrics=\
+            run_RF_reg(data_reg_train,X_cols_reg,y_coln_reg,
+                            test_size=0.34,data_out_fh=pkld_reg_metrics_fh)
+            get_RF_reg_metrics(pkld_reg_metrics_fh,data_dh=data_dh,plot_dh=plot_dh)
+        else:
+            logging.info('already exists: %s' % basename(pkld_reg_fh))
+    
+    
+from dms2dfe.lib.io_nums import is_numeric
+# from dms2dfe.ana4_modeller import get_cols_del
+from dms2dfe.lib.io_dfs import set_index
+
+def get_abs_diff(mutid_mm,data_feats,col):
+    mutid_m1,mutid_m2=mutid_mm.split(':')
+    return abs(data_feats.loc[mutid_m1,col]-data_feats.loc[mutid_m2,col])
+def add_feats(data_feats_all_mm,data_feats_all):
+    for col in data_feats_all:
+#         print col
+        data_feats_all_mm.loc[:,"$\Delta$(%s)" % col]=data_feats_all_mm.apply(lambda x: \
+                                    get_abs_diff(x['mutids'],data_feats_all,col), axis=1)
+    return data_feats_all_mm
+
+def make_data_combo(data_fit_dm,data_feats,ycol,Xcols):
+    cols_numeric=[c for c in data_feats if is_numeric(data_feats.loc[:,c])]
+    data_feats=data_feats.loc[:,cols_numeric]
+    for col in get_cols_del(data_feats):
+        del data_feats[col]
+    data_feats_dm=pd.DataFrame(index=data_fit_dm.index)
+    data_feats_dm.loc[:,ycol]=data_fit_dm.loc[:,ycol]
+    data_feats_dm=add_feats(data_feats_dm.reset_index(),data_feats)
+    return data_feats_dm
+    
+def get_cols_del(data_feats):
+    cols_del=[col for col in data_feats if "Helix formation" in col]+\
+    [col for col in data_feats if "beta bridge" in col]+\
+    [col for col in data_feats if "Chirality" in col]+\
+    [col for col in data_feats if "Offset from residue to the partner" in col]+\
+    [col for col in data_feats if "Energy (kcal/mol) of " in col]+\
+    [col for col in data_feats if "Secondary structure" in col]+\
+    [col for col in data_feats if 'cosine of the angle between C=O of residue and C=O of previous residue' in col]+\
+    [col for col in data_feats if '$\Delta$(Molecular Polarizability) per substitution' in col]+\
+    [col for col in data_feats if '$\Delta$(Molecular weight (Da)) per substitution' in col]+\
+    [col for col in data_feats if '$\Delta$(Molecular Refractivity) per substitution' in col]+\
+    [col for col in data_feats if 'bend' in col]
+    return cols_del

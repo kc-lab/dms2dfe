@@ -6,6 +6,8 @@ transform_type,,log,[log: log2  |  plog: log2 with pseudocount | rlog: regularis
 norm_type,,none,[MLE: wrt MLE of synonymous mutations | GLM: by generalized linear modelling (needs DESeq2) | none : use raw fold changes],Type of normalization of fold changes
 alignment_type,,loc,[loc:local | glob:global],Alignment type
 cores,,2,,Number of cores to be used
+mut_type,double,single,[single: double],Whether input data is of single mutation or double mutations
+ml_input,,FC,[FC: Preferential enrichments| Fi: Fitness scores ],Whether to use Preferential enrichments or Fitness scores for identification of molecular constraints
 clips,,,,Optional: Clip upstream UPTO and downstream FROM codons (space delimited) rg. 10<SPACE>167
 fsta_fh,,found in project directory,,Optional: Path to reference fasta file
 pdb_fh,,found in project directory,,Optional: Path to pdb file

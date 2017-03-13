@@ -12,7 +12,7 @@ from multiprocessing import Pool
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 from dms2dfe import configure
-from dms2dfe.lib.io_mut_files import getusable_lbls_list,getusable_fits_list,mut_mat_cds2data_lbl,data_lbl2data_fit,transform_data_lbl,transform_data_lbl_deseq 
+from dms2dfe.lib.io_mut_files import getusable_lbls_list,getusable_fits_list,mut_mat_cds2data_lbl,data_lbl2data_fit,data_lbl2data_fit_lite,transform_data_lbl,transform_data_lbl_deseq 
 
 def main(prj_dh,test=False):
     """
@@ -39,10 +39,15 @@ def main(prj_dh,test=False):
     fsta_len=info.fsta_len
     Ni_cutoff=int(info.Ni_cutoff)
     rscript_fh=info.rscript_fh
-    # SET global variables
-
+    if hasattr(info, 'mut_type'):
+        mut_type=info.mut_type
+    else:
+        mut_type='single'    
+    
     lbls=pd.read_csv(prj_dh+'/cfg/lbls')
     lbls=lbls.set_index('varname')
+
+    # SET global variables
     prj_dh_global=prj_dh
     fsta_fh_global=fsta_fh    
     if cctmr != 'nan':
@@ -56,37 +61,50 @@ def main(prj_dh,test=False):
     else:
         clips=None
 
-    lbls_list=getusable_lbls_list(prj_dh)
-    if len(lbls_list)!=0:
-        if test:
-            pooled_mut_mat_cds2data_lbl(lbls_list[0])
+    if mut_type=='single':
+        lbls_list=getusable_lbls_list(prj_dh)
+        if len(lbls_list)!=0:
+            if test:
+                pooled_mut_mat_cds2data_lbl(lbls_list[0])
+            else:
+                pool_mut_mat_cds2data_lbl=Pool(processes=int(cores)) 
+                pool_mut_mat_cds2data_lbl.map(pooled_mut_mat_cds2data_lbl,lbls_list)
+                pool_mut_mat_cds2data_lbl.close(); pool_mut_mat_cds2data_lbl.join()
         else:
-            pool_mut_mat_cds2data_lbl=Pool(processes=int(cores)) 
-            pool_mut_mat_cds2data_lbl.map(pooled_mut_mat_cds2data_lbl,lbls_list)
-            pool_mut_mat_cds2data_lbl.close(); pool_mut_mat_cds2data_lbl.join()
-    else:
-        logging.info("already processed: mut_mat_cds2data_lbl")
-    #TRANSFORM
-    if (transform_type=='rlog') or (transform_type=='vst'):
-        logging.info("transforming frequencies: %s" % transform_type)
-        transform_data_lbl_deseq(prj_dh,transform_type,rscript_fh)
-    else:
-        logging.info("transforming frequencies: %s" % transform_type)
-        transform_data_lbl(prj_dh,transform_type)
-    #FITNESS
-    fits_pairs_list    =getusable_fits_list(prj_dh)    
-    if len(fits_pairs_list)!=0:
-        if test:
-            pooled_data_lbl2data_fit(fits_pairs_list[0])      
-            # for fits_pairs in fits_pairs_list:
-            #     pooled_data_lbl2data_fit(fits_pairs)
+            logging.info("already processed: mut_mat_cds2data_lbl")
+        #TRANSFORM
+        if (transform_type=='rlog') or (transform_type=='vst'):
+            logging.info("transforming frequencies: %s" % transform_type)
+            transform_data_lbl_deseq(prj_dh,transform_type,rscript_fh)
         else:
-            pool_data_lbl2data_fit=Pool(processes=int(cores)) 
-            pool_data_lbl2data_fit.map(pooled_data_lbl2data_fit,
-                                       fits_pairs_list)
-            pool_data_lbl2data_fit.close(); pool_data_lbl2data_fit.join()
-    else:
-        logging.info("already processed: data_lbl2data_fit")
+            logging.info("transforming frequencies: %s" % transform_type)
+            transform_data_lbl(prj_dh,transform_type)
+        #FITNESS
+        fits_pairs_list    =getusable_fits_list(prj_dh,data_fit_dh='data_fit')    
+        if len(fits_pairs_list)!=0:
+            if test:
+                pooled_data_lbl2data_fit(fits_pairs_list[0])      
+                # for fits_pairs in fits_pairs_list:
+                #     pooled_data_lbl2data_fit(fits_pairs)
+            else:
+                pool_data_lbl2data_fit=Pool(processes=int(cores)) 
+                pool_data_lbl2data_fit.map(pooled_data_lbl2data_fit,
+                                           fits_pairs_list)
+                pool_data_lbl2data_fit.close(); pool_data_lbl2data_fit.join()
+        else:
+            logging.info("already processed: data_lbl2data_fit")
+    elif mut_type=='double':
+        fits_pairs_list_dm=getusable_fits_list(prj_dh,data_fit_dh='data_fit_dm')    
+        if len(fits_pairs_list_dm)!=0:
+            if test:
+                data_lbl2data_fit_dm(fits_pairs_list_dm[0],prj_dh,data_lbl_dh='data_lbl_dm',
+                        data_fit_dh='data_fit_dm')      
+            else:
+                for fits_pairs in fits_pairs_list_dm:
+                    data_lbl2data_fit_lite(fits_pairs,prj_dh,data_lbl_dh='data_lbl_dm',
+                        data_fit_dh='data_fit_dm')
+        else:
+            logging.info("already processed: data_lbl2data_fit")
     logging.shutdown()
 
 def pooled_mut_mat_cds2data_lbl(lbls_list_tp):
@@ -98,7 +116,8 @@ def pooled_mut_mat_cds2data_lbl(lbls_list_tp):
     lbli=lbls_list_tp[0]
     lbl_mat_mut_cds_fh=lbls_list_tp[1]
     logging.info("processing : %s" % (lbli))
-    mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh_global,fsta_len,cctmr_global,Ni_cutoff,fsta_fh_global,clips=clips)
+    mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,host,prj_dh_global,fsta_len,
+                         cctmr_global,Ni_cutoff,fsta_fh_global,clips=clips)
 
 
 def pooled_data_lbl2data_fit(fits_list):
@@ -118,10 +137,7 @@ def pooled_data_lbl2data_fit(fits_list):
         
 if __name__ == '__main__':
     if len(sys.argv)==3:
-        if sys.argv[2]=='test':
-            test=True
-        else:
-            test=False
+        test=sys.argv[2]
     else:
         test=False
     main(sys.argv[1],test=test)

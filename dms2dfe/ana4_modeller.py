@@ -4,7 +4,7 @@
 # This program is distributed under General Public License v. 3.  
 
 import sys
-from os.path import exists,splitext,basename
+from os.path import exists,splitext,basename,dirname
 from os import makedirs
 from glob import glob
 import numpy as np
@@ -20,7 +20,8 @@ from dms2dfe.lib.io_strs import get_logger
 logging=get_logger()
 # logging.basicConfig(filename="dms2dfe_%s.log" % (make_pathable_string(str(datetime.datetime.now()))),level=logging.DEBUG)
 from dms2dfe import configure
-from dms2dfe.lib.io_ml import data_fit2ml
+from dms2dfe.lib.io_dfs import set_index
+from dms2dfe.lib.io_ml import data_fit2ml,get_cols_del,make_data_combo
 
 def main(prj_dh,test=False):
     """
@@ -43,48 +44,71 @@ def main(prj_dh,test=False):
     configure.main(prj_dh)
     from dms2dfe.tmp import info
     cores=int(info.cores)
+    if hasattr(info, 'mut_type'):
+        mut_type=info.mut_type
+    else:
+        mut_type='single'    
+    if hasattr(info, 'ml_input'):
+        if info.ml_input=='FC':
+            ml_input='FCA_norm'
+        elif info.ml_input=='Fi':
+            ml_input='FiA'
+    else:
+        ml_input='FCA_norm'    
     
-    global prj_dh_global,data_feats,y_coln
+    global prj_dh_global,data_feats,ml_input_global
     prj_dh_global=prj_dh
+    ml_input_global=ml_input
     type_form="aas"
     if not exists("%s/plots/%s" % (prj_dh,type_form)):
         makedirs("%s/plots/%s" % (prj_dh,type_form))
     if not exists("%s/data_ml/%s" % (prj_dh,type_form)):
         makedirs("%s/data_ml/%s" % (prj_dh,type_form))
-
     data_feats=pd.read_csv("%s/data_feats/aas/data_feats_all" % (prj_dh))
-    # remove junk columns # stitch
-    cols_del=[col for col in data_feats if "Helix formation" in col]+\
-    [col for col in data_feats if "beta bridge" in col]+\
-    [col for col in data_feats if "Chirality" in col]+\
-    [col for col in data_feats if "Offset from residue to the partner" in col]+\
-    [col for col in data_feats if "Energy (kcal/mol) of " in col]+\
-    [col for col in data_feats if "Secondary structure" in col]+\
-    [col for col in data_feats if 'cosine of the angle between C=O of residue and C=O of previous residue' in col]+\
-    [col for col in data_feats if '$\Delta$(Molecular Polarizability) per substitution' in col]+\
-    [col for col in data_feats if '$\Delta$(Molecular weight (Da)) per substitution' in col]+\
-    [col for col in data_feats if '$\Delta$(Molecular Refractivity) per substitution' in col]+\
-    ['bend']
-
-    for col in cols_del:
+    for col in get_cols_del(data_feats):
         del data_feats[col]
+        
+    if mut_type=='single':
+        data_fit_keys = ["data_fit/%s/%s" % (type_form,basename(fh)) \
+                         for fh in glob("%s/data_fit/aas/*" % prj_dh) \
+                         if (not "inferred" in basename(fh)) and ("_WRT_" in basename(fh))]
+        data_fit_keys = np.unique(data_fit_keys)
 
-    y_coln='class_fit'
-    data_fit_keys = ["data_fit/%s/%s" % (type_form,basename(fh)) \
-                     for fh in glob("%s/data_fit/aas/*" % prj_dh) \
-                     if (not "inferred" in basename(fh)) and ("_WRT_" in basename(fh))]
-    data_fit_keys = np.unique(data_fit_keys)
-    if len(data_fit_keys)!=0:
-        if test:
-            # pooled_io_ml(data_fit_keys[0])
-            for data_fit_key in data_fit_keys:
-                pooled_io_ml(data_fit_key)
+        if len(data_fit_keys)!=0:
+            if test:
+                pooled_io_ml(data_fit_keys[0])
+                # for data_fit_key in data_fit_keys:
+                #     pooled_io_ml(data_fit_key)
+            else:
+                pool_io_ml=Pool(processes=int(cores)) 
+                pool_io_ml.map(pooled_io_ml,data_fit_keys)
+                pool_io_ml.close(); pool_io_ml.join()
         else:
-            pool_io_ml=Pool(processes=int(cores)) 
-            pool_io_ml.map(pooled_io_ml,data_fit_keys)
-            pool_io_ml.close(); pool_io_ml.join()
-    else:
-        logging.info("already processed")
+            logging.info("already processed")
+    elif mut_type=='double':
+        data_feats=set_index(data_feats,'mutids')
+        data_fit_dh='data_fit_dm'
+        data_fit_keys = ["%s/%s/%s" % (data_fit_dh,type_form,basename(fh)) \
+                         for fh in glob("%s/%s/aas/*" % (prj_dh,data_fit_dh)) \
+                         if (not "inferred" in basename(fh)) and ("_WRT_" in basename(fh))]
+        data_fit_keys = np.unique(data_fit_keys)
+        ycol='FCA_norm'
+        Xcols=data_feats.columns
+        if len(data_fit_keys)!=0:
+            for data_fit_key in data_fit_keys:
+                data_fit_dm_fh='%s/%s' % (prj_dh,data_fit_key)
+                data_combo_fh='%s/data_ml/%s.combo' % (prj_dh,basename(data_fit_dm_fh))
+                force=False
+                if not exists(data_combo_fh) or force:
+                    data_fit_dm=pd.read_csv(data_fit_dm_fh).set_index('mutids')
+                    data_combo=make_data_combo(data_fit_dm,data_feats,ycol,Xcols)
+                    if not exists(dirname(data_combo_fh)):
+                        makedirs(dirname(data_combo_fh))
+                    data_combo.to_csv(data_combo_fh)
+                else:
+                    data_combo=pd.read_csv(data_combo_fh).set_index('mutids')
+                
+                
     logging.shutdown()
 
 def pooled_io_ml(data_fit_key):
@@ -93,7 +117,8 @@ def pooled_io_ml(data_fit_key):
     
     :param data_fit_key: in the form <data_fit>/<aas/cds>/<name of file>.
     """
-    data_fit2ml(data_fit_key,prj_dh_global,data_feats)
+    data_fit2ml(data_fit_key,prj_dh_global,data_feats,
+               data_fit_col=ml_input_global,data_fit_col_alt=ml_input_global)
     
 if __name__ == '__main__':
     if len(sys.argv)==3:

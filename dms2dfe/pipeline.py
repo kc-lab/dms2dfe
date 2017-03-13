@@ -5,11 +5,12 @@
 
 import sys
 from os.path import exists,splitext
+import argparse
 import logging
 from dms2dfe import configure, ana0_fastq2dplx,ana0_fastq2sbam,ana0_getfeats,ana1_sam2mutmat,ana2_mutmat2fit,ana3_fit2comparison,ana4_modeller,ana4_plotter
     
 # GET INPTS    
-def main(prj_dh):
+def main():
     """
     This runs all analysis steps in tandem.
 
@@ -29,25 +30,44 @@ def main(prj_dh):
 
     """
     logging.info("start")
-    if exists(prj_dh) :
-        configure.main(prj_dh,"deps")
-        configure.main(prj_dh)          
-        # run modules
-        # ana0_getfeats.main(prj_dh)
-        # ana0_fastq2dplx.main(prj_dh)
-        # ana0_fastq2sbam.main(prj_dh)
-        # ana1_sam2mutmat.main(prj_dh)
-        ana2_mutmat2fit.main(prj_dh)
-        ana4_modeller.main(prj_dh)
-        # ana3_fit2comparison.main(prj_dh)
-        # ana4_plotter.main(prj_dh)    
+    parser = argparse.ArgumentParser(description='dms2dfe')
+    parser.add_argument("prj_dh", help="path to project directory", 
+                        action="store", default=False)    
+    parser.add_argument("--test", help="Debug mode on", dest="test", 
+                        action="store", default=False)    
+    parser.add_argument("--step", help="0: configure prohect directory, 0.1: get molecular features, 0.2: demultiplex fastq by provided borcodes, 0.3: alignment, 1: variant calling, 2: get preferntial enrichments, 3: identify molecular determinants, 4: identify relative selection pressures, 5: make visualizations", dest="step", 
+                        type=float,action="store", choices=[0,0.1,0.2,0.3,1,2,3,4,5],default=None)  
+    args = parser.parse_args()
+    pipeline(args.prj_dh,test=args.test,step=args.step)
 
-        logging.info("Location of output data: %s/plots/aas/data_comparison" % (prj_dh))
-        logging.info("Location of output visualizations: %s/plots/aas/" % (prj_dh))
-        logging.info("For information about file formats of outputs, refer to http://kc-lab.github.io/dms2dfe .")
-        logging.shutdown()
+def pipeline(prj_dh,step=None,test=False):
+    if exists(prj_dh) :
+        if step==0 or step==None:
+            configure.main(prj_dh,"deps")
+            configure.main(prj_dh)          
+        if step==0.1 or step==None:
+            ana0_getfeats.main(prj_dh)
+        if step==0.2 or step==None:
+            ana0_fastq2dplx.main(prj_dh)
+        if step==0.3 or step==None:
+            ana0_fastq2sbam.main(prj_dh)
+        if step==1 or step==None:
+            ana1_sam2mutmat.main(prj_dh)
+        if step==2 or step==None:
+            ana2_mutmat2fit.main(prj_dh,test)
+        if step==3 or step==None:
+            ana4_modeller.main(prj_dh,test)
+        if step==4 or step==None:
+            ana3_fit2comparison.main(prj_dh)
+        if step==5 or step==None:
+            ana4_plotter.main(prj_dh)
+        if step==None:
+            logging.info("Location of output data: %s/plots/aas/data_comparison" % (prj_dh))
+            logging.info("Location of output visualizations: %s/plots/aas/" % (prj_dh))
+            logging.info("For information about file formats of outputs, refer to http://kc-lab.github.io/dms2dfe .")
     else:
         configure.main(prj_dh)                  
-    # sys.exit()
+    logging.shutdown()
+
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main()

@@ -599,6 +599,21 @@ def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="Fi
         # data_fit.loc[:,col_fit_rescaled]
         return data_fit
 
+def data_lbl2data_fit_lite(fits_pairs,prj_dh,data_lbl_dh,data_fit_dh,force=False):
+    data_fit_fh='%s/%s/aas/%s_WRT_%s' % (prj_dh,data_fit_dh,fits_pairs[1],fits_pairs[0])
+    if not exists(data_fit_fh) or force:
+        data_lbl_fhs=['%s/%s/aas/%s' % (prj_dh,data_lbl_dh,s) for s in fits_pairs]
+
+        data_fit=fhs2data_combo(data_lbl_fhs,cols=['NiA_tran'],
+        #                labels=['ref','sel'],
+                       index='mutids',col_sep='.')
+        data_fit.columns=['NiA_tran.ref','NiA_tran.sel']
+        data_fit.loc[:,'FCA']=data_fit.loc[:,'NiA_tran.sel']-data_fit.loc[:,'NiA_tran.ref']
+        data_fit.loc[:,'FCA_norm']=data_fit.loc[:,'NiA_tran.sel']-data_fit.loc[:,'NiA_tran.ref']
+        if not exists(dirname(data_fit_fh)):
+            makedirs(dirname(data_fit_fh))
+        data_fit.to_csv(data_fit_fh)
+        
 def class_comparison(data_comparison):
     """
     This classifies differences in fitness i.e. relative fitness into positive, negative or robust categories. 
