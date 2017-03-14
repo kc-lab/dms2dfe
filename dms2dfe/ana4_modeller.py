@@ -21,7 +21,7 @@ logging=get_logger()
 # logging.basicConfig(filename="dms2dfe_%s.log" % (make_pathable_string(str(datetime.datetime.now()))),level=logging.DEBUG)
 from dms2dfe import configure
 from dms2dfe.lib.io_dfs import set_index
-from dms2dfe.lib.io_ml import data_fit2ml,get_cols_del,make_data_combo
+from dms2dfe.lib.io_ml import data_fit2ml,get_cols_del,make_data_combo,data_combo2ml
 
 def main(prj_dh,test=False):
     """
@@ -92,12 +92,12 @@ def main(prj_dh,test=False):
                          for fh in glob("%s/%s/aas/*" % (prj_dh,data_fit_dh)) \
                          if (not "inferred" in basename(fh)) and ("_WRT_" in basename(fh))]
         data_fit_keys = np.unique(data_fit_keys)
-        ycol='FCA_norm'
+        ycol=ml_input
         Xcols=data_feats.columns
         if len(data_fit_keys)!=0:
             for data_fit_key in data_fit_keys:
                 data_fit_dm_fh='%s/%s' % (prj_dh,data_fit_key)
-                data_combo_fh='%s/data_ml/%s.combo' % (prj_dh,basename(data_fit_dm_fh))
+                data_combo_fh='%s/data_ml/aas/%s.combo' % (prj_dh,basename(data_fit_dm_fh))
                 force=False
                 if not exists(data_combo_fh) or force:
                     data_fit_dm=pd.read_csv(data_fit_dm_fh).set_index('mutids')
@@ -107,7 +107,9 @@ def main(prj_dh,test=False):
                     data_combo.to_csv(data_combo_fh)
                 else:
                     data_combo=pd.read_csv(data_combo_fh).set_index('mutids')
-                
+                data_combo2ml(data_combo,basename(data_fit_dm_fh),dirname(data_combo_fh),dirname(data_combo_fh),
+                            ycoln=ycol,col_idx='mutids',ml_type='cls',
+                            middle_percentile_skipped=0.1,force=False,)
                 
     logging.shutdown()
 

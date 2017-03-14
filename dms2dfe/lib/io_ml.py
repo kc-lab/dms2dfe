@@ -693,7 +693,7 @@ def make_cls_input(data_combo,y_coln_cls,middle_percentile_skipped):
     X_cols_cls=data_ml.columns.tolist()
     y_coln_cls="classes"
     X_cols_cls=data_ml.columns.tolist().remove(y_coln_cls)
-    data_ml_mutids=list(data_ml.loc[:,'mutids'])
+    data_ml_mutids=list(data_ml.index)
     # print sum(~pd.isnull(data_combo.loc[:,y_coln_cls]))
     data_combo=set_index(data_combo,"mutids")
     data_ml=set_index(data_ml,"mutids")
@@ -714,37 +714,35 @@ def make_cls_input(data_combo,y_coln_cls,middle_percentile_skipped):
     data_cls_tests=data_ml.loc[data_cls_tests_mutids,:]
     return data_combo,data_ml,data_cls_train,data_cls_tests
 
-def make_reg_input(data_cls_train,data_cls_tests,
+def make_reg_input(data_combo,data_cls_train,data_cls_tests,
                     feature_importances_cls,
                     y_coln_reg,
                     y_coln_cls="classes",
                     topNfeats=25
                     ):
     data_reg_train=data_cls_train.copy()
-    data_reg_train=X_cols2binary(data_reg_train,[y_coln_cls])
-    data_combo=set_index(data_combo,col_idx)
-    data_reg_train.loc[:,y_coln_reg]=\
-    data_combo.loc[data_cls_train.index.values,y_coln_reg]
-    data_reg_train=denan(data_reg_train,axis='both',condi='all any')
-    data_reg_tests=data_cls_tests                
+    data_reg_tests=data_cls_tests.copy()
+    data_reg_train.loc[:,y_coln_reg]=data_combo.loc[data_cls_train.index.values,y_coln_reg]
+    data_reg_tests.loc[:,y_coln_reg]=data_combo.loc[data_reg_tests.index.values,y_coln_reg]
+    if y_coln_cls in data_reg_train.columns.tolist(): 
+        data_reg_tests=data_reg_train.drop(y_coln_cls,axis=1)
     if y_coln_cls in data_reg_tests.columns.tolist(): 
         data_reg_tests=data_reg_tests.drop(y_coln_cls,axis=1)
-    else:
-        data_reg_tests=denan(data_reg_tests,axis='both',condi='all any')
-        data_reg_tests=X_cols2binary(data_reg_tests,[y_coln_cls])
-    data_reg_tests=denan(data_reg_tests,axis='both',condi='all any')
-    X_cols_top=feature_importances_cls\
-    .sort_values(by='Importance',ascending=False).head(topNfeats).loc[:,'Feature'].tolist()
+    # data_reg_train=denan(data_reg_train,axis='both',condi='all any')
+    # data_reg_tests=denan(data_reg_tests,axis='both',condi='all any')
+    # data_reg_train=X_cols2binary(data_reg_train,[y_coln_cls])
+    # data_reg_tests=X_cols2binary(data_reg_tests,[y_coln_cls])
+    X_cols_top=feature_importances_cls.sort_values(by='Importance',ascending=False).\
+    									head(topNfeats).loc[:,'Feature'].tolist()
     X_cols_reg=[col for col in X_cols_top\
                     if col in data_reg_tests.columns.tolist()]
-    data_reg_train=data_reg_train.loc[:,X_cols_reg]
-    data_reg_tests=data_reg_tests.loc[:,X_cols_reg]
+    data_reg_train=data_reg_train.loc[:,X_cols_reg+[y_coln_reg]]
+    data_reg_tests=data_reg_tests.loc[:,X_cols_reg+[y_coln_reg]]
     return data_reg_train,data_reg_tests
 
-def data_combo2ml(data_combo,data_fn,
-                  data_dh,plots_dh,
+def data_combo2ml(data_combo,data_fn,data_dh,plot_dh,
                 ycoln,col_idx,
-                ml_type='both'
+                ml_type='both',
                 middle_percentile_skipped=0.1,
                 force=False,
                 ):
@@ -756,32 +754,34 @@ def data_combo2ml(data_combo,data_fn,
     :param y_coln: column name of column with classes (ys). 
     :param ml_type: classi | both
     """
+    data_combo=del_Unnamed(data_combo)
     for dh in [plot_dh,data_dh]:
         if not exists(dh):
             makedirs(dh)
-    plot_cls_fh="%s/plot_ml_cls_%s.pdf" % (plot_dh,basename(data_fn))
-    plot_reg_fh="%s/plot_ml_reg_%s.pdf" % (plot_dh,basename(data_fn))
-    data_combo_fh="%s/%s.input_raw" % (data_dh,basename(data_fn))
-    data_fh="%s/%s.input" % (data_dh,basename(data_fn))
-    data_cls_train_fh="%s/%s.cls.train" % (data_dh,basename(data_fn))
-    data_cls_tests_fh="%s/%s.cls.tests" % (data_dh,basename(data_fn))
-    data_reg_train_fh="%s/%s.cls.train" % (data_dh,basename(data_fn))
-    data_reg_tests_fh="%s/%s.cls.tests" % (data_dh,basename(data_fn))    
+    # plot_cls_fh="%s/plot_ml_cls_%s.pdf" % (plot_dh,data_fn)
+    # plot_reg_fh="%s/plot_ml_reg_%s.pdf" % (plot_dh,data_fn)
+    data_combo_fh="%s/%s.input_raw" % (data_dh,data_fn)
+    data_fh="%s/%s.cls.all" % (data_dh,data_fn)
+    data_cls_train_fh="%s/%s.cls.train" % (data_dh,data_fn)
+    data_cls_tests_fh="%s/%s.cls.tests" % (data_dh,data_fn)
+    data_reg_train_fh="%s/%s.reg.train" % (data_dh,data_fn)
+    data_reg_tests_fh="%s/%s.reg.tests" % (data_dh,data_fn)    
     pkld_cls_fh='%s/%s.cls.pkl' % (data_dh,data_fn)
     pkld_reg_fh='%s/%s.reg.pkl' % (data_dh,data_fn)
-    pkld_cls_metrics_fh='%s/%s.cls.metrics.pkl' % (data_dh,data_fn)
+    # pkld_cls_metrics_fh='%s/%s.cls.metrics.pkl' % (data_dh,data_fn)
     pkld_reg_metrics_fh='%s/%s.reg.metrics.pkl' % (data_dh,data_fn)
+    feature_importances_cls_fh="%s_%s_.csv" % (pkld_cls_fh,'featimps')
 
     y_coln_cls=ycoln
     y_coln_reg=ycoln
 
-    if np.sum(~data_combo.loc[:,y_coln_cls].isnull())>50:
+    if np.sum(~data_combo.loc[:,y_coln_cls].isnull())<50:
         logging.error("skipping %s: need more data: %d<50" %\
-                        (data_fn,np.sum(~data_combo.loc[:,data_combo_col].isnull())))
+                        (data_fn,np.sum(~data_combo.loc[:,ycoln].isnull())))
         return False
 
     logging.info("processing: %s" % data_fn)
-    if ml_type=='classi':
+    if ml_type=='cls' or ml_type=='both':
         if not exists(pkld_cls_fh):
             if not exists(data_cls_train_fh):
                 data_combo,data_ml,data_cls_train,data_cls_tests=make_cls_input(data_combo,y_coln_cls,                                                                                middle_percentile_skipped=middle_percentile_skipped)
@@ -794,27 +794,27 @@ def data_combo2ml(data_combo,data_fn,
                 data_cls_tests=pd.read_csv(data_cls_tests_fh)
                 data_cls_train  =data_cls_train.set_index(col_idx,drop=True)
                 data_cls_tests  =data_cls_tests.set_index(col_idx,drop=True)
-                y_coln_cls="classes"
+            y_coln_cls="classes"
             logging.info("cls: train set = %d" % len(data_cls_train))
             X_cols_cls=data_cls_train.columns.tolist()
             X_cols_cls.remove(y_coln_cls)
             # cls
             pkld_cls,data_preds=run_RF_classi(data_cls_train,X_cols_cls,y_coln_cls,
                     test_size=0.34,data_out_fh=pkld_cls_fh) #                     
-            get_RF_cls_metrics(pkld_cls_fh,data_dh=data_dh,plot_dh=plot_dh)
         else:
             logging.info('already exists: %s' % basename(pkld_cls_fh))
+        if not exists(feature_importances_cls_fh):
+	        get_RF_classi_metrics(pkld_cls_fh,data_dh=data_dh,plot_dh=plot_dh)
     
     if ml_type=='both':
         if not exists(pkld_reg_fh):
             if not exists('%s.train' % data_fh): 
                 data_cls_tests=pd.read_csv(data_cls_train_fh)
-                data_cls_tests  =data_cls_tests.set_index(col_idx,drop=True)
                 data_cls_train=pd.read_csv(data_cls_tests_fh)
+                data_cls_tests  =data_cls_tests.set_index(col_idx,drop=True)
                 data_cls_train  =data_cls_train.set_index(col_idx,drop=True)
-                feature_importances_cls_fh="%s_%s_.csv" % (pkld_cls_fh,'featimps')
                 feature_importances_cls=pd.read_csv(feature_importances_cls_fh)
-                data_reg_train,data_reg_tests=make_reg_input(data_cls_train,data_cls_tests,
+                data_reg_train,data_reg_tests=make_reg_input(data_combo,data_cls_train,data_cls_tests,
                                             feature_importances_cls,
                                             y_coln_reg,
                                             y_coln_cls="classes",
@@ -827,19 +827,19 @@ def data_combo2ml(data_combo,data_fn,
                 data_reg_train  =data_reg_train.set_index(col_idx,drop=True)
                 data_reg_tests  =data_reg_tests.set_index(col_idx,drop=True)
             logging.info("reg: train set = %d" % len(data_reg_train))
-            X_cols_reg=data_reg_train.columns.tolist().remove(y_coln_reg)
-
+            X_cols_reg=[c for c in data_reg_train.columns.tolist() if c!=y_coln_reg]
+            # print data_reg_train.loc[:,X_cols_reg]
             pkld_reg_metrics,data_preds_reg_metrics=\
-            run_RF_reg(data_reg_train,X_cols_reg,y_coln_reg,
+            run_RF_regress(data_reg_train,X_cols_reg,y_coln_reg,
                             test_size=0.34,data_out_fh=pkld_reg_metrics_fh)
-            get_RF_reg_metrics(pkld_reg_metrics_fh,data_dh=data_dh,plot_dh=plot_dh)
+            get_RF_regress_metrics(pkld_reg_metrics_fh,data_dh=data_dh,plot_dh=plot_dh)
         else:
             logging.info('already exists: %s' % basename(pkld_reg_fh))
     
     
-from dms2dfe.lib.io_nums import is_numeric
+# from dms2dfe.lib.io_nums import is_numeric
 # from dms2dfe.ana4_modeller import get_cols_del
-from dms2dfe.lib.io_dfs import set_index
+# from dms2dfe.lib.io_dfs import set_index
 
 def get_abs_diff(mutid_mm,data_feats,col):
     mutid_m1,mutid_m2=mutid_mm.split(':')
