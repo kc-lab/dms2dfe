@@ -8,6 +8,10 @@
 ``io_plot_files``
 ================================
 """
+import sys
+from os import makedirs,stat
+from os.path import splitext, join, exists, isdir,basename,abspath,dirname
+import pandas as pd
 import numpy as np
 import subprocess
 from glob import glob
@@ -23,15 +27,16 @@ from dms2dfe.lib.plot_mut_data import plot_data_lbl_repli,plot_data_fit_scatter,
 # from dms2dfe.lib.io_seq_files import getwildtypecov
 from dms2dfe.lib.plot_pdb import vector2bfactor
 from dms2dfe.lib.global_vars import mut_types_form
+from dms2dfe.lib.io_dfs import denanrows
+# from dms2dfe.lib.io_plot_files import plot_coverage,plot_heatmap,plot_clustermap,plot_multisca,plot_violin,plot_pies,plot_pdb
 
-def plot_coverage(info,plot_type="coverage"):    
-    if not exists(prj_dh+"/data_coverage/aas"):
-        makedirs(prj_dh+"/data_coverage/aas")
+def plot_coverage(info,plot_type="coverage",type_form='aas'):    
+    if not exists(info.prj_dh+"/data_coverage/aas"):
+        makedirs(info.prj_dh+"/data_coverage/aas")
     lbls=pd.read_csv("%s/cfg/lbls" % info.prj_dh).set_index("varname",drop=True)
-    type_form="aas"
     for lbl in lbls.index.values:
-        plot_fh="%s/plots/%s/plot_%s_%s.pdf" % (prj_dh,type_form,plot_type,lbl)
-        data_fh="%s/data_coverage/%s/%s" % (prj_dh,type_form,lbl)        
+        plot_fh="%s/plots/%s/%s.%s.pdf" % (info.prj_dh,type_form,lbl,plot_type)
+        data_fh="%s/data_coverage/%s.depth_ref" % (info.prj_dh,lbl)        
         if not exists(plot_fh):
             if not pd.isnull(lbls.loc[lbl,'fhs_1']):
                 fhs=glob(lbls.loc[lbl,'fhs_1']+"*")
@@ -42,26 +47,40 @@ def plot_coverage(info,plot_type="coverage"):
                         sbam_fh=sbam_fhs[0]
                         lbl_mat_mut_cds_fh=[fh for fh in fhs if "bam.mat_mut_cds" in fh][0]
                         # print lbl_mat_mut_cds_fh
-                        if not exists(data_fh):
-                            data_cov=getwildtypecov(sbam_fh,lbl_mat_mut_cds_fh,fsta_id,fsta_seqlen,cctmr)
-                            data_cov.to_csv(data_fh,index=False)
-                        else: 
+                        if exists(data_fh):
                             data_cov=pd.read_csv(data_fh)
-                        data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (prj_dh,lbl))
+                        data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (info.prj_dh,lbl))
                         plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
                 else:
                     logging.warning("can not find sequencing data to get coverage")
             else:
                 logging.warning("can not find sequencing data to get coverage")
 
-    data_fit_fhs=glob("%s/data_fit/aas/*" % prj_dh)+glob("%s/data_fit/cds/*" % prj_dh)
+def get_data_fhs(info):
+    data_fit_fhs=glob("%s/data_fit/aas/*" % info.prj_dh)
+    # +glob("%s/data_fit/cds/*" % info.prj_dh)
     data_fit_fhs= [fh for fh in data_fit_fhs if "_WRT_" in basename(fh)]
     data_fit_fhs=np.unique(data_fit_fhs)
+    return data_fit_fhs
+
+def get_fhs(dh,include,exclude=None):
+    fhs=glob("%s/*" % dh)
+    fhs= [fh for fh in fhs if include in basename(fh)]
+    if not exclude is None:
+        fhs= [fh for fh in fhs if not exclude in basename(fh)]
+    fhs=np.unique(fhs)
+    return fhs
     
-def plot_heatmap(info,data_fit_fhs,plot_type="heatmap"):
+def plot_heatmap(info,data_fit_fhs=None,plot_type="heatmap"):
+    if data_fit_fhs is None:
+        data_fit_fhs=get_data_fhs(info)
+    type_form='aas'
+    data_feats=pd.read_csv(info.prj_dh+"/data_feats/aas/feats_all")
+
     for data_fit_fh in data_fit_fhs:
+        data_fit_fn=basename(data_fit_fh)
         data_fit=pd.read_csv(data_fit_fh)
-        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
+        plot_fh="%s/plots/%s/%s.%s.pdf" % (info.prj_dh,type_form,data_fit_fn,plot_type) 
         if not exists(plot_fh):
             if "_inferred" in basename(plot_fh):
                 cbar_label="Fitness scores ($F_{i}$)"
@@ -70,25 +89,34 @@ def plot_heatmap(info,data_fit_fhs,plot_type="heatmap"):
             plot_data_fit_heatmap(data_fit,type_form,col='FiA',data_feats=data_feats,\
                                   plot_fh=plot_fh,cbar_label=cbar_label)
     
-def plot_clustermap(info,data_fit_fhs,plot_type="clustermap"):
+def plot_clustermap(info,data_fit_fhs=None,plot_type="clustermap"):
+    if data_fit_fhs is None:
+        data_fit_fhs=get_data_fhs(info)
+    type_form='aas'
     for data_fit_fh in data_fit_fhs:
+        data_fit_fn=basename(data_fit_fh)
         data_fit=pd.read_csv(data_fit_fh)
-        plot_fh="%s/plots/%s/fig_%s_%s.pdf" % (prj_dh,type_form,plot_type,data_fiti) 
+        plot_fh="%s/plots/%s/%s.%s.pdf" % (info.prj_dh,type_form,data_fit_fn,plot_type) 
         if not exists(plot_fh):
             ax=plot_data_fit_clustermap(data_fit,type_form,col='FiA',col_cluster=True)
             ax.savefig(plot_fh+".pdf",format='pdf')                        
             ax.savefig(plot_fh);plt.clf();plt.close()
 
-            
-def plot_multisca(info,data_fit_fhs,plot_type='multisca'):
+from dms2dfe.lib.plot_mut_data_scatter import plot_scatter_mutilayered
+
+def plot_multisca(info,data_fit_fhs=None,plot_type='multisca'):
+    if data_fit_fhs is None:
+        data_fit_fhs=get_data_fhs(info)
+    data_fit_fhs=[fh for fh in data_fit_fhs if not '_inferred' in fh]    
+    type_form='aas'
     for data_fit_fh in data_fit_fhs:
+        data_fit_fn=basename(data_fit_fh)
         data_fit=pd.read_csv(data_fit_fh).set_index('mutids')
-        plot_fh='%s/plot_%s.pdf' % (plot_dh,plot_type)
+        plot_fh='%s/plots/aas/%s.%s.pdf' % (info.prj_dh,data_fit_fn,plot_type)
         if not exists(plot_fh):
-            print plot_fh
             cols=['NiA_tran.ref','NiA_tran.sel']
             cols_labels=['$N_{i,ref}$','$N_{i,sel}$']
-            data=data.loc[denanrows(data.loc[:,cols]).index.tolist(),:]
+            data=data_fit.loc[denanrows(data_fit.loc[:,cols]).index.tolist(),:]
             data.loc[:,cols_labels[0]]=data.loc[:,cols[0]]
             data.loc[:,cols_labels[1]]=data.loc[:,cols[1]]
             m,s,p=plot_scatter_mutilayered(data,
@@ -107,15 +135,18 @@ def plot_multisca(info,data_fit_fhs,plot_type='multisca'):
                                      space=0.1,
                                     )    
     
-            
-def plot_pdb(info,data_fit_fhs,plot_type="pdb"):
+def plot_pdb(info,data_fit_fhs=None,plot_type="pdb"):
+    if data_fit_fhs is None:
+        data_fit_fhs=get_data_fhs(info)
+    type_form='aas'
     for data_fit_fh in data_fit_fhs:
-        pdb_clrd_fh="%s/plots/%s/fig_%s_%s.pdb" % (prj_dh,type_form,plot_type,data_fiti) 
+        data_fit_fn=basename(data_fit_fh)
+        pdb_clrd_fh="%s/plots/%s/%s.pdb" % (info.prj_dh,type_form,data_fit_fn) 
         if not exists(pdb_clrd_fh):
             data_fit=pd.read_csv(data_fit_fh)
             mut_matrix=data2mut_matrix(data_fit,'FiA','mut',type_form)
             data_fit_avg=mut_matrix.mean()
-            vector2bfactor(data_fit_avg,pdb_fh,pdb_clrd_fh)
+            vector2bfactor(data_fit_avg,info.pdb_fh,pdb_clrd_fh)
             plot_pdb_chimera_fhs_f.write(abspath(pdb_clrd_fh)+"\n")
         else:
             logging.info("already processed: %s" % basename(pdb_clrd_fh))
@@ -140,56 +171,61 @@ def plot_pdb(info,data_fit_fhs,plot_type="pdb"):
         logging.info("skipping pdb vizs : please install UCSF-Chimera")      
     logging.shutdown()
 
-def plot_violin(plot_type='violin'):
-        
-    plot_fh='%s/plot_%s.pdf' % (plot_dh,plot_type)
-    # %run ../progs/dms2dfe/dms2dfe/lib/plot_mut_data_dists.py
-    prj_dh='/home/kclabws1/Documents/propro/writ/prjs/1_dms_software/data/datasets/APH2_Melnikov_et_al_2014/b170104_full_run//rlog_GLM'
+from dms2dfe.lib.plot_mut_data_dists import plot_data_comparison_multiviolin
 
-    data_fit_fns=['Kan14_WRT_Bkg','Kan11_WRT_Bkg']
-    data_fiti_ctrl=0
+def plot_violin(info,data_comparison_fhs=None,plot_type='violin'):
+    if data_comparison_fhs is None:
+        data_comparison_fhs=get_fhs('%s/data_comparison/aas/' % info.prj_dh,
+                                    include='_VERSUS_',exclude='_inferred')
     aasORcds="aas"
     col="FiA"
     ylabel="$F_{i}$"
     ylims=[-4,6]
+    for fh in data_comparison_fhs:
+        fn=basename(fh)
+        plot_fh='%s/plots/aas/%s.%s.pdf' % (info.prj_dh,fn,plot_type)
+        data_fit_fns=fn.split('_VERSUS_')[::-1]
+        data_fiti_ctrl=0
+        data_fit_labels=data_fit_fns
+        # print plot_fh
+        # print fn
+        # print data_fit_fns
+        plot_data_comparison_multiviolin(info.prj_dh,
+                                data_fit_fns,col,
+                                data_fiti_ctrl=data_fiti_ctrl,
+                                aasORcds=aasORcds,
+                                data_fits_labels=data_fit_labels,
+                                color_test='yellow',
+                                color_ctrl='lightgray',
+                                figsize=[2.65,2.5],
+                                color_xticks=(0,0.2,1),
+                                ns=False,
+                                numeric=True,
+                                # ylims=ylims,
+                                force=True,
+                                ylabel=ylabel,
+                                plot_fh=plot_fh)
 
-    data_fit_labels=[data_fit_fns2labels[s] if s in data_fit_fns2labels.keys() else s for s in data_fit_fns]
+from dms2dfe.lib.plot_mut_data_dists import plot_pie
 
-    tmp,tmp2=plot_data_comparison_multiviolin(prj_dh,data_fit_fns,col,
-                                              data_fiti_ctrl=data_fiti_ctrl,
-                                              aasORcds=aasORcds,
-                                            data_fits_labels=data_fit_labels,#[l.replace(' + ','\n+\n') for l in data_fit_labels],ylabel=ylabel,
-                                            color_test='yellow',
-                                            color_ctrl='lightgray',
-                                            figsize=[2.65,2.5],
-                                            color_xticks=(0,0.2,1),
-    #                                         plot_fh=plot_fh,
-                                            ns=False,
-                                            numeric=True,
-                                            ylims=ylims,
-                                            force=True,
-                                              ylabel=ylabel,
-                                              plot_fh=plot_fh
-                                             )
-
-def plot_pies():
-    plot_type='plot_pies_selection'
-    plot_fh='%s/plot_%s.pdf' % (plot_dh,plot_type)
-    print plot_fh
-    # %run ../progs/dms2dfe/dms2dfe/lib/plot_mut_data_dists.py
-
-    col_classes='class_comparison'
-    colors=['cyan', 'hotpink','lightgray']
-    explodei='mid'
-    fontsize=12.5
-    data_fh='/home/kclabws1/Documents/propro/writ/prjs/1_dms_software/data/datasets/APH2_Melnikov_et_al_2014/b170104_full_run//rlog_GLM/data_comparison/aas/Kan11_WRT_Bkg_VERSUS_Kan14_WRT_Bkg'
-    data_fit=pd.read_csv(data_fh)
-    flag=''
-    plot_pie(data_fit,col_classes,"mutids",
-             explodei=explodei,
-             figsize=[1,1],
-             colors=colors,
-             plot_fh=plot_fh,
-             label=True,
-             fontsize=fontsize,
-            )
+def plot_pies(info,data_comparison_fhs=None,plot_type='pies_selection'):    
+    if data_comparison_fhs is None:
+        data_comparison_fhs=get_fhs('%s/data_comparison/aas/' % info.prj_dh,
+                                    include='_VERSUS_',exclude='_inferred')
+    for fh in data_comparison_fhs:
+        fn=basename(fh)
+        plot_fh='%s/%s.%s.pdf' % (info.prj_dh,fn,plot_type)
+        data_fit=pd.read_csv(fh)
+        col_classes='class_comparison'
+        colors=['cyan', 'hotpink','lightgray']
+        explodei='mid'
+        fontsize=12.5
+        flag=''
+        plot_pie(data_fit,col_classes,"mutids",
+                 explodei=explodei,
+                 figsize=[1,1],
+                 colors=colors,
+                 plot_fh=plot_fh,
+                 label=True,
+                 fontsize=fontsize,
+                )

@@ -208,11 +208,11 @@ def plot_scatter_mutilayered(data_all,xcol,ycol,
     repel_sub=repel*len(data_all_sub)/(len(data_all_mut))*5
     if repel_sub>repel:
         repel_sub=repel
-    print repel_sub
-    print data_all_sub.columns
+    # print repel_sub
+    # print data_all_sub.columns
     # data_all_sub=denanrows(data_all_sub)
     data_all_sub=data_all_sub.loc[denanrows(data_all_sub.loc[:,[xcol,ycol]]).index.tolist(),:]
-    print data_all_sub.shape
+    # print data_all_sub.shape
     ax2,_,_,_=plot_sc(data_all_sub,ax2,xcol,ycol,
                heads=[mutids2subid(i) for i in mutids_heads],tails=[mutids2subid(i) for i in mutids_tails],
                repel=repel_sub,
@@ -222,7 +222,7 @@ def plot_scatter_mutilayered(data_all,xcol,ycol,
     repel_pos=repel*len(data_all_pos)/(len(data_all_mut))*12.5
     if repel_pos>repel:
         repel_pos=repel
-    print repel_pos
+    # print repel_pos
     ax3,_,_,_=plot_sc(data_all_pos,ax3,xcol,ycol,
                heads=[mutids2refrei(i) for i in mutids_heads],tails=[mutids2refrei(i) for i in mutids_tails],
                repel=repel_pos,

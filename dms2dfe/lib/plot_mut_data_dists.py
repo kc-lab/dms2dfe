@@ -156,7 +156,7 @@ def plot_data_comparison_multiviolin(prj_dh,data_fits,col,
         for col_testi in range(len(col_tests)):
             col_test=col_tests[col_testi]
             pval,side=get_wilcoxon(data_all,col_ctrl,col_test,side='one',denan=False)
-            print pval
+            # print pval
             if stars:
                 pval=pval2stars(pval,ns=ns,numeric=False)
             if ns and (pval>0.05):
@@ -165,8 +165,8 @@ def plot_data_comparison_multiviolin(prj_dh,data_fits,col,
                 result="%s\n%s" % (side,pval)
             else:
                 result="%s\n%s" % (side,pval)
-            print result
-            print ax.get_ylim()[0]+(ax.get_ylim()[1]-ax.get_ylim()[0])*0.05
+            # print result
+            # print ax.get_ylim()[0]+(ax.get_ylim()[1]-ax.get_ylim()[0])*0.05
             ax.text(col_testi,ax.get_ylim()[0]+(ax.get_ylim()[1]-ax.get_ylim()[0])*0.05,
                     result,ha='center',color='b',
                     bbox=dict(facecolor='w', edgecolor='none', 

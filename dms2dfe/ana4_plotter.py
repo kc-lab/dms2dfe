@@ -7,7 +7,6 @@ import sys
 from os import makedirs,stat
 from os.path import splitext, join, exists, isdir,basename,abspath,dirname
 import pandas as pd 
-from dms2dfe.lib.io_plot_files import plot_coverage,plot_heatmap,plot_clustermap,plot_multisca,plot_violin,plot_pies,plot_pdb
 
 def main(prj_dh):
     """
@@ -28,30 +27,16 @@ def main(prj_dh):
         sys.exit()
     configure.main(prj_dh)
     from dms2dfe.tmp import info
-    # fsta_fh=info.fsta_fh
-    # pdb_fh=info.pdb_fh
-    # norm_type=info.norm_type
-    # Ni_cutoff=int(info.Ni_cutoff)
-    # cctmr=info.cctmr            
-    # if cctmr != 'nan':
-    #     cctmr=[int("%s" % i) for i in cctmr.split(" ")]
-    #     cctmr=[(cctmr[0],cctmr[1]),(cctmr[2],cctmr[3])]
-    # else:
-    #     cctmr=None
-    # data_feats=pd.read_csv(prj_dh+"/data_feats/aas/feats_all")
-    # #tmp files
-    # plot_pdb_chimera_fhs_fh='%s/tmp/plot_pdb_chimera_fhs' % abspath(dirname(__file__))
-    # plot_pdb_chimera_fhs_f = open(plot_pdb_chimera_fhs_fh, 'w+')
     if not exists(prj_dh+"/plots"):
         makedirs(prj_dh+"/plots")
         
-    plot_coverage(info,plot_type="coverage")
-    plot_heatmap(info,data_fit_fhs,plot_type="heatmap")
-    plot_clustermap
-    plot_multisca
-    plot_violin
-    plot_pies
-    plot_pdb
-
+    plot_coverage(info)
+    plot_heatmap(info)
+    plot_clustermap(info)
+    plot_multisca(info)
+    plot_pdb(info)
+    plot_violin(info)
+    plot_pies(info)
+    
 if __name__ == '__main__':
     main(sys.argv[1])
