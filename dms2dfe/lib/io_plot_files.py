@@ -183,20 +183,20 @@ def plot_pdb(info,data_fit_fhs=None,plot_type="pdb",
     plot_pdb_chimera_fhs_f.close()
     try:
         chimera_dh=guess_chimera_path()[0]
-        if exists(chimera_dh):
-            std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
-            if std.stdout.read():
-                if not stat(plot_pdb_chimera_fhs_fh).st_size == 0:
-                    subprocess.call("%s/bin/chimera --silent %s/lib/plot_pdb_chimera.py" % (chimera_dh,abspath(dirname(__file__))),shell=True)
-                else:
-                    logging.info("already processed")  
-            else:
-                logging.error("skipping: pdb vizs: graphics drivers not present/configured.") 
-                logging.info("To configure graphics drivers for UCSF-Chimera please install mesa-utils: sudo apt-get install mesa-utils;sudo apt-get update ")  
-        else:
-            logging.info("install UCSF-Chimera for PDB vizs")      
     except:
-        logging.info("install UCSF-Chimera for PDB vizs")      
+        logging.info("1install UCSF-Chimera for PDB vizs")      
+    if exists(chimera_dh):
+        std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
+        if std.stdout.read():
+            if not stat(plot_pdb_chimera_fhs_fh).st_size == 0:
+                subprocess.call("%s/bin/chimera --silent %s/lib/plot_pdb_chimera.py" % (chimera_dh,abspath(dirname(__file__))),shell=True)
+            else:
+                logging.info("already processed")  
+        else:
+            logging.error("skipping: pdb vizs: graphics drivers not present/configured.") 
+            logging.info("To configure graphics drivers for UCSF-Chimera please install mesa-utils: sudo apt-get install mesa-utils;sudo apt-get update ")  
+    else:
+        logging.info("2install UCSF-Chimera for PDB vizs")      
 
 from dms2dfe.lib.plot_mut_data_dists import plot_data_comparison_multiviolin
 
