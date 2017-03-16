@@ -642,7 +642,7 @@ def get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
         data_feats_pos=pd.read_csv(data_feats_pos_fh)
         data_feats_sub=pd.read_csv(data_feats_sub_fh)
 
-        #fsta_fh='/home/kclabws1/Documents/propro/writ/prjs/1_dms/data/GMR_dms2dfe_b161123_ml_improvement/miseq2/gmr_wt.fasta'
+        #fsta_fh='/gmr_wt.fasta'
         # if info.cctmr != 'nan':
         #     cctmr=[int("%s" % i) for i in cctmr.split(" ")]
         #     aas_len=cctmr[1]-1

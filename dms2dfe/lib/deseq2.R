@@ -7,8 +7,8 @@ counts_fh=args[1]
 annots_fh=args[2]
 tranformORnormalize=args[3]
 
-# counts_fh="/home/kclabws1/Documents/propro/writ/prjs/1_dms_software/data/datasets/APH2_Melnikov_et_al_2014/b161229_replicates/data_lbl/aas_all/all.csv"
-# annots_fh="/home/kclabws1/Documents/propro/writ/prjs/1_dms_software/data/datasets/APH2_Melnikov_et_al_2014/b161229_replicates/data_fit/aas_annot/KKA2_S__Kan14_L__avg_WRT_KKA2_Bkg__avg"
+# counts_fh="/data_lbl/aas_all/all.csv"
+# annots_fh="data_fit/aas_annot/KKA2_S__Kan14_L__avg_WRT_KKA2_Bkg__avg"
 
 colData <- read.csv(annots_fh, row.names=1)
 rownames(colData) <- gsub(" ", ".", rownames(colData))
