@@ -427,7 +427,7 @@ def make_plot_cluster_sub_matrix(data_combo,xcol,boundaries,
     # for quant in [0,0.25,0.5,0.75]:
     for quant in boundaries:
 #         print quant
-        if not plot_fh is None:
+        if plot_fh is None:
             plot_out_fh='%s_%s_to_%s.pdf' % (plot_fh,quant[0],quant[1])
         else:
             plot_out_fh=plot_fh

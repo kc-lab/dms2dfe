@@ -72,7 +72,9 @@ def get_fhs(dh,include,exclude=None):
     
 def plot_mutmap(info,data_fit_fhs=None,plot_type="mutmap"):
     if data_fit_fhs is None:
-        data_fit_fhs=get_data_fhs(info)
+        data_fit_fhs=get_fhs('%s/data_fit/aas/' % info.prj_dh,
+                            include='_WRT_',exclude='_inferred')
+
     type_form='aas'
     data_feats=pd.read_csv(info.prj_dh+"/data_feats/aas/feats_all")
     if info.clips=='nan':
@@ -106,7 +108,8 @@ def plot_submap(info,data_fit_fhs=None,plot_type="submap",
     data_feats_all_fh='%s/data_feats/aas/data_feats_all' % info.prj_dh
     data_feats_all=pd.read_csv(data_feats_all_fh).set_index('mutids')
     if data_fit_fhs is None:
-        data_fit_fhs=get_data_fhs(info)
+        data_fit_fhs=get_fhs('%s/data_fit/aas/' % info.prj_dh,
+                            include='_WRT_',exclude='_inferred')
     type_form='aas'
     for data_fit_fh in data_fit_fhs:
         data_fit_fn=basename(data_fit_fh)
@@ -130,7 +133,9 @@ def plot_submap(info,data_fit_fhs=None,plot_type="submap",
 from dms2dfe.lib.plot_mut_data_scatter import plot_scatter_mutilayered
 def plot_multisca(info,data_fit_fhs=None,plot_type='multisca'):
     if data_fit_fhs is None:
-        data_fit_fhs=get_data_fhs(info)
+        data_fit_fhs=get_fhs('%s/data_fit/aas/' % info.prj_dh,
+                            include='_WRT_',exclude='_inferred')
+    # print data_fit_fhs
     data_fit_fhs=[fh for fh in data_fit_fhs if not '_inferred' in fh]    
     # type_form='aas'
     for data_fit_fh in data_fit_fhs:
@@ -145,8 +150,6 @@ def plot_multisca(info,data_fit_fhs=None,plot_type='multisca'):
             data.loc[:,cols_labels[1]]=data.loc[:,cols[1]]
             m,s,p=plot_scatter_mutilayered(data,
                                            cols_labels[0],cols_labels[1],
-            #                          mutids_heads=mutids_heads,
-            #                          mutids_tails=mutids_tails,
                                      color_heads='b',color_tails='b',
                                      col_z_mutations='padj',
                                      zcol_threshold=0.05,
@@ -162,7 +165,8 @@ def plot_multisca(info,data_fit_fhs=None,plot_type='multisca'):
 def plot_pdb(info,data_fit_fhs=None,plot_type="pdb",
             plot_pdb_chimera_fhs_fh=None):
     if data_fit_fhs is None:
-        data_fit_fhs=get_data_fhs(info)
+        data_fit_fhs=get_fhs('%s/data_fit/aas/' % info.prj_dh,
+                            include='_WRT_',exclude='_inferred')
     type_form='aas'
     if plot_pdb_chimera_fhs_fh is None:
         plot_pdb_chimera_fhs_fh='%s/../tmp/plot_pdb_chimera_fhs' % abspath(dirname(__file__))
@@ -181,22 +185,33 @@ def plot_pdb(info,data_fit_fhs=None,plot_type="pdb",
     else:
         logging.info("already processed")
     plot_pdb_chimera_fhs_f.close()
+    if check_chimera_compatibility():
+        if not stat(plot_pdb_chimera_fhs_fh).st_size == 0:
+            subprocess.call("%s/bin/chimera --silent %s/lib/plot_pdb_chimera.py" % (chimera_dh,abspath(dirname(__file__))),shell=True)
+        # else:
+        #     logging.info("already processed")  
+
+def check_chimera_compatibility():
     try:
         chimera_dh=guess_chimera_path()[0]
     except:
         logging.info("1install UCSF-Chimera for PDB vizs")      
+        return False
     if exists(chimera_dh):
+        # Monitor is On
         std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
         if std.stdout.read():
-            if not stat(plot_pdb_chimera_fhs_fh).st_size == 0:
-                subprocess.call("%s/bin/chimera --silent %s/lib/plot_pdb_chimera.py" % (chimera_dh,abspath(dirname(__file__))),shell=True)
+            std=subprocess.Popen("xset q",shell=True,stdout=subprocess.PIPE)
+            if 'Monitor is On' in std.stdout.read():
+                return True
             else:
-                logging.info("already processed")  
+                logging.error("skipping: pdb vizs: X11 not available.")                 
         else:
             logging.error("skipping: pdb vizs: graphics drivers not present/configured.") 
             logging.info("To configure graphics drivers for UCSF-Chimera please install mesa-utils: sudo apt-get install mesa-utils;sudo apt-get update ")  
     else:
         logging.info("2install UCSF-Chimera for PDB vizs")      
+        return False
 
 from dms2dfe.lib.plot_mut_data_dists import plot_data_comparison_multiviolin
 
@@ -241,13 +256,13 @@ def plot_pies(info,data_comparison_fhs=None,plot_type='pies_selection'):
                                     include='_VERSUS_',exclude='_inferred')
     for fh in data_comparison_fhs:
         fn=basename(fh)
-        plot_fh='%s/%s.%s.pdf' % (info.prj_dh,fn,plot_type)
+        plot_fh='%s/plots/aas/%s.%s.pdf' % (info.prj_dh,fn,plot_type)
         data_fit=pd.read_csv(fh)
         col_classes='class_comparison'
         colors=['cyan', 'hotpink','lightgray']
         explodei='mid'
         fontsize=12.5
-        flag=''
+        # flag=''
         plot_pie(data_fit,col_classes,"mutids",
                  explodei=explodei,
                  figsize=[1,1],

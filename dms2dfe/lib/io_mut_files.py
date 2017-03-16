@@ -139,36 +139,37 @@ def collate_cctmr(lbl_mat_cds,cctmr):
 def transform_data_lbl(prj_dh,transform_type,
                       type_form='aas',data_lbl_col='NiA_norm',):
     data_lbl_fhs=glob("%s/data_lbl/aas/*" % prj_dh)
-    col_sep="."
-    data_lbl_all=fhs2data_combo(data_lbl_fhs,cols=[data_lbl_col],index='mutids',col_sep=col_sep)
-    data_lbl_all_dh='%s/data_lbl/%s_all' % (prj_dh,type_form)
-    if not exists(data_lbl_all_dh):
-        makedirs(data_lbl_all_dh)
-    data_lbl_all_fh='%s/%s.csv' % (data_lbl_all_dh,data_lbl_col)
-    data_lbl_all.to_csv(data_lbl_all_fh)
+    if len(data_lbl_fhs)>0:
+        col_sep="."
+        data_lbl_all=fhs2data_combo(data_lbl_fhs,cols=[data_lbl_col],index='mutids',col_sep=col_sep)
+        data_lbl_all_dh='%s/data_lbl/%s_all' % (prj_dh,type_form)
+        if not exists(data_lbl_all_dh):
+            makedirs(data_lbl_all_dh)
+        data_lbl_all_fh='%s/%s.csv' % (data_lbl_all_dh,data_lbl_col)
+        data_lbl_all.to_csv(data_lbl_all_fh)
 
-    if (transform_type=='log2') or (transform_type=='log'):
-        data_lbl_all=data_lbl_all.apply(np.log2)
-    elif transform_type=='plog':
-        data_lbl_all=data_lbl_all.apply(plog)
-    else:
-        logging.error("trnaform_type not valid: %s" % transform_type)
-        sys.exist()
-    data_lbl_col='NiA_tran'
-    data_lbl_all_fh='%s/%s.csv' % (data_lbl_all_dh,data_lbl_col)
-    data_lbl_all.to_csv(data_lbl_all_fh)
-    
-    for col in data_lbl_all:
-        data_lbl_fn,tmp=col.split('.')
-        data_lbl_fh='%s/data_lbl/%s/%s' % (prj_dh,type_form,data_lbl_fn)
-        data_lbl=pd.read_csv(data_lbl_fh).set_index('mutids')
-        if not data_lbl_col in data_lbl:
-            data_lbl_cols=data_lbl.columns.tolist()
-            data_lbl=pd.concat([data_lbl,
-                                data_lbl_all.loc[:,col]],axis=1)
-            data_lbl.columns=data_lbl_cols+[data_lbl_col]
-            data_lbl.index.name='mutids'
-            data_lbl.to_csv(data_lbl_fh)
+        if (transform_type=='log2') or (transform_type=='log'):
+            data_lbl_all=data_lbl_all.apply(np.log2)
+        elif transform_type=='plog':
+            data_lbl_all=data_lbl_all.apply(plog)
+        else:
+            logging.error("trnaform_type not valid: %s" % transform_type)
+            sys.exist()
+        data_lbl_col='NiA_tran'
+        data_lbl_all_fh='%s/%s.csv' % (data_lbl_all_dh,data_lbl_col)
+        data_lbl_all.to_csv(data_lbl_all_fh)
+        
+        for col in data_lbl_all:
+            data_lbl_fn,tmp=col.split('.')
+            data_lbl_fh='%s/data_lbl/%s/%s' % (prj_dh,type_form,data_lbl_fn)
+            data_lbl=pd.read_csv(data_lbl_fh).set_index('mutids')
+            if not data_lbl_col in data_lbl:
+                data_lbl_cols=data_lbl.columns.tolist()
+                data_lbl=pd.concat([data_lbl,
+                                    data_lbl_all.loc[:,col]],axis=1)
+                data_lbl.columns=data_lbl_cols+[data_lbl_col]
+                data_lbl.index.name='mutids'
+                data_lbl.to_csv(data_lbl_fh)
         
 def transform_data_lbl_deseq(prj_dh,transform_type,rscript_fh,type_form='aas'):
     data_lbl_fhs=glob("%s/data_lbl/aas/*" % prj_dh)

@@ -50,7 +50,7 @@ def pipeline(prj_dh,step=None,test=False):
         if step==0.2 or step==None:
             ana0_fastq2dplx.main(prj_dh)
         if step==0.3 or step==None:
-            ana0_fastq2sbam.main(prj_dh)
+            ana0_fastq2sbam.main(prj_dh,test)
         if step==1 or step==None:
             ana1_sam2mutmat.main(prj_dh)
         if step==2 or step==None:

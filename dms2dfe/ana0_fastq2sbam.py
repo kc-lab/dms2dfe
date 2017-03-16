@@ -15,7 +15,7 @@ from dms2dfe import configure
 from dms2dfe.lib.io_seq_files import getusablefastqs_list,fastq2qcd,qcd2sbam
 #import numpy as np
 
-def main(prj_dh):
+def main(prj_dh,test=False):
     """
     This optional modules preprocesses unaligned .fastq files.
 
@@ -30,7 +30,7 @@ def main(prj_dh):
     :param prj_dh: path to project directory
     """
     logging.info("start")
-    global trimmomatic_fh,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtools_fh
+    global trimmomatic_fh,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtools_fh,bowtie2_com
 
     if not exists(prj_dh) :
         logging.error("Could not find '%s'\n" % prj_dh)
@@ -53,13 +53,16 @@ def main(prj_dh):
                         % (bowtie2_fh,fsta_fh,splitext(bt2_ref_fh)[0],bt2_ref_fh)
         subprocess.call(bowtie_ref_com,shell=True)
         logging.info("bt2_ref_fh do not exist, made one.")
-    pool=Pool(processes=int(cores))  
     fastqs_list=getusablefastqs_list(prj_dh)
     # print fastqs_list
     if len(fastqs_list)!=0:
-        # pooled(fastqs_list[0])
-        pool.map(pooled,fastqs_list)
-        pool.close(); pool.join()
+        if test:
+            for fastq in fastqs_list:
+                pooled(fastq)
+        else:
+            pool=Pool(processes=int(cores))  
+            pool.map(pooled,fastqs_list)
+            pool.close(); pool.join()
     else:
         logging.info("already processed")  
     # cfg_h5.close()
@@ -71,8 +74,12 @@ def pooled(fastq_fhs_list):
     
     :param fastq_fhs_list: R1 read of fastq tuple with R1 and R2 if otherwise paired.    
     """
-    fastq2qcd(fastq_fhs_list,trimmomatic_fh,trimmomatic_com=trimmomatic_com)
+    fastq2qcd(fastq_fhs_list,trimmomatic_fh)
     qcd2sbam(fastq_fhs_list,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtools_fh,bowtie2_com=bowtie2_com)
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    if len(sys.argv)==3:
+        test=sys.argv[2]
+    else:
+        test=False
+    main(sys.argv[1],test=test)

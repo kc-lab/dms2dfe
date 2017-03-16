@@ -58,77 +58,47 @@ def plot_sc(data,ax,xcol,ycol,ylabel='',
             space=0.2,
             axlims=None,
            ):
+    if (not zcol is None) and (sum(~pd.isnull(data.loc[:,zcol]))==0):
+        zcol=None
     if zcol is None:
         ax=data.plot.scatter(xcol,ycol,edgecolor='none',alpha=0.6,
                              c='yellowgreen',
                              ax=ax)
     else:
         data=data.sort_values(by=zcol,ascending=False)
-        # print data.loc[:,zcol]
         ax.scatter(x=data.loc[:,xcol],
                    y=data.loc[:,ycol],
                    edgecolor='none',
                    alpha=0.6,
-                   # c='lightgray'
                    c=data.loc[:,zcol],
                   cmap='summer_r',
-                   # vmin=-100,
-                   # vmax=0,
                   )
         ax.set_xlabel(xcol)
-        # signi=data.loc[:,zcol]<zcol_threshold
-        # rest=data.loc[:,zcol]>zcol_threshold
-        # ax.scatter(x=data.loc[rest,xcol],
-        #            y=data.loc[rest,ycol],
-        #            edgecolor='none',
-        #            alpha=0.6,
-        #            c='lightgray'
-        #            # c=data.loc[:,zcol],
-        #           # cmap='gray',
-        #           )
-        # ax.scatter(x=data.loc[signi,xcol],
-        #            y=data.loc[signi,ycol],
-        #            edgecolor='none',
-        #            alpha=0.6,
-        #            c='darkgray'
-        #            # c=data.loc[:,zcol],
-        #           # cmap='gray',
-        #           )
-    # del data[zcol] 
     if len(heads)==0 and len(tails)==0:
         heads,tails=gettopnlastdiff(data,ycol,xcol,zcol=zcol,zcol_threshold=zcol_threshold)
-        # print heads
-        # print tails
-    # if color_sca is None:
     color_sca='none'
     color_edge='royalblue'
     if (color_dots=='heads') or (color_dots=='both'):
-        # ax=data.loc[heads,:].plot.scatter(xcol,ycol,
         ax.scatter(x=data.loc[heads,xcol],y=data.loc[heads,ycol],
                                           edgecolor=color_edge,
                                           facecolors=color_sca,
-                                          # alpha=0.6,
-                                          # c=color_sca,
-                                          # ax=ax
                                          )
         try:
             repel_labels(ax, data.loc[heads, xcol], data.loc[heads, ycol], heads, k=repel,label_color=color_heads)
         except:
             for s in heads:
-                ax.text(data.loc[s, xcol], data.loc[s, ycol], s,color=color_tails)    
+                ax.text(data.loc[s, xcol], data.loc[s, ycol], s,color=color_heads)    
     if (color_dots=='tails') or (color_dots=='both'):
         ax.scatter(x=data.loc[tails,xcol],y=data.loc[tails,ycol],
                                           edgecolor=color_edge,
                                           facecolors=color_sca,
-                                          # alpha=0.6,
-                                          # c=color_sca,
-                                          # ax=ax
                                           )    
         try:
             repel_labels(ax, data.loc[tails, xcol], data.loc[tails, ycol], tails, k=repel,label_color=color_tails)
         except:
             for s in tails:
-                ax.text(data.loc[s, xcol], data.loc[s, ycol], s,color=color_tails)
+                if s in data.index:
+                    ax.text(data.loc[s, xcol], data.loc[s, ycol], s,color=color_tails)
     ax.set_ylabel(ylabel)
     if diagonal:
         ax.plot([100,-100],[100,-100],linestyle='-',color='darkgray',zorder=0)
@@ -167,6 +137,7 @@ def plot_scatter_mutilayered(data_all,xcol,ycol,
     data_all_mut=data_all.copy()
     if not col_z_mutations is None:
         data_all=data_all.drop(col_z_mutations,axis=1)
+    # sum(~pd.isnull(data_all_mut.loc[:,col_z_mutations]))
     data_all_pos=pd.concat([data2mut_matrix(data_all.reset_index(),xcol,'mut','aas').mean(),
                             data2mut_matrix(data_all.reset_index(),ycol,'mut','aas').mean(),
                             data2mut_matrix(data_all.reset_index(),xcol,'mut','aas').std(),
@@ -206,7 +177,6 @@ def plot_scatter_mutilayered(data_all,xcol,ycol,
                      fmt="none",ecolor='gray',alpha=0.15, 
                      capthick=0,
                      zorder=0)
-
     ax1,mutids_heads,mutids_tails,axlims=plot_sc(data_all_mut,ax1,xcol,ycol,ylabel=ycol,
                 heads=mutids_heads,tails=mutids_tails,
                 zcol=col_z_mutations,zcol_threshold=zcol_threshold,

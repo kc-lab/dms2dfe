@@ -31,8 +31,10 @@ def main(prj_dh):
         sys.exit()
     configure.main(prj_dh)
     from dms2dfe.tmp import info
-    if not exists(prj_dh+"/plots"):
-        makedirs(prj_dh+"/plots")
+    for type_form in ['aas','cds']:
+        plots_dh='%s/plots/%s' % (prj_dh,type_form)
+        if not exists(plots_dh):
+            makedirs(plots_dh)
         
     plot_coverage(info)
     plot_mutmap(info)
