@@ -295,117 +295,117 @@ def plotacc(data_feats,ax):
     print [c for c in data_feats.columns if 'ccessib' in c]
     return ax
 
-def plot_data_fit_heatmap(data_fit,type_form,col,\
-                          cmap="coolwarm",center=0,data_feats=None,xticklabels=None,plot_fh=None,cbar_label=None):
-    """
-    This plots heatmap of fitness values.
+# def plot_data_fit_heatmap(data_fit,type_form,col,\
+#                           cmap="coolwarm",center=0,data_feats=None,xticklabels=None,plot_fh=None,cbar_label=None):
+#     """
+#     This plots heatmap of fitness values.
     
-    :param data_fit: input data (`data_lbl` or `data_fit`) (dataframe).
-    :param type_form: type of values ["aas" : amino acid | "cds" : codons].
-    :param col: eg. columns with values. col for data_fit
-    :param cmap: name of colormap (str).
-    :param center: center colormap to this value (int).
-    :param data_feats: input features `data_feats`.
-    :param xticklabels: xticklabels of heatmap ["None" : reference index | "seq" : reference sequence].
-    """
-    from dms2dfe.lib.io_nums import str2num
-    from dms2dfe.lib.global_vars import aas_21,cds_64
-    import seaborn as sns
+#     :param data_fit: input data (`data_lbl` or `data_fit`) (dataframe).
+#     :param type_form: type of values ["aas" : amino acid | "cds" : codons].
+#     :param col: eg. columns with values. col for data_fit
+#     :param cmap: name of colormap (str).
+#     :param center: center colormap to this value (int).
+#     :param data_feats: input features `data_feats`.
+#     :param xticklabels: xticklabels of heatmap ["None" : reference index | "seq" : reference sequence].
+#     """
+#     from dms2dfe.lib.io_nums import str2num
+#     from dms2dfe.lib.global_vars import aas_21,cds_64
+#     import seaborn as sns
     
-    data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
-    refis=[str2num(i) for i in data_fit_heatmap.columns.tolist()]
-    refis=np.sort(refis)
-    refrefis=pd.DataFrame(data_fit_heatmap.columns.tolist(),index=refis,columns=["refrefi"])
+#     data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
+#     refis=[str2num(i) for i in data_fit_heatmap.columns.tolist()]
+#     refis=np.sort(refis)
+#     refrefis=pd.DataFrame(data_fit_heatmap.columns.tolist(),index=refis,columns=["refrefi"])
 
-    data_fit_heatmap2=pd.DataFrame(index=data_fit_heatmap.index)
-    for i in range(1,refis[-1]+1):
-        if i not in refis:
-            data_fit_heatmap2.loc[:,i]=np.nan
-        else :
-            data_fit_heatmap2.loc[:,refrefis.loc[i,"refrefi"]]=data_fit_heatmap.loc[:,refrefis.loc[i,"refrefi"]]
+#     data_fit_heatmap2=pd.DataFrame(index=data_fit_heatmap.index)
+#     for i in range(1,refis[-1]+1):
+#         if i not in refis:
+#             data_fit_heatmap2.loc[:,i]=np.nan
+#         else :
+#             data_fit_heatmap2.loc[:,refrefis.loc[i,"refrefi"]]=data_fit_heatmap.loc[:,refrefis.loc[i,"refrefi"]]
 
-    data_syn_locs=data_fit.loc[(data_fit.loc[:,"ref"]==data_fit.loc[:,"mut"]),["mutids","ref"]]
-    data_syn_locs["refi"]=[str2num(i)-1+0.05 for i in data_syn_locs["mutids"]]
+#     data_syn_locs=data_fit.loc[(data_fit.loc[:,"ref"]==data_fit.loc[:,"mut"]),["mutids","ref"]]
+#     data_syn_locs["refi"]=[str2num(i)-1+0.05 for i in data_syn_locs["mutids"]]
 
-    data_nan_locs=data_fit.loc[pd.isnull(data_fit.loc[:,col]),["mutids","ref","mut"]]
-    data_nan_locs["refi"]=[str2num(i)-1+0.05 for i in data_nan_locs["mutids"]]
-
-
-    if "aas" in type_form:
-        data_syn_locs["muti"]=[20-aas_21.index(i)+0.15 for i in data_syn_locs["ref"]]
-        data_nan_locs["muti"]=[20-aas_21.index(i)+0.15 for i in data_nan_locs["mut"]]
-
-    if "cds" in type_form:
-        cds_64.sort()
-        data_syn_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_syn_locs["ref"]]
-        data_nan_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_nan_locs["mut"]]
-
-    # fig=
-    plt.figure(figsize=(80, 12),dpi=300)      
-    # fig=plt.figure(figsize=(40, 6),dpi=500)      
-    gs = gridspec.GridSpec(3, 1,height_ratios=[1,1,32])
+#     data_nan_locs=data_fit.loc[pd.isnull(data_fit.loc[:,col]),["mutids","ref","mut"]]
+#     data_nan_locs["refi"]=[str2num(i)-1+0.05 for i in data_nan_locs["mutids"]]
 
 
-    ax_all=plt.subplot(gs[:])
-    ax_all.set_axis_off()
+#     if "aas" in type_form:
+#         data_syn_locs["muti"]=[20-aas_21.index(i)+0.15 for i in data_syn_locs["ref"]]
+#         data_nan_locs["muti"]=[20-aas_21.index(i)+0.15 for i in data_nan_locs["mut"]]
 
-    ax = plt.subplot(gs[2])
-    result=sns.heatmap(data_fit_heatmap2,cmap=cmap,ax=ax)
-    ax.set_xlabel('Wild type',fontdict={'size': 20})
-    ax.set_ylabel('Mutation to',fontdict={'size': 20})
-    cbar=ax.figure.colorbar(ax.collections[0])
-    if cbar_label==None:
-        cbar.set_label(("$%s$" % col),fontdict={'size': 20})
-    else:
-        cbar.set_label(("%s" % cbar_label),fontdict={'size': 20})
-    # print len(data_fit_heatmap2.columns.tolist())
-    # print len(range(1,len(data_fit_heatmap2.columns)+1,1))
-    if xticklabels=="seq":
-        ax.set_xticklabels(data_fit_heatmap2.columns.tolist(),rotation=90)
-    else:
-        ax.set_xticks(np.arange(1,len(data_fit_heatmap2.columns)+1,1)-0.35)
-        ax.set_xticklabels(range(1,len(data_fit_heatmap2.columns)+1,1),rotation=90)
-    yticklabels=data_fit_heatmap2.index.values.tolist()
-    ax.set_yticklabels(yticklabels[::-1],rotation=0)
+#     if "cds" in type_form:
+#         cds_64.sort()
+#         data_syn_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_syn_locs["ref"]]
+#         data_nan_locs["muti"]=[63-cds_64.index(i)+0.15 for i in data_nan_locs["mut"]]
 
-    data_syn_locs=data_syn_locs.reset_index(drop=True)
-    for i in data_syn_locs.reset_index().index.values:
-        ax.text(data_syn_locs.loc[i,"refi"],data_syn_locs.loc[i,"muti"],r"$\plus$")#,color='g')
+#     # fig=
+#     plt.figure(figsize=(80, 12),dpi=300)      
+#     # fig=plt.figure(figsize=(40, 6),dpi=500)      
+#     gs = gridspec.GridSpec(3, 1,height_ratios=[1,1,32])
 
-    data_nan_locs=data_nan_locs.reset_index(drop=True)
-    for i in data_nan_locs.index.values:
-        ax.text(data_nan_locs.loc[i,"refi"],data_nan_locs.loc[i,"muti"],r"$\otimes$")#,color='gray')
 
-    if not data_feats is None: 
-        if not 'aasi' in data_feats:
-            if 'refi' in data_feats:
-                data_feats.loc[:,'aasi']=data_feats.loc[:,'refi']
-            elif 'refrefi' in data_feats:
-                data_feats.loc[:,'aasi']=[str2num(s) for s in data_feats.loc[:,'refrefi']]        
-        data_feats=data_feats.sort('aasi',ascending=True)
-        ax_ss = plt.subplot(gs[0])
-        ax_acc = plt.subplot(gs[1])
+#     ax_all=plt.subplot(gs[:])
+#     ax_all.set_axis_off()
 
-        ax_pos=ax.get_position()
-        ax_ss_pos=ax_ss.get_position()
-        ax_ss.set_position([ax_ss_pos.x0,ax_ss_pos.y0-0.05,ax_pos.width,ax_ss_pos.height*2])
-        # ax_ss=plt.axes([ax_ss_pos.x0,ax_ss_pos.y0,ax_pos.width,ax_ss_pos.height])
-        ax_ss.set_axis_off()
-        ax_acc_pos=ax_acc.get_position()
-        ax_acc.set_position([ax_acc_pos.x0,ax_acc_pos.y0-0.03,ax_pos.width,ax_acc_pos.height*2])
-        ax_acc.set_axis_off()
+#     ax = plt.subplot(gs[2])
+#     result=sns.heatmap(data_fit_heatmap2,cmap=cmap,ax=ax)
+#     ax.set_xlabel('Wild type',fontdict={'size': 20})
+#     ax.set_ylabel('Mutation to',fontdict={'size': 20})
+#     cbar=ax.figure.colorbar(ax.collections[0])
+#     if cbar_label==None:
+#         cbar.set_label(("$%s$" % col),fontdict={'size': 20})
+#     else:
+#         cbar.set_label(("%s" % cbar_label),fontdict={'size': 20})
+#     # print len(data_fit_heatmap2.columns.tolist())
+#     # print len(range(1,len(data_fit_heatmap2.columns)+1,1))
+#     if xticklabels=="seq":
+#         ax.set_xticklabels(data_fit_heatmap2.columns.tolist(),rotation=90)
+#     else:
+#         ax.set_xticks(np.arange(1,len(data_fit_heatmap2.columns)+1,1)-0.35)
+#         ax.set_xticklabels(range(1,len(data_fit_heatmap2.columns)+1,1),rotation=90)
+#     yticklabels=data_fit_heatmap2.index.values.tolist()
+#     ax.set_yticklabels(yticklabels[::-1],rotation=0)
 
-        ax_ss=plotss(data_feats,ax_ss)
-        ax_acc=plotacc(data_feats,ax_acc)
-    # extent = ax_all.get_window_extent().transformed(ax_all.figure.dpi_scale_trans.inverted())
-    # extent.set_points(np.array([[5,0],[36,11]]))    
-    # extent.set_points(np.array([[5,0],[36,11]]))    
-    plt.figtext(0.125, .02, "%s: Synonymous mutations \n%s: Mutations for which data is not available" % (r"$\plus$",r"$\otimes$"),\
-                fontdict={'size': 20})
-    if plot_fh!=None:
-        plt.savefig(plot_fh,format='pdf') 
-        plt.clf();plt.close()
-    return ax_all
+#     data_syn_locs=data_syn_locs.reset_index(drop=True)
+#     for i in data_syn_locs.reset_index().index.values:
+#         ax.text(data_syn_locs.loc[i,"refi"],data_syn_locs.loc[i,"muti"],r"$\plus$")#,color='g')
+
+#     data_nan_locs=data_nan_locs.reset_index(drop=True)
+#     for i in data_nan_locs.index.values:
+#         ax.text(data_nan_locs.loc[i,"refi"],data_nan_locs.loc[i,"muti"],r"$\otimes$")#,color='gray')
+
+#     if not data_feats is None: 
+#         if not 'aasi' in data_feats:
+#             if 'refi' in data_feats:
+#                 data_feats.loc[:,'aasi']=data_feats.loc[:,'refi']
+#             elif 'refrefi' in data_feats:
+#                 data_feats.loc[:,'aasi']=[str2num(s) for s in data_feats.loc[:,'refrefi']]        
+#         data_feats=data_feats.sort('aasi',ascending=True)
+#         ax_ss = plt.subplot(gs[0])
+#         ax_acc = plt.subplot(gs[1])
+
+#         ax_pos=ax.get_position()
+#         ax_ss_pos=ax_ss.get_position()
+#         ax_ss.set_position([ax_ss_pos.x0,ax_ss_pos.y0-0.05,ax_pos.width,ax_ss_pos.height*2])
+#         # ax_ss=plt.axes([ax_ss_pos.x0,ax_ss_pos.y0,ax_pos.width,ax_ss_pos.height])
+#         ax_ss.set_axis_off()
+#         ax_acc_pos=ax_acc.get_position()
+#         ax_acc.set_position([ax_acc_pos.x0,ax_acc_pos.y0-0.03,ax_pos.width,ax_acc_pos.height*2])
+#         ax_acc.set_axis_off()
+
+#         ax_ss=plotss(data_feats,ax_ss)
+#         ax_acc=plotacc(data_feats,ax_acc)
+#     # extent = ax_all.get_window_extent().transformed(ax_all.figure.dpi_scale_trans.inverted())
+#     # extent.set_points(np.array([[5,0],[36,11]]))    
+#     # extent.set_points(np.array([[5,0],[36,11]]))    
+#     plt.figtext(0.125, .02, "%s: Synonymous mutations \n%s: Mutations for which data is not available" % (r"$\plus$",r"$\otimes$"),\
+#                 fontdict={'size': 20})
+#     if plot_fh!=None:
+#         plt.savefig(plot_fh,format='pdf') 
+#         plt.clf();plt.close()
+#     return ax_all
 
 
 def plot_data_comparison_bar(data_comparison,plot_fh=None,index=[]):
@@ -476,28 +476,28 @@ def plot_data_comparison_violin(data_comparison,plot_fh=None,stars=True):
         plt.savefig(plot_fh,format='pdf')
         plt.clf();plt.close()
     return ax
-def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col_cluster=False,row_cluster=True,plot_fh=None):
-    """
-    This clusters heatmaps.
+# def plot_data_fit_clustermap(data_fit,type_form,col,cmap="coolwarm",center=0,col_cluster=False,row_cluster=True,plot_fh=None):
+#     """
+#     This clusters heatmaps.
     
-    :param data_fit: fitness data
-    :param type_form: type of mutants ["aas" : amino acid | "cds" : codon level]
-    :param col: eg. columns with values. col for data_fit
-    """
-    import seaborn as sns
-    data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
-    plt.figure()
-    ax=sns.clustermap(data_fit_heatmap.fillna(0),method='average', metric='euclidean',\
-                      col_cluster=col_cluster,row_cluster=row_cluster)
-    ax.ax_heatmap.set_xlabel('Wild type')
-    ax.ax_heatmap.set_ylabel('Mutation to')
-    if not col_cluster:
-        ax.ax_heatmap.set_xticks(range(1,len(data_fit_heatmap.columns),20))
-        ax.ax_heatmap.set_xticklabels(range(1,len(data_fit_heatmap.columns),20),rotation=90)
-    if plot_fh!=None:
-        plt.savefig(plot_fh,format='pdf')
-        plt.clf();plt.close()
-    return ax
+#     :param data_fit: fitness data
+#     :param type_form: type of mutants ["aas" : amino acid | "cds" : codon level]
+#     :param col: eg. columns with values. col for data_fit
+#     """
+#     import seaborn as sns
+#     data_fit_heatmap  =data2mut_matrix(data_fit,col,'mut',type_form)
+#     plt.figure()
+#     ax=sns.clustermap(data_fit_heatmap.fillna(0),method='average', metric='euclidean',\
+#                       col_cluster=col_cluster,row_cluster=row_cluster)
+#     ax.ax_heatmap.set_xlabel('Wild type')
+#     ax.ax_heatmap.set_ylabel('Mutation to')
+#     if not col_cluster:
+#         ax.ax_heatmap.set_xticks(range(1,len(data_fit_heatmap.columns),20))
+#         ax.ax_heatmap.set_xticklabels(range(1,len(data_fit_heatmap.columns),20),rotation=90)
+#     if plot_fh!=None:
+#         plt.savefig(plot_fh,format='pdf')
+#         plt.clf();plt.close()
+#     return ax
 
 def data2sub_matrix(data_fit,values_col,index_col,type_form,aggfunc='mean'): 
     """

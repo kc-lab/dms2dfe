@@ -7,6 +7,10 @@ import sys
 from os import makedirs,stat
 from os.path import splitext, join, exists, isdir,basename,abspath,dirname
 import pandas as pd 
+from dms2dfe.lib.io_strs import get_logger
+logging=get_logger()
+from dms2dfe import configure
+from dms2dfe.lib.io_plot_files import plot_coverage,plot_mutmap,plot_submap,plot_multisca,plot_pdb,plot_violin,plot_pies
 
 def main(prj_dh):
     """
@@ -31,8 +35,8 @@ def main(prj_dh):
         makedirs(prj_dh+"/plots")
         
     plot_coverage(info)
-    plot_heatmap(info)
-    plot_clustermap(info)
+    plot_mutmap(info)
+    plot_submap(info)
     plot_multisca(info)
     plot_pdb(info)
     plot_violin(info)

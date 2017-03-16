@@ -367,6 +367,7 @@ def run_RF_classi(data_all,X_cols,y_coln,
           'y_score':grid_search.predict_proba(X_test),
           'classes':classes,
           'X_cols':X_cols,
+          'y_coln':y_coln,
           'features':X_cols,
           'featimps':featimps,
           'y_pred':y_pred,
@@ -477,6 +478,7 @@ def run_RF_regress(data_all,X_cols,y_coln,
           'y_train':y_train,
           'y_test':y_test,
           'X_cols':X_cols,
+          'y_coln':y_coln,
           'features':X_cols,
           'featimps':featimps,
           'y_pred':y_pred,
@@ -607,7 +609,6 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
             data_classi_train=pd.read_csv(data_fh.replace("data_ml_","data_ml_classi_train_"))
             data_classi_train  =data_classi_train.set_index("mutids",drop=True)
             #regress
-            # y_coln_regress="FCA_norm"
             y_coln_regress=data_fit_col
             data_regress_train=data_classi_train                
             data_regress_train=X_cols2binary(data_regress_train,[y_coln_classi])

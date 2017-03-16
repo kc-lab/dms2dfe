@@ -111,7 +111,11 @@ def plot_sc(data,ax,xcol,ycol,ylabel='',
                                           # c=color_sca,
                                           # ax=ax
                                          )
-        repel_labels(ax, data.loc[heads, xcol], data.loc[heads, ycol], heads, k=repel,label_color=color_heads)
+        try:
+            repel_labels(ax, data.loc[heads, xcol], data.loc[heads, ycol], heads, k=repel,label_color=color_heads)
+        except:
+            for s in heads:
+                ax.text(data.loc[s, xcol], data.loc[s, ycol], s,color=color_tails)    
     if (color_dots=='tails') or (color_dots=='both'):
         ax.scatter(x=data.loc[tails,xcol],y=data.loc[tails,ycol],
                                           edgecolor=color_edge,
@@ -120,8 +124,11 @@ def plot_sc(data,ax,xcol,ycol,ylabel='',
                                           # c=color_sca,
                                           # ax=ax
                                           )    
-        repel_labels(ax, data.loc[tails, xcol], data.loc[tails, ycol], tails, k=repel,label_color=color_tails)
-
+        try:
+            repel_labels(ax, data.loc[tails, xcol], data.loc[tails, ycol], tails, k=repel,label_color=color_tails)
+        except:
+            for s in tails:
+                ax.text(data.loc[s, xcol], data.loc[s, ycol], s,color=color_tails)
     ax.set_ylabel(ylabel)
     if diagonal:
         ax.plot([100,-100],[100,-100],linestyle='-',color='darkgray',zorder=0)

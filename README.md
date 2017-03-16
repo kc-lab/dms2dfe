@@ -6,7 +6,8 @@ dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of 
 
 ##Installation
 
-	git clone https://github.com/kc-lab/dms2dfe.git
+Download the latest release from https://github.com/kc-lab/dms2dfe/releases .
+
 	cd dms2dfe
 	pip install .
 

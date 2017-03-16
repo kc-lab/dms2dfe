@@ -18,7 +18,6 @@ warnings.simplefilter(action = "ignore", category = DeprecationWarning)
 # import logging
 from dms2dfe.lib.io_strs import get_logger
 logging=get_logger()
-# logging.basicConfig(filename="dms2dfe_%s.log" % (make_pathable_string(str(datetime.datetime.now()))),level=logging.DEBUG)
 from dms2dfe import configure
 from dms2dfe.lib.io_dfs import set_index
 from dms2dfe.lib.io_ml import data_fit2ml,get_cols_del,make_data_combo,data_combo2ml
@@ -107,6 +106,7 @@ def main(prj_dh,test=False):
                     data_combo.to_csv(data_combo_fh)
                 else:
                     data_combo=pd.read_csv(data_combo_fh).set_index('mutids')
+                logging.info('ml: start')
                 data_combo2ml(data_combo,basename(data_fit_dm_fh),dirname(data_combo_fh),dirname(data_combo_fh),
                             ycoln=ycol,col_idx='mutids',ml_type='cls',
                             middle_percentile_skipped=0.1,force=False,)

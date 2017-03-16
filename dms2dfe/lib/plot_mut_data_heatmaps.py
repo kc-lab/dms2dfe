@@ -205,7 +205,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,
     ax_all=plt.subplot(gs[:])
     sns.set(font_scale=2)
     ax = plt.subplot(gs[2])
-    print data_fit_heatmap2.shape
+    # print data_fit_heatmap2.shape
     sns.heatmap(data_fit_heatmap2,cmap=cmap,ax=ax,
         vmin=cbar_lims[0],vmax=cbar_lims[1]
         )
@@ -217,7 +217,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,
         ax.set_xticklabels(data_fit_heatmap2.columns.tolist(),rotation=90)
     else:
         ax.set_xticks(np.arange(0,refi_max-refi_min,xticklabels_stepsize)+0.5)
-        print refi_min,refi_max,xticklabels_stepsize
+        # print refi_min,refi_max,xticklabels_stepsize
         ax.set_xticklabels(range(refi_min,refi_max,xticklabels_stepsize),rotation=90)
     yticklabels=data_fit_heatmap2.index.values.tolist()
     ax.set_yticklabels(yticklabels[::-1],rotation=0,)
@@ -318,7 +318,7 @@ def plot_clustermap(data_fit_heatmap,
 
     # ax1=plt.subplot(121)
     # ax2=plt.subplot(122)
-    print vmin  
+    # print vmin  
     ax=sns.clustermap(data_fit_heatmap.fillna(0),
                     method='average', metric='euclidean',
                       col_cluster=col_cluster,row_cluster=row_cluster,
@@ -382,3 +382,72 @@ def plot_clustermap(data_fit_heatmap,
         # plt.savefig(plot_fh+'.svg',format='svg')
         plt.clf();plt.close()
     return ax
+
+from dms2dfe.lib.io_dfs import denanrows
+from dms2dfe.lib.plot_mut_data import data2sub_matrix
+from dms2dfe.lib.io_plots import get_rgb_colors
+
+def make_plot_cluster_sub_matrix(data_combo,xcol,boundaries,
+                                 feats,
+                                 feats_labels,
+                                 row_cluster=True,
+                                 col_cluster=True,
+                                 test=False,
+                                 plot_fh=None):
+    # data_combo_fh='%s/data_feats/data_fit_boxplot_per_feat_%s.csv' % (prj_dh,data_fit_fn)
+    # data_combo=pd.read_csv(data_combo_fh).set_index('mutids')
+    if not 'mutids' in data_combo:
+        data_combo=data_combo.reset_index()
+#     xcol='%s: FiA' % data_fit_fn
+    cols=[xcol,'mut','ref','refrefi']+feats
+    for col in cols:
+        if not col in data_combo:
+            data_combo.loc[:,col]=mutids_converter(data_combo.loc[:,'mutids'],
+                                                   col, 'aas')
+            # break
+    data_combo=denanrows(data_combo.loc[:,cols])
+    # return data_combo.shape
+    
+    # data_combo.head()
+    featn=feats[1]
+    data_feat_ref=pd.DataFrame()
+    data_feat_ref.loc[:,featn]=data2sub_matrix(data_combo, featn,
+                                               'mut','aas',
+                                               aggfunc='mean').sum()
+    data_feat_ref.loc[(data_feat_ref.loc[:,featn]==0),featn]=data_feat_ref.loc[:,featn].min()
+#     print data_feat_ref.loc[:,featn]
+    col_colors=get_rgb_colors(data_feat_ref.loc[:,featn])
+    featn=feats[0]
+    data_feat_ref.loc[:,featn]=data2sub_matrix(data_combo, featn,
+                                               'mut','aas',
+                                               aggfunc='mean').T.sum()
+    data_feat_ref.loc[(data_feat_ref.loc[:,featn]==0),featn]=data_feat_ref.loc[:,featn].min()
+    row_colors=get_rgb_colors(data_feat_ref.loc[:,featn])
+    
+    # for quant in [0,0.25,0.5,0.75]:
+    for quant in boundaries:
+#         print quant
+        if not plot_fh is None:
+            plot_out_fh='%s_%s_to_%s.pdf' % (plot_fh,quant[0],quant[1])
+        else:
+            plot_out_fh=plot_fh
+        # print plot_out_fh
+        cutoff_dw=data_combo.loc[:,featn].quantile(q=quant[0])
+        cutoff_up=data_combo.loc[:,featn].quantile(q=quant[1])
+        data=data_combo.loc[((data_combo.loc[:,featn]>cutoff_dw) & (data_combo.loc[:,featn]<=cutoff_up)),cols]
+        sub_matrix=data2sub_matrix(data, xcol,'mut','aas', aggfunc='mean')
+        ax=plot_clustermap(sub_matrix,
+                            row_cluster=row_cluster,
+                            col_cluster=col_cluster,
+                            row_cluster_label=feats_labels[0],
+                            col_cluster_label=feats_labels[1],                           
+                            row_colors=row_colors,
+                            col_colors=col_colors,
+                            cax_pos=[0.75, .2, .02, .45],
+                            cax_label='$F_{i}$',#'$F_{i}$\n(average)',
+                            figsize=[6,4],
+                            plot_fh=plot_out_fh
+                                )
+        if test:
+            return ax
+            break

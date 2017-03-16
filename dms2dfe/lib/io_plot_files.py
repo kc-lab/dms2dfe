@@ -22,9 +22,8 @@ from Bio import SeqIO
 from pychimera.pychimera import guess_chimera_path
 import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
-from dms2dfe import configure
-from dms2dfe.lib.plot_mut_data import plot_data_lbl_repli,plot_data_fit_scatter,plot_data_fit_dfe,plot_data_fit_heatmap,data2mut_matrix,plot_data_comparison_bar,plot_data_fit_clustermap,plot_sub_matrix,plot_cov,plot_data_comparison_violin
-# from dms2dfe.lib.io_seq_files import getwildtypecov
+from dms2dfe.lib.plot_mut_data import plot_data_lbl_repli,plot_data_fit_scatter,plot_data_fit_dfe,data2mut_matrix,plot_data_comparison_bar,plot_sub_matrix,plot_cov,plot_data_comparison_violin
+from dms2dfe.lib.plot_mut_data_heatmaps import plot_data_fit_heatmap,make_plot_cluster_sub_matrix
 from dms2dfe.lib.plot_pdb import vector2bfactor
 from dms2dfe.lib.global_vars import mut_types_form
 from dms2dfe.lib.io_dfs import denanrows
@@ -71,44 +70,69 @@ def get_fhs(dh,include,exclude=None):
     fhs=np.unique(fhs)
     return fhs
     
-def plot_heatmap(info,data_fit_fhs=None,plot_type="heatmap"):
+def plot_mutmap(info,data_fit_fhs=None,plot_type="mutmap"):
     if data_fit_fhs is None:
         data_fit_fhs=get_data_fhs(info)
     type_form='aas'
     data_feats=pd.read_csv(info.prj_dh+"/data_feats/aas/feats_all")
-
+    if info.clips=='nan':
+        clips=[]
+    # else:
+        
     for data_fit_fh in data_fit_fhs:
         data_fit_fn=basename(data_fit_fh)
         data_fit=pd.read_csv(data_fit_fh)
         plot_fh="%s/plots/%s/%s.%s.pdf" % (info.prj_dh,type_form,data_fit_fn,plot_type) 
         if not exists(plot_fh):
-            if "_inferred" in basename(plot_fh):
-                cbar_label="Fitness scores ($F_{i}$)"
-            else:
-                cbar_label="Log fold change ($FC_{i}$)"
-            plot_data_fit_heatmap(data_fit,type_form,col='FiA',data_feats=data_feats,\
-                                  plot_fh=plot_fh,cbar_label=cbar_label)
-    
-def plot_clustermap(info,data_fit_fhs=None,plot_type="clustermap"):
+            cbar_label="Fitness scores ($F_{i}$)"
+            plot_data_fit_heatmap(data_fit,type_form,col='FiA',
+                          cmap="coolwarm",
+                          center=0,data_feats=data_feats,
+                          xticklabels_stepsize=5,
+                          note_loc=[0,0],
+                          refi_lims=clips,
+                          cbar_label=cbar_label,
+                          plot_fh=plot_fh,
+                             )
+    # return t,data_fit
+
+# from dms2dfe.lib.io_plots import plot_data_fit_clustermap
+# from dms2dfe.lib.plot_mut_data import data2sub_matrix,plot_data_fit_clustermap
+# from dms2dfe.lib.io_mut_files import mutids_converter
+def plot_submap(info,data_fit_fhs=None,plot_type="submap",
+               feats_tup=["Mutant amino acid's Solvent Accessible Surface Area",'Solvent Accessible Surface Area',],
+                feats_labels= ['SASA','SASA'],
+                ):
+    data_feats_all_fh='%s/data_feats/aas/data_feats_all' % info.prj_dh
+    data_feats_all=pd.read_csv(data_feats_all_fh).set_index('mutids')
     if data_fit_fhs is None:
         data_fit_fhs=get_data_fhs(info)
     type_form='aas'
     for data_fit_fh in data_fit_fhs:
         data_fit_fn=basename(data_fit_fh)
         data_fit=pd.read_csv(data_fit_fh)
+        data_plot=pd.concat([data_fit,data_feats_all],axis=1)
         plot_fh="%s/plots/%s/%s.%s.pdf" % (info.prj_dh,type_form,data_fit_fn,plot_type) 
         if not exists(plot_fh):
-            ax=plot_data_fit_clustermap(data_fit,type_form,col='FiA',col_cluster=True)
-            ax.savefig(plot_fh+".pdf",format='pdf')                        
-            ax.savefig(plot_fh);plt.clf();plt.close()
-
+            for c in ['FiAcol','FiArow']:
+                data_plot.loc[:,c]=data_plot.loc[:,'FiA']
+                data_plot.loc[:,c]=data_plot.loc[:,c].fillna(0)
+            make_plot_cluster_sub_matrix(data_plot,
+                                         'FiA',[[0,1]],
+                                        feats=['FiAcol','FiArow'],
+                                        feats_labels= feats_labels,
+                                        row_cluster=False,
+                                        col_cluster=False,
+                                         plot_fh=plot_fh,
+                                            test=True,
+                                        )        
+        
 from dms2dfe.lib.plot_mut_data_scatter import plot_scatter_mutilayered
-
 def plot_multisca(info,data_fit_fhs=None,plot_type='multisca'):
     if data_fit_fhs is None:
         data_fit_fhs=get_data_fhs(info)
     data_fit_fhs=[fh for fh in data_fit_fhs if not '_inferred' in fh]    
-    type_form='aas'
+    # type_form='aas'
     for data_fit_fh in data_fit_fhs:
         data_fit_fn=basename(data_fit_fh)
         data_fit=pd.read_csv(data_fit_fh).set_index('mutids')
@@ -135,10 +159,14 @@ def plot_multisca(info,data_fit_fhs=None,plot_type='multisca'):
                                      space=0.1,
                                     )    
     
-def plot_pdb(info,data_fit_fhs=None,plot_type="pdb"):
+def plot_pdb(info,data_fit_fhs=None,plot_type="pdb",
+            plot_pdb_chimera_fhs_fh=None):
     if data_fit_fhs is None:
         data_fit_fhs=get_data_fhs(info)
     type_form='aas'
+    if plot_pdb_chimera_fhs_fh is None:
+        plot_pdb_chimera_fhs_fh='%s/../tmp/plot_pdb_chimera_fhs' % abspath(dirname(__file__))
+        plot_pdb_chimera_fhs_f = open(plot_pdb_chimera_fhs_fh, 'w+')
     for data_fit_fh in data_fit_fhs:
         data_fit_fn=basename(data_fit_fh)
         pdb_clrd_fh="%s/plots/%s/%s.pdb" % (info.prj_dh,type_form,data_fit_fn) 
@@ -155,7 +183,7 @@ def plot_pdb(info,data_fit_fhs=None,plot_type="pdb"):
     plot_pdb_chimera_fhs_f.close()
     try:
         chimera_dh=guess_chimera_path()[0]
-        if chimera_dh:
+        if exists(chimera_dh):
             std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
             if std.stdout.read():
                 if not stat(plot_pdb_chimera_fhs_fh).st_size == 0:
@@ -166,10 +194,9 @@ def plot_pdb(info,data_fit_fhs=None,plot_type="pdb"):
                 logging.error("skipping: pdb vizs: graphics drivers not present/configured.") 
                 logging.info("To configure graphics drivers for UCSF-Chimera please install mesa-utils: sudo apt-get install mesa-utils;sudo apt-get update ")  
         else:
-            logging.info("skipping pdb vizs : please install UCSF-Chimera ")      
+            logging.info("install UCSF-Chimera for PDB vizs")      
     except:
-        logging.info("skipping pdb vizs : please install UCSF-Chimera")      
-    logging.shutdown()
+        logging.info("install UCSF-Chimera for PDB vizs")      
 
 from dms2dfe.lib.plot_mut_data_dists import plot_data_comparison_multiviolin
 
@@ -180,7 +207,7 @@ def plot_violin(info,data_comparison_fhs=None,plot_type='violin'):
     aasORcds="aas"
     col="FiA"
     ylabel="$F_{i}$"
-    ylims=[-4,6]
+    # ylims=[-4,6]
     for fh in data_comparison_fhs:
         fn=basename(fh)
         plot_fh='%s/plots/aas/%s.%s.pdf' % (info.prj_dh,fn,plot_type)

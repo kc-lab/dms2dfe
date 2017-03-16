@@ -8,7 +8,7 @@
 ``io_data_files``
 ================================
 """
-import sys
+# import sys
 import pandas as pd
 from os.path import exists,basename,abspath,dirname
 import logging
@@ -48,7 +48,11 @@ def auto_find_missing_paths(prj_dh):
             logging.error("can not find .pdb file")
     if pd.isnull(info.loc["fsta_fh","input"]):
         try:
-            info.loc["fsta_fh","input"]=glob("%s/*.fasta" % prj_dh)[0]
+            fsta_fhs=glob("%s/*.fasta" % prj_dh)
+            for fsta_fh in fsta_fhs:
+                if 'prt' not in fsta_fh:
+                    info.loc["fsta_fh","input"]=fsta_fh
+                    break
         except:
             logging.error("could not find .fasta file")     
     info_paths=[info.loc[info_path_var,"input"] for info_path_var in info_path_vars]
@@ -79,9 +83,6 @@ def info2src(prj_dh):
         if not pd.isnull(info_path):
             if not exists(info_path):                
                 logging.error('Path to files do not exist. Include correct path in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
-                # from dms2dfe import configure
-                # configure.main(prj_dh,"deps")
-                # sys.exit()
                 return None
         else:
             logging.error('Path to file is missing. Check in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
@@ -94,6 +95,7 @@ def info2src(prj_dh):
         # aas_len=cctmr[1]-1
         fsta_fh=cctmr_fasta2ref_fasta(info.loc['fsta_fh','input'],cctmr)
     else:
+
         fsta_fh=info.loc['fsta_fh','input']
     info.loc['prj_dh','input']=abspath(prj_dh)
     info.loc['fsta_id','input'],info.loc['fsta_seq','input'],info.loc['fsta_len','input']=get_fsta_feats(fsta_fh)
