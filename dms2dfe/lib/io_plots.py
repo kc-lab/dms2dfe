@@ -17,6 +17,7 @@ from dms2dfe.lib.io_dfs import debad,denanrows
 
 def get_rgb_colors(series,cmap='Greens',res=10):
     series=(series-series.min())/(series.max()-series.min())*10
+    series=series.fillna(0)
     series=series.astype(int)
     # print series
     try:

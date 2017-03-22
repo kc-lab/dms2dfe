@@ -47,6 +47,8 @@ def get_logger(argv=None):
     import logging
     import datetime
     log_format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s'
+    #'[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s'
+
     logging.basicConfig(format=log_format,
                         level=logging.DEBUG,)
     if not argv is None:

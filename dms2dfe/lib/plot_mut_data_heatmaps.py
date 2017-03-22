@@ -416,6 +416,7 @@ def make_plot_cluster_sub_matrix(data_combo,xcol,boundaries,
                                                aggfunc='mean').sum()
     data_feat_ref.loc[(data_feat_ref.loc[:,featn]==0),featn]=data_feat_ref.loc[:,featn].min()
 #     print data_feat_ref.loc[:,featn]
+    print data_feat_ref.loc[:,featn]
     col_colors=get_rgb_colors(data_feat_ref.loc[:,featn])
     featn=feats[0]
     data_feat_ref.loc[:,featn]=data2sub_matrix(data_combo, featn,
