@@ -575,7 +575,7 @@ def class_fit(data_fit_df,col_fit='FiA',zscore=False): #column of the data_fit
         data_fit_df.loc[data_fit_df.loc[:,col_fit]<=-2,    'class_fit']="deleterious"
     return data_fit_df
 
-def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA"):
+def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA",syn2nan=True):
     if not sum(~pd.isnull(data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),col_fit]))==0:
         data_fit=set_index(data_fit,'mutids')
         if col_fit_rescaled in data_fit.columns:
@@ -593,6 +593,8 @@ def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="Fi
         if "tmp" in data_fit.columns:
             data_fit.loc[:,col_fit_rescaled_ori]=data_fit.loc[:,"tmp"]
             data_fit=data_fit.drop("tmp",axis=1)
+        if syn2nan:
+            data_fit.loc[(d.loc[:,'ref']==data_fit.loc[:,'mut']),col_fit_rescaled]=np.nan
         return data_fit
     else:
     	logging.info('no synonymous mutations available')

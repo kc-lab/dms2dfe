@@ -140,9 +140,11 @@ def plot_scatter_reg(data_all,cols,
                      color_line='k',
                      logscale=False,
                      std=False,
+                     regline=True,
                      results=True,
                      results_n=False,
                      results_RMSE=True,
+                     result_spearman=True,
                      space=0.2,figsize=[2,2],
                      ax=None,plot_fh=None):
     if ax==None:
@@ -151,12 +153,18 @@ def plot_scatter_reg(data_all,cols,
     data_all=debad(data_all.loc[:,cols],axis=0,condi='any',bad='nan')
     if logscale:
         data_all=debad(data_all,axis=0,condi='any',bad=0)
-        data_all=data_all.apply(np.log2)    
-    ax=sns.regplot(data=data_all,x=cols[0],y=cols[1],
-                line_kws={"color":color_line},
-                scatter_kws={"color":color_scatter,
-                            's':ms_scatter},
-                ax=ax)
+        data_all=data_all.apply(np.log2)
+    if regline:
+        ax=sns.regplot(data=data_all,x=cols[0],y=cols[1],
+                    line_kws={"color":color_line},
+                    scatter_kws={"color":color_scatter,
+                                's':ms_scatter},
+                    ax=ax)
+    else:
+        data_all.plot.scatter(x=cols[0],y=cols[1],
+                              color='b',
+                              alpha=0.3,
+                              ax=ax)
     # if std:
     #     ax.scatter(data_all.loc[:,cols[0]],data_all.loc[:,cols[1]],
     #                # s=ms, 
@@ -170,6 +178,8 @@ def plot_scatter_reg(data_all,cols,
         results='%s\nn=%s' % (results,len(denanrows(data_all.loc[:,cols])))
     if not results_RMSE:
         results=results.split('\n')[0]
+    if result_spearman:
+        results='%s = %.2f' % (r'$\rho$',data_all.loc[:,cols].corr(method='spearman').iloc[0,:][1])
     if results:
         ax.text(0, 1, results,
             horizontalalignment='left',
@@ -328,7 +338,7 @@ def plot_contourf(x,y,z,contourlevels=15,xlabel=None,ylabel=None,
         ax.scatter(x, y, marker='o', c='b', s=5, zorder=10)
 
     if annot_fit_land:
-        labels=["$F,cB$","$F,B$","$cF,cB$","$cF,B$"]
+        labels=["$F:cB$","$F:B$","$cF:cB$","$cF:B$"]
         # labels=["$F,B$","$F,cB$","$cF,B$","$cF,cB$"]
         if xlog:
             # x=np.log2(x)+1
