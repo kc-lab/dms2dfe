@@ -593,7 +593,7 @@ def plot_cov(data_cov,data_lbl,plot_fh=None):
     ax1=plt.subplot(111)
     ax1.plot(data_cov,lw=2,color='b')
     ax2 = ax1.twinx()
-    ax2.plot(data2mut_matrix(data_lbl,"NiA","mut","aas").sum().tolist(),
+    ax2.plot(data_lbl,
              lw=2,color='r')
     ax1.set_xlabel("Position")
     ax1.set_ylabel("Coverage\n(number of reads per codon)",color='b')

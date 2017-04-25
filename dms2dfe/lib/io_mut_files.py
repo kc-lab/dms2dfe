@@ -594,7 +594,7 @@ def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="Fi
             data_fit.loc[:,col_fit_rescaled_ori]=data_fit.loc[:,"tmp"]
             data_fit=data_fit.drop("tmp",axis=1)
         if syn2nan:
-            data_fit.loc[(d.loc[:,'ref']==data_fit.loc[:,'mut']),col_fit_rescaled]=np.nan
+            data_fit.loc[(data_fit.loc[:,'ref']==data_fit.loc[:,'mut']),col_fit_rescaled]=np.nan
         return data_fit
     else:
     	logging.info('no synonymous mutations available')

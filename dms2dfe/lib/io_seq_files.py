@@ -230,6 +230,11 @@ def qcd2sbam(fastq_fhs_list,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtool
         alignment_type=""
     else : #local_alignment
         alignment_type="-local" 
+
+    if bowtie2_com == 'nan':
+        bowtie2_com=''
+    # print bowtie2_com
+
     if exists(fastq_R1_fh) :
         if not exists(fastq_R1_fh+".sam.s.bam"):
             if fastq_R2_fh and exists(fastq_R2_fh): # paired end
@@ -244,7 +249,7 @@ def qcd2sbam(fastq_fhs_list,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtool
 
             log_fh="%s.qcd2sbam.log" % fastq_R1_fh
             log_f = open(log_fh,'a')
-
+            # print bashCommand
             if not exists(fastq_R1_fh+".sam"):
                 subprocess.call(bashCommand,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             else :

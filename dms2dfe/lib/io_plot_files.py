@@ -27,6 +27,7 @@ from dms2dfe.lib.plot_mut_data_heatmaps import plot_data_fit_heatmap,make_plot_c
 from dms2dfe.lib.plot_pdb import vector2bfactor
 from dms2dfe.lib.global_vars import mut_types_form
 from dms2dfe.lib.io_dfs import denanrows
+from dms2dfe.lib.io_mut_files import mutids_converter
 # from dms2dfe.lib.io_plot_files import plot_coverage,plot_heatmap,plot_clustermap,plot_multisca,plot_violin,plot_pies,plot_pdb
 
 def plot_coverage(info,plot_type="coverage",type_form='aas'):    
@@ -49,7 +50,7 @@ def plot_coverage(info,plot_type="coverage",type_form='aas'):
                         if exists(data_fh):
                             data_cov=pd.read_csv(data_fh)
                         data_lbl=pd.read_csv("%s/data_lbl/aas/%s" % (info.prj_dh,lbl))
-                        plot_cov(data_cov,data_lbl,plot_fh=plot_fh)
+                        plot_cov(data_cov.loc[:,'depth_ref'],data2mut_matrix(data_lbl,"NiA","mut","aas").sum().tolist(),plot_fh=plot_fh)
                 else:
                     logging.warning("can not find sequencing data to get coverage")
             else:

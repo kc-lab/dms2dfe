@@ -130,10 +130,10 @@ def pooled_data_lbl2data_fit(fits_list):
     unsel_lbl=fits_list[0]
     sel_lbl=fits_list[1]
     logging.info("processing : %s and %s" % (unsel_lbl,sel_lbl))
-    try:
-        data_lbl2data_fit(unsel_lbl,sel_lbl,info)
-    except:
-        logging.error("check logs for %s and %s" % (unsel_lbl,sel_lbl))
+    # try:
+    data_lbl2data_fit(unsel_lbl,sel_lbl,info)
+    # except:
+    #     logging.error("check logs for %s and %s" % (unsel_lbl,sel_lbl))
         
 if __name__ == '__main__':
     if len(sys.argv)==3:

@@ -36,13 +36,14 @@ def main(prj_dh):
         if not exists(plots_dh):
             makedirs(plots_dh)
         
+
     plot_coverage(info)
-    plot_mutmap(info)
-    plot_submap(info)
-    plot_multisca(info)
-    plot_pdb(info)
-    plot_violin(info)
-    plot_pies(info)
+    # plot_mutmap(info)
+    # plot_submap(info)
+    # plot_multisca(info)
+    # plot_pdb(info)
+    # plot_violin(info)
+    # plot_pies(info)
     
 if __name__ == '__main__':
     main(sys.argv[1])

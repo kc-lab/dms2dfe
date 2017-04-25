@@ -27,6 +27,7 @@ def main(prj_dh):
 
     if exists('%s/cfg/barcodes' % prj_dh) :
         barcodes=pd.read_csv(prj_dh+'/cfg/barcodes')
+        # print barcodes        
         if len(barcodes)!=0:
             fastq_R1_fhs=[str(s) for s in barcodes.loc[:,'fastq_R1_fh'].unique()]
             fastq_fhs_list=[[s, s.replace('R1','R2')] for s in fastq_R1_fhs if not exists("%s.qcd.fastq" % s)] # pairs
@@ -41,7 +42,8 @@ def main(prj_dh):
                     if (not exists("%s.qcd.fastq_unresolved_joined.qcd.fastq" % (fastq_R1_fh)))\
                     and (not exists("%s.qcd.fastq_unresolved_joined.qcd.fastq" % (fastq_R1_fh))):
                         if exists(fastq_R1_fh):
-                            logging.info("processing: %s" % basename(fastq_R1_fh))            
+                            logging.info("processing: %s" % basename(fastq_R1_fh))
+                            # print fastq_R1_fh_barcodes
                             barcode_R1s=[str(s) for s in list(fastq_R1_fh_barcodes.loc[:,'barcode_R1'])]
                             barcode_R2s=[str(s) for s in list(fastq_R1_fh_barcodes.loc[:,'barcode_R2'])]        
                             fastq_fns    =[str(s) for s in list(fastq_R1_fh_barcodes.loc[:,'fastq_fn'])]        

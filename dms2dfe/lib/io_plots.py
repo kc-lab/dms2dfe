@@ -144,7 +144,7 @@ def plot_scatter_reg(data_all,cols,
                      results=True,
                      results_n=False,
                      results_RMSE=True,
-                     result_spearman=True,
+                     result_spearman=False,
                      space=0.2,figsize=[2,2],
                      ax=None,plot_fh=None):
     if ax==None:

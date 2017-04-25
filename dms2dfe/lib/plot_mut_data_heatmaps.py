@@ -27,7 +27,7 @@ import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # 
 
 from dms2dfe.lib.io_plots import saveplot
-
+from dms2dfe.lib.io_mut_files import mutids_converter
 
 def data2mut_matrix(data_fit,values_col,index_col,type_form): 
     """
