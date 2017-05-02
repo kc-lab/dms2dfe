@@ -532,6 +532,7 @@ def make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info):
     data_fit=data_fit.join(data_deseq2_res)
     return data_fit
 
+from dms2dfe.lib.io_mut_class import class_fit
 def data_lbl2data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,type_forms=['aas']):
     for type_form in type_forms : # cds OR aas
         data_fit_fh='%s/data_fit/%s/%s_WRT_%s' % (info.prj_dh,type_form,data_lbl_sel_fn,data_lbl_ref_fn)
@@ -549,7 +550,9 @@ def data_lbl2data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,type_forms=['aas']):
             elif info.norm_type == 'none':
                 data_fit.loc[:,'FCA_norm']=data_fit.loc[:,'FCA']
             data_fit.loc[:,'FCS_norm']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCA_norm']
-            data_fit=rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA")
+            if hasattr(info, 'rescaling'):
+                if info.rescaling=='TRUE':
+                    data_fit=rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA")
             data_fit=class_fit(data_fit,col_fit="FiA")
             if not exists(dirname(data_fit_fh)):
                 try:
@@ -558,22 +561,6 @@ def data_lbl2data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,type_forms=['aas']):
                     logging.info("race error /data_fit/")
             data_fit.to_csv(data_fit_fh)
             
-def class_fit(data_fit_df,col_fit='FiA',zscore=False): #column of the data_fit
-    """
-    This classifies the fitness of mutants into beneficial, neutral or, deleterious.
-    
-    :param data_fit_df: dataframe of `data_fit`.
-    :returns data_fit_df: classes of fitness written in 'class-fit' column based on values in column 'FiA'. 
-    """
-    if not zscore:
-        data_fit_df.loc[data_fit_df.loc[:,col_fit]>0,'class_fit']='beneficial'
-        data_fit_df.loc[data_fit_df.loc[:,col_fit]<0,'class_fit']='deleterious'
-        data_fit_df.loc[data_fit_df.loc[:,col_fit]==0,'class_fit']='neutral'
-    else:
-        data_fit_df.loc[data_fit_df.loc[:,col_fit]>=+2,    'class_fit']="beneficial"
-        data_fit_df.loc[((data_fit_df.loc[:,col_fit]>-2) & (data_fit_df.loc[:,'FiA']<+2)),'class_fit']="neutral"
-        data_fit_df.loc[data_fit_df.loc[:,col_fit]<=-2,    'class_fit']="deleterious"
-    return data_fit_df
 
 def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA",syn2nan=True):
     if not sum(~pd.isnull(data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),col_fit]))==0:
@@ -617,20 +604,7 @@ def data_lbl2data_fit_lite(fits_pairs,prj_dh,data_lbl_dh,data_fit_dh,force=False
             makedirs(dirname(data_fit_fh))
         data_fit.to_csv(data_fit_fh)
         
-def class_comparison(data_comparison):
-    """
-    This classifies differences in fitness i.e. relative fitness into positive, negative or robust categories. 
-    
-    :param data_comparison: dataframe with `data_comparison`. 
-    :returns data_comparison: dataframe with `class__comparison` added according to fitness levels in input and selected samples in `data_comparison`
-    """
-    if not (all(pd.isnull(data_comparison.loc[:,"class_fit_test"]))\
-    or all(pd.isnull(data_comparison.loc[:,"class_fit_test"]))):
-        data_comparison.loc[ ((data_comparison.loc[:,"class_fit_test"]=='beneficial')   & (data_comparison.loc[:,"class_fit_ctrl"]=='deleterious')), 'class_comparison']="positive"
-        data_comparison.loc[ ((data_comparison.loc[:,"class_fit_test"]=='deleterious')  & (data_comparison.loc[:,"class_fit_ctrl"]=='beneficial')), 'class_comparison']="negative"
-        data_comparison.loc[ (data_comparison.loc[:,"class_fit_test"]==data_comparison.loc[:,"class_fit_ctrl"]) , 'class_comparison']="robust"
-    return data_comparison
-
+from dms2dfe.lib.io_mut_class import class_comparison
 def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
     """
     This converts the Fitness values to Relative fitness among test and control fed as input.
