@@ -215,6 +215,13 @@ def make_reg_input(data_combo,data_cls_train,data_cls_tests,
     data_reg_tests=data_reg_tests.loc[:,X_cols_reg+[y_coln_reg]]
     return data_reg_train,data_reg_tests
 
+def make_input(d,ycol):
+    d=set_index(d,"mutids")
+    # remove feats with unique categories deviating max by 1sd
+    d=rescalecols(d)
+    d=d.dropna(axis=0, how='any').dropna(axis=1, how='all')
+    return d
+
 def make_data_combo(data_fit_dm,data_feats,ycol,Xcols):
     cols_numeric=[c for c in data_feats if is_numeric(data_feats.loc[:,c])]
     data_feats=data_feats.loc[:,cols_numeric]

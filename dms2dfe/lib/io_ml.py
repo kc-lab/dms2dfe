@@ -226,7 +226,9 @@ def data_combo2ml(data_combo,data_fn,data_dh,plot_dh,
     if ml_type=='cls' or ml_type=='both':
         if not exists(pkld_cls_fh):
             if not exists(data_cls_train_fh):
-                data_combo,data_ml,data_cls_train,data_cls_tests=make_cls_input(data_combo,y_coln_cls,middle_percentile_skipped=middle_percentile_skipped)
+                data_combo,data_ml,data_cls_train,data_cls_tests=make_cls_input(data_combo,
+                                                                                y_coln_cls,
+                                                                        middle_percentile_skipped=middle_percentile_skipped)
                 data_combo.to_csv(data_combo_fh)
                 data_ml.to_csv(data_fh)
                 data_cls_train.to_csv(data_cls_train_fh)
