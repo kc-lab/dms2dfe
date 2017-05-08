@@ -20,7 +20,7 @@ from dms2dfe import configure
 from dms2dfe.lib.io_mut_files import data_fit2data_comparison,getusable_comparison_list
 from dms2dfe.lib.global_vars import mut_types_form 
 
-def main(prj_dh):
+def main(prj_dh,test=False):
     """
     This modules makes the comparison between test (eg. treated) and control (eg. untreated) experiments. 
     The output data is saved in `data_comparison` format as described in :ref:`io`.
@@ -40,10 +40,12 @@ def main(prj_dh):
     prj_dh_global=prj_dh
     if exists('%s/cfg/comparison' % prj_dh):
         comparison_pairs_list    =getusable_comparison_list(prj_dh)    
-        pool=Pool(processes=int(cores)) 
-        pool.map(pooled_data_fit2data_comparison,comparison_pairs_list)
-        pool.close(); pool.join()
-        # pooled_data_fit2data_comparison(comparison_pairs_list[0])
+        if test:
+            pooled_data_fit2data_comparison(comparison_pairs_list[0])
+        else:
+            pool=Pool(processes=int(cores)) 
+            pool.map(pooled_data_fit2data_comparison,comparison_pairs_list)
+            pool.close(); pool.join()
     else :
         logging.warning("do not exist: cfg/comparison")
     logging.shutdown()
@@ -59,4 +61,11 @@ def pooled_data_fit2data_comparison(data_comparison_tp):
     data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh_global)
     
 if __name__ == '__main__':
-    main(sys.argv[1])
+    if len(sys.argv)==3:
+        if sys.argv[2]=='test':
+            test=True
+        else:
+            test=False
+    else:
+        test=False
+    main(sys.argv[1],test=test)

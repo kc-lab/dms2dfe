@@ -553,6 +553,17 @@ def data_lbl2data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,type_forms=['aas']):
             if hasattr(info, 'rescaling'):
                 if info.rescaling=='TRUE':
                     data_fit=rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA")
+                else:
+                    data_fit.loc[:,'FiA']=data_fit.loc[:,'FCA_norm']           
+            else:
+                data_fit.loc[:,'FiA']=data_fit.loc[:,'FCA_norm']           
+            if hasattr(info, 'mut_subset'):
+                if info.mut_subset=='N':
+                    data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FiA']=np.nan
+                elif info.mut_subset=='S':
+                    data_fit.loc[(data_fit.loc[:,'mut']!=data_fit.loc[:,'ref']),'FiA']=np.nan
+            else:
+                data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FiA']=np.nan                                
             data_fit=class_fit(data_fit,col_fit="FiA")
             if not exists(dirname(data_fit_fh)):
                 try:
@@ -630,7 +641,7 @@ def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
                 for testi in data_fit_test_keys :       
                     data_comparison_fh='%s/data_comparison/%s/%s_VERSUS_%s' % (prj_dh,type_form,testi,ctrli)
                     if not exists(data_comparison_fh):
-                        if data_comparison_fh.count("inferred")!=1:
+                        if not "inferred" in data_comparison_fh:
                             # print data_comparison_fh
                             # if 'inferred' in data_comparison_fh:
                             #     print ">>>>%s" % data_comparison_fh
@@ -649,7 +660,8 @@ def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
                              & (data_comparison.loc[:,"padj_test"]<0.05)),'Significant']=True
                             data_comparison.loc[pd.isnull(data_comparison.loc[:,'Significant']),'Significant']=False
         #                     data_comparison.to_csv("test_comparison")
-                            data_comparison=class_comparison(data_comparison) # get class fit rel
+                            # data_comparison=class_comparison(data_comparison) # get class fit rel
+                            data_comparison.loc[:,'class_comparison']=class_comparison(data_fit_test,data_fit_ctrl)
                             if not exists('%s/data_comparison/%s' % (prj_dh,type_form)):
                                 try:
                                     makedirs('%s/data_comparison/%s' % (prj_dh,type_form))

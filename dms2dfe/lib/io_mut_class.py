@@ -16,6 +16,8 @@ from glob import glob
 import logging
 import subprocess
 
+from dms2dfe.lib.io_dfs import set_index
+
 def get_2SD_cutoffs(d,reps,N=False):
     t=d.copy()
     t.loc[:,'reps']=t.loc[:,reps[0]]-t.loc[:,reps[1]]
@@ -25,9 +27,10 @@ def get_2SD_cutoffs(d,reps,N=False):
     sigma=t.loc[:,'reps'].std()
     return mu+sigma*2,mu,sigma
 
-def get_repli_FCN(d,csel='.NiA_tran.sel',cref='.NiA_tran.ref'):
+def get_repli_FiA(d,csel='.NiA_tran.sel',cref='.NiA_tran.ref'):
     sels=np.sort([c for c in d.columns if csel in c])
     refs=np.sort([c for c in d.columns if cref in c])
+    # print refs,sels
 #     sel1=[c for c in sels if 'replicate_1' in c][0]
 #     sel2=[c for c in sels if 'replicate_2' in c][0]
 #     ref1=[c for c in refs if 'replicate_1' in c][0]
@@ -70,7 +73,7 @@ def class_fit(d,col_fit='FiA',FC=True,zscore=False): #column of the data_fit
     :param d: dataframe of `data_fit`.
     :returns d: classes of fitness written in 'class-fit' column based on values in column 'FiA'. 
     """
-    cols_reps=[c for c in dctrl if '.NiA_tran.ref' in c]
+    cols_reps=[c for c in d if '.NiA_tran.ref' in c]
     if FC and (len(cols_reps)==2):
         up,_,_=get_2SD_cutoffs(d,cols_reps,N=True)
         dw=-1*up
@@ -80,7 +83,7 @@ def class_fit(d,col_fit='FiA',FC=True,zscore=False): #column of the data_fit
         else:
             up,dw=0,0
     d.loc[d.loc[:,col_fit]>+up,    'class_fit']="enriched"
-    d.loc[((d.loc[:,col_fit]>=dw) & (d.loc[:,'FiA']<=up)),'class_fit']="neutral"
+    d.loc[((d.loc[:,col_fit]>=dw) & (d.loc[:,col_fit]<=up)),'class_fit']="neutral"
     d.loc[d.loc[:,col_fit]<dw,    'class_fit']="depleted"
     return d
 
@@ -91,16 +94,18 @@ def class_comparison(dA,dB):
     :param dc: dataframe with `dc`. 
     :returns dc: dataframe with `class__comparison` added according to fitness levels in input and selected samples in `dc`
     """
-    dc=get_repli_FCN(dA).join(get_repli_FCN(dB),lsuffix='_ctrl',rsuffix='_test')
+    dA=set_index(dA,'mutids')
+    dB=set_index(dB,'mutids')
+    dc=get_repli_FiA(dA).join(get_repli_FiA(dB),lsuffix='_ctrl',rsuffix='_test')
     up=data_fit2cutoffs(dc,sA='_reps_test',sB='_reps_ctrl',N=False)
     dw=-1*up
 
-    diff=dB.loc[:,'FCN']-dA.loc[:,'FCN']
+    diff=dB.loc[:,'FiA']-dA.loc[:,'FiA']
+    diff.index.name='mutids'
     diff=diff.reset_index()
-    mutids_up=diff.loc[(diff.loc[:,'FCN']>up),'mutids'].tolist()
-    mutids_dw=diff.loc[(diff.loc[:,'FCN']<dw),'mutids'].tolist()
+    mutids_up=diff.loc[(diff.loc[:,'FiA']>up),'mutids'].tolist()
+    mutids_dw=diff.loc[(diff.loc[:,'FiA']<dw),'mutids'].tolist()
 
-    d.loc[d.loc[:,col_fit]>+up,    'class_comparison']="enriched"
-    d.loc[((d.loc[:,col_fit]>=dw) & (d.loc[:,'FiA']<=up)),'class_comparison']="neutral"
-    d.loc[d.loc[:,col_fit]<dw,    'class_comparison']="depleted"
-    return dc
+    dc.loc[mutids_up,'class_comparison']="positive"
+    dc.loc[mutids_dw,'class_comparison']="negative"
+    return dc.loc[:,'class_comparison']

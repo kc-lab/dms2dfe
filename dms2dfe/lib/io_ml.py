@@ -588,7 +588,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
                 X_cols_classi.remove(y_coln_classi)
                 # classi
                 grid_search_classi,data_preds=run_RF_classi(data_classi_train,X_cols_classi,y_coln_classi,
-                        test_size=0.34,data_test=data_classi_test,data_out_fh=grid_search_classi_fh) #                     
+                        test_size=0,data_test=data_classi_test,data_out_fh=grid_search_classi_fh) #                     
                 get_RF_classi_metrics(grid_search_classi_fh,data_dh='data_ml/',plot_dh='plots/')
                 
                 # # classi metrics
@@ -635,7 +635,7 @@ def data_fit2ml(data_fit_key,prj_dh,data_feats,
             # try:
             grid_search_regress_metrics,data_preds_regress_metrics=\
             run_RF_regress(data_regress_train,X_cols_regress,y_coln_regress,
-                            test_size=0.34,data_test=data_regress_test,data_out_fh=grid_search_regress_metrics_fh)
+                            test_size=0,data_test=data_regress_test,data_out_fh=grid_search_regress_metrics_fh)
             get_RF_regress_metrics(grid_search_regress_metrics_fh,data_dh='data_ml/',plot_dh='plots/')
 
             logging.info("number of mutants used for training = %d" % len(data_regress_train))
@@ -785,7 +785,7 @@ def data_combo2ml(data_combo,data_fn,data_dh,plot_dh,
     if ml_type=='cls' or ml_type=='both':
         if not exists(pkld_cls_fh):
             if not exists(data_cls_train_fh):
-                data_combo,data_ml,data_cls_train,data_cls_tests=make_cls_input(data_combo,y_coln_cls,                                                                                middle_percentile_skipped=middle_percentile_skipped)
+                data_combo,data_ml,data_cls_train,data_cls_tests=make_cls_input(data_combo,y_coln_cls,middle_percentile_skipped=middle_percentile_skipped)
                 data_combo.to_csv(data_combo_fh)
                 data_ml.to_csv(data_fh)
                 data_cls_train.to_csv(data_cls_train_fh)
