@@ -24,7 +24,6 @@ def set_index(data,col_index):
     elif data.index.name==col_index:
         return data
 
-
 # dfs
 def concat_cols(df1,df2,idx_col,df1_cols,df2_cols,
                 df1_suffix,df2_suffix):

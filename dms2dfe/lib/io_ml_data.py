@@ -140,26 +140,120 @@ def add_feats(data_feats_all_mm,data_feats_all):
 def get_cols_del(data_feats):
     cols_del_strs=["Helix formation","beta bridge","Chirality","Offset from residue to the partner",
              "Energy (kcal/mol) of ","Secondary structure",
+             'torsion',
              'cosine of the angle between C=O of residue and C=O of previous residue',
              '$\Delta$(Molecular Polarizability) per substitution',
              '$\Delta$(Molecular weight (Da)) per substitution',
              '$\Delta$(Molecular Refractivity) per substitution',
-             'bend',' coordinates of ','(Zyggregator)','(NORSnet)','(PROFbval)','(Ucon)']
+             'bend',' coordinates of ','(Zyggregator)','(NORSnet)','(PROFbval)','(Ucon)',
+              'Residue (C-alpha) depth']
     cols_del=[]
     for c in cols_del_strs:
         cols_del=cols_del+[col for col in data_feats if c in col]
     return cols_del
 
-def feats_sel_corr(data,method='spearman'):
+def keep_cols(dXy,dXy_ori,ycol):
+    cols_keep=['Conservation score (inverse shannon uncertainty): gaps ignored',#'Conservation score (ConSurf)',
+     '$\\Delta\\Delta G$ per mutation',
+     '$\\Delta$(logP) per substitution',
+     'Distance from active site residue: minimum',
+     '$\\Delta$(Solubility (%)) per substitution',
+     '$\\Delta$(Polar Surface Area) per substitution',
+     'Distance from dimer interface',
+     'Temperature factor (flexibility)',
+     '$\\Delta$(Solvent Accessible Surface Area) per substitution',
+     'Residue depth']
+    for c in cols_keep:
+        if not c in dXy:
+            if c in dXy_ori:
+                dXy.loc[:,c]=dXy_ori.loc[:,c]
+    return make_dXy(dXy,ycol,unique_quantile=0,index="mutids",if_rescalecols=False)
+
+def get_corr_feats(corr,mx=0.9):
+    feats=[]
+    for row in corr.index:
+        for col in corr.columns:
+            if row!=col:
+                if not col in feats:
+                    if (corr.loc[row,col]>mx):
+                        feats.append(row)
+    return np.unique(feats)
+
+def feats_sel_corr(dXy,ycol,method='spearman',range_coef=[0.9,0.8,0.7]):
+    Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
+    data=dXy.loc[:,Xcols]
     del_cols=data.columns.tolist()
-    for mx in [0.9,0.8,0.7]:
+    for mx in range_coef:
         while len(del_cols)!=0:
             if len(del_cols)!=len(data.columns):
                 data=data.drop(del_cols,axis=1)
-            print len(del_cols)
+            logging.info( '%s' % len(del_cols))
             del_cols=get_corr_feats(data.corr(method=method),mx=mx)
         del_cols=data.columns.tolist()
-    return data
+    Xcols=data.columns.tolist()
+    dXy=dXy.loc[:,Xcols+[ycol]]
+    return dXy,Xcols,ycol
+
+def feats_inter(dXy,ycol,cols1=None,cols2=None,
+                inter='all',
+                if_rescalecols=True,
+                join=True):
+    Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
+    if cols1 is None and cols2 is None:
+        cols_predefined=False
+    if not cols_predefined:
+        cols1=Xcols
+        cols2=Xcols       
+    if if_rescalecols:
+        if cols_predefined:
+            d=rescalecols(dXy.loc[:,cols1+cols2], kind='zscore')
+        else:
+            d=rescalecols(dXy.loc[:,cols1], kind='zscore')            
+    dinter=pd.DataFrame(index=d.index)
+    for c1i,c1 in enumerate(cols1):
+        for c2i,c2 in enumerate(cols2):
+            if c1i<c2i or cols_predefined:
+                # print c1i,c2i
+                if inter=='-' or inter=='all':
+                    dinter.loc[:,'(%s) - (%s)' % (c1,c2)]=d.loc[:,c1].sub(d.loc[:,c2])
+                if inter=='*' or inter=='all':
+                    dinter.loc[:,'(%s) * (%s)' % (c1,c2)]=d.loc[:,c1].mul(d.loc[:,c2])
+                if inter=='/' or inter=='all':
+                    dinter.loc[:,'(%s) / (%s)' % (c1,c2)]=d.loc[:,c1].div(d.loc[:,c2])
+    if join:
+        dXy=dXy.join(dinter)
+    return dXy
+def make_dXy(dXy,ycol,unique_quantile=0.25,index="mutids",if_rescalecols=True):
+    dXy=set_index(dXy,index)
+    dXy=dXy.drop(get_cols_del(dXy),axis=1)
+    Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
+    Xunique=pd.DataFrame({'unique':[len(np.unique(dXy[c])) for c in Xcols]},index=[c for c in Xcols])
+    Xcols=Xunique.index[Xunique['unique']>Xunique['unique'].quantile(unique_quantile)]
+    dXy=dXy.loc[:,Xcols.tolist()+[ycol]]
+    dXy=dXy.dropna(axis=1, how='all').dropna(axis=0, how='any')
+    if if_rescalecols:
+        Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
+        dXy.loc[:,Xcols]=rescalecols(dXy.loc[:,Xcols])
+    return dXy,Xcols,ycol
+
+from boruta import BorutaPy
+def feats_sel_boruta(model,dXy,Xcols,ycol):
+    model_boruta = BorutaPy(model, n_estimators='auto', verbose=2, random_state=1)
+    X=dXy.loc[:,Xcols].as_matrix()
+    y=dXy.loc[:,ycol].as_matrix()
+    model_boruta.fit(X,y)
+#     print Xcols,model_boruta.support_
+    Xcols=np.array(Xcols)
+    Xcols=Xcols[np.array(model_boruta.support_)]
+    return dXy.loc[:,Xcols.tolist()+[ycol]],Xcols,ycol
+
+# def make_input(d,ycol,index="mutids",if_rescalecols=True):
+#     d=set_index(d,index)
+#     # remove feats with unique categories deviating max by 1sd
+#     if if_rescalecols:
+#         d=rescalecols(d)
+#     d=d.dropna(axis=0, how='any').dropna(axis=1, how='all')
+#     return d
 
 def make_cls_input(data_combo,y_coln_cls,middle_percentile_skipped):
     data_ml=y2classes(data_combo,y_coln_cls,
@@ -215,12 +309,6 @@ def make_reg_input(data_combo,data_cls_train,data_cls_tests,
     data_reg_tests=data_reg_tests.loc[:,X_cols_reg+[y_coln_reg]]
     return data_reg_train,data_reg_tests
 
-def make_input(d,ycol):
-    d=set_index(d,"mutids")
-    # remove feats with unique categories deviating max by 1sd
-    d=rescalecols(d)
-    d=d.dropna(axis=0, how='any').dropna(axis=1, how='all')
-    return d
 
 def make_data_combo(data_fit_dm,data_feats,ycol,Xcols):
     cols_numeric=[c for c in data_feats if is_numeric(data_feats.loc[:,c])]

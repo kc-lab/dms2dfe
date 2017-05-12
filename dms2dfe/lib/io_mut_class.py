@@ -30,13 +30,6 @@ def get_2SD_cutoffs(d,reps,N=False):
 def get_repli_FiA(d,csel='.NiA_tran.sel',cref='.NiA_tran.ref'):
     sels=np.sort([c for c in d.columns if csel in c])
     refs=np.sort([c for c in d.columns if cref in c])
-    # print refs,sels
-#     sel1=[c for c in sels if 'replicate_1' in c][0]
-#     sel2=[c for c in sels if 'replicate_2' in c][0]
-#     ref1=[c for c in refs if 'replicate_1' in c][0]
-#     ref2=[c for c in refs if 'replicate_2' in c][0]
-    
-#     for rep in ['replicate_1','replicate_2']:
     FCAi=1
     cols_FCA=[]
     for refi,ref in enumerate(refs):
@@ -47,16 +40,6 @@ def get_repli_FiA(d,csel='.NiA_tran.sel',cref='.NiA_tran.ref'):
                 d.loc[(d.loc[:,'mut']==d.loc[:,'ref']),coln]=np.nan
                 cols_FCA.append(coln)
                 FCAi+=1
-#     FCAi=1
-#     cols_FCA=[]
-#     for refi,ref in enumerate(refs):
-#         for seli,sel in enumerate(sels):
-#             if refi>=seli:
-#                 coln='FCA%s' % FCAi
-#                 d.loc[:,coln]=d.loc[:,sel]-d.loc[:,ref]
-#                 d.loc[(d.loc[:,'mut']==d.loc[:,'ref']),coln]=np.nan
-#                 cols_FCA.append(coln)
-#                 FCAi+=1
     return d.loc[:,cols_FCA]
 
 def data_fit2cutoffs(d,sA,sB,N=True):
