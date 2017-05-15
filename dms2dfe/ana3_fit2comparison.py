@@ -48,6 +48,7 @@ def main(prj_dh,test=False):
             pool.close(); pool.join()
     else :
         logging.warning("do not exist: cfg/comparison")
+    data_fit_metrics=get_data_metrics(prj_dh)
     logging.shutdown()
 
 def pooled_data_fit2data_comparison(data_comparison_tp):

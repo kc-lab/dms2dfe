@@ -20,7 +20,7 @@ from dms2dfe.lib.io_strs import get_logger
 logging=get_logger()
 from dms2dfe import configure
 from dms2dfe.lib.io_dfs import set_index
-from dms2dfe.lib.io_ml import data_fit2ml,get_cols_del,make_data_combo,data_combo2ml
+#from dms2dfe.lib.io_ml import data_fit2ml,get_cols_del,make_data_combo,data_combo2ml
 
 def main(prj_dh,test=False):
     """

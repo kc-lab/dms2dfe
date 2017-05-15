@@ -92,3 +92,8 @@ def splitlabel(label,splitby=' ',ctrl='__'):
     elif len(splits)==1:
 
         return splits+[ctrl]
+
+def get_time():
+    import datetime
+    time=make_pathable_string('%s' % datetime.datetime.now())
+    return time.replace('-','_').replace(':','_').replace('.','_')

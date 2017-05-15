@@ -650,9 +650,15 @@ def data_fit2data_comparison(lbl_ctrl,lbl_test,prj_dh):
                             data_fit_test_fh="%s/data_fit/%s/%s" % (prj_dh,type_form,testi)
                             data_fit_test=pd.read_csv(data_fit_test_fh)
                             # print data_fit_test_fh
-                            data_comparison=concat_cols(data_fit_test,data_fit_ctrl,'mutids',
-                                    ['mut','ref','FiA',"class_fit",'padj'],['FiA',"class_fit",'padj'],
-                                    '_test','_ctrl')
+                            # df1,df2,idx_col,df1_cols,df2_cols,
+                            # df1_suffix,df2_suffix
+                            data_comparison=concat_cols(df1=data_fit_test,df2=data_fit_ctrl,
+                                                        idx_col='mutids',
+                                    df1_cols=['mut','ref','FiA',"class_fit",'padj'],
+                                    df2_cols=['FiA',"class_fit",'padj'],
+                                    df1_suffix='_test',df2_suffix='_ctrl',
+                                    wc_cols=['.NiA_tran.ref','.NiA_tran.sel'],
+                                                       suffix_all=True)
 
                             data_comparison.loc[:,"Fi_ctrl"]=data_comparison.loc[:,"FiA_ctrl"]
                             data_comparison.loc[:,"Fi_test"]=data_comparison.loc[:,"FiA_test"]

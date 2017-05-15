@@ -26,16 +26,27 @@ def set_index(data,col_index):
 
 # dfs
 def concat_cols(df1,df2,idx_col,df1_cols,df2_cols,
-                df1_suffix,df2_suffix):
-#     df1_cols=[ for col in df1_cols]
+                df1_suffix,df2_suffix,wc_cols=[],suffix_all=False):
     df1=df1.set_index(idx_col)
     df2=df2.set_index(idx_col)    
+    if not len(wc_cols)==0:
+        for wc in wc_cols:
+            df1_cols=df1_cols+[c for c in df1.columns if wc in c]
+            df2_cols=df2_cols+[c for c in df2.columns if wc in c]
     combo=pd.concat([df1.loc[:,df1_cols],df2.loc[:,df2_cols]],axis=1)
     # find common columns and rename them
-    common_cols=[col for col in df1_cols if col in df2_cols]
-    for col in common_cols:
-        df1_cols[df1_cols.index(col)]="%s%s" % (col,df1_suffix)
-        df2_cols[df2_cols.index(col)]="%s%s" % (col,df2_suffix)
+    # print df1_cols
+    # print df2_cols    
+    if suffix_all:
+        df1_cols=["%s%s" % (c,df1_suffix) for c in df1_cols]
+        df2_cols=["%s%s" % (c,df2_suffix) for c in df2_cols]
+        # df1_cols[df1_cols.index(col)]="%s%s" % (col,df1_suffix)
+        # df2_cols[df2_cols.index(col)]="%s%s" % (col,df2_suffix)
+    else:
+        common_cols=[col for col in df1_cols if col in df2_cols]
+        for col in common_cols:
+            df1_cols[df1_cols.index(col)]="%s%s" % (col,df1_suffix)
+            df2_cols[df2_cols.index(col)]="%s%s" % (col,df2_suffix)
     combo.columns=df1_cols+df2_cols
     combo.index.name=idx_col
     return combo

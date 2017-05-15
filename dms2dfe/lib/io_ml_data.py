@@ -34,6 +34,7 @@ import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
 from dms2dfe.lib.io_strs import get_logger
 logging=get_logger()
+# from dms2dfe.lib.io_strs import get_time
 # logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
 def y2classes(data_combo,y_coln,classes=2,
@@ -140,13 +141,13 @@ def add_feats(data_feats_all_mm,data_feats_all):
 def get_cols_del(data_feats):
     cols_del_strs=["Helix formation","beta bridge","Chirality","Offset from residue to the partner",
              "Energy (kcal/mol) of ","Secondary structure",
-             'torsion',
+             'torsion','pKa',
              'cosine of the angle between C=O of residue and C=O of previous residue',
              '$\Delta$(Molecular Polarizability) per substitution',
              '$\Delta$(Molecular weight (Da)) per substitution',
              '$\Delta$(Molecular Refractivity) per substitution',
              'bend',' coordinates of ','(Zyggregator)','(NORSnet)','(PROFbval)','(Ucon)',
-              'Residue (C-alpha) depth']
+              'Residue (C-alpha) depth',]
     cols_del=[]
     for c in cols_del_strs:
         cols_del=cols_del+[col for col in data_feats if c in col]
@@ -222,7 +223,8 @@ def feats_inter(dXy,ycol,cols1=None,cols2=None,
                     dinter.loc[:,'(%s) / (%s)' % (c1,c2)]=d.loc[:,c1].div(d.loc[:,c2])
     if join:
         dXy=dXy.join(dinter)
-    return dXy
+    return dXy,[c for c in dXy.columns.tolist() if c!=ycol],ycol
+
 def make_dXy(dXy,ycol,unique_quantile=0.25,index="mutids",if_rescalecols=True):
     dXy=set_index(dXy,index)
     dXy=dXy.drop(get_cols_del(dXy),axis=1)
@@ -238,7 +240,7 @@ def make_dXy(dXy,ycol,unique_quantile=0.25,index="mutids",if_rescalecols=True):
 
 from boruta import BorutaPy
 def feats_sel_boruta(model,dXy,Xcols,ycol):
-    model_boruta = BorutaPy(model, n_estimators='auto', verbose=2, random_state=1)
+    model_boruta = BorutaPy(model, n_estimators='auto', random_state=88)
     X=dXy.loc[:,Xcols].as_matrix()
     y=dXy.loc[:,ycol].as_matrix()
     model_boruta.fit(X,y)
