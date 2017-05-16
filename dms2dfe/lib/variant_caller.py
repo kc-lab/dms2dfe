@@ -9,7 +9,7 @@
 ================================
 """
 from os import stat,makedirs
-from os.path import splitext, exists,basename,dirname
+from os.path import splitext, exists,basename,dirname,expanduser
 import numpy as np
 import pandas as pd
 import pysam
@@ -32,16 +32,17 @@ def getusablesbams_list(prj_dh):
     for lbli,lbl in lbls.iterrows() :
         # if fh are fastq : find sbam 
         sbam_fh=str(lbl['fhs_1'])
+        sbam_fh=expanduser(sbam_fh)
         #print sbam_fh
         if not (exists(sbam_fh+".list_mut_cds") & exists(sbam_fh+".mat_mut_cds")) :    
             ext=splitext(sbam_fh)[1]              
             if (("fastq" or "fq") in ext):
                 if (exists(sbam_fh+".sam.s.bam")):
-                    sbam_fh=sbam_fh+".sam.s.bam"
+                    sbam_fh=sbam_fh+".sam.s.bam"                
                 elif exists(sbam_fh+".qcd.fastq.sam.s.bam") :
                     sbam_fh=sbam_fh+".qcd.fastq.sam.s.bam"
                 else :
-                    logging.warning("can not find: %s" % basename(sbam_fh))     
+                    logging.warning("can not find: %s" % sbam_fh)     
             # if (("s.bam" in sbam_fh) and (exists(sbam_fh))) and (not exists(sbam_fh+".mat_mut_cds") or (stat(sbam_fh+".mat_mut_cds").st_size ==0)):
             if ((sbam_fh.endswith("s.bam")) and (exists(sbam_fh))) and (not exists(sbam_fh+".mat_mut_cds") or (stat(sbam_fh+".mat_mut_cds").st_size ==0)):
                 sbam_fhs.append(sbam_fh)              

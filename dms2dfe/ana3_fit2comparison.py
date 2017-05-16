@@ -19,6 +19,7 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(
 from dms2dfe import configure
 from dms2dfe.lib.io_mut_files import data_fit2data_comparison,getusable_comparison_list
 from dms2dfe.lib.global_vars import mut_types_form 
+from dms2dfe.lib.io_mut_class import get_data_metrics
 
 def main(prj_dh,test=False):
     """

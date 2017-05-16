@@ -10,7 +10,7 @@
 """
 # import sys
 import pandas as pd
-from os.path import exists,basename,abspath,dirname
+from os.path import exists,basename,abspath,dirname,expanduser
 import logging
 from glob import glob  
 import numpy as np
@@ -245,11 +245,9 @@ def getusable_lbls_list(prj_dh):
     lbls_list=[]
     #data_lbl cols: NiA mutids NiS NiN NiNcut NiNcutlog NiScut NiScutlog NiAcut NiAcutlog    
     for lbli,lbl in lbls.iterrows() :
-        # print "%s/data_lbl/%s/%s" % (prj_dh,'aas',str(lbli))
-        if (not exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',str(lbli)))) \
-        and (not exists("%s/data_lbl/%s/%s" % (prj_dh,'cds',str(lbli)))):
-            fh_1=str(lbl['fhs_1'])
-            # print fh_1
+        # print "%s/data_lbl/%s/%s" % (prj_dh,'aas',str(lbli))        
+        if (not exists("%s/data_lbl/%s/%s" % (prj_dh,'aas',str(lbli)))):
+            fh_1=expanduser(str(lbl['fhs_1']))
             lbl_mat_mut_cds_fh=[fh for fh in glob(fh_1+"*") if '.mat_mut_cds' in fh]
             if len(lbl_mat_mut_cds_fh)!=0:
                 lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
@@ -262,7 +260,7 @@ def getusable_lbls_list(prj_dh):
                     lbl_mat_mut_cds_fh=lbl_mat_mut_cds_fh[0]
                     lbls_list.append([lbli,lbl_mat_mut_cds_fh])
                 else:    
-                    logging.warning("can not find: %s" % basename(fh_1))
+                    logging.warning("can not find: %s" % fh_1)
         # else:
             # logging.info("already processed: %s" % (str(lbli)))
     return lbls_list

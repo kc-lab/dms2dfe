@@ -9,7 +9,7 @@ cores,,2,,Number of cores to be used
 mut_type,,single,[single: double],Whether input data is of single mutation or double mutations
 rescaling,,FALSE,[FALSE | TRUE],Optional: Position wise rescaling the fold changes by fold changes of synonymous (wild type) mutations
 mut_subset,,N,[N: Non-synonymous | S: Synonymous | A: All],Optional: Subset of mutations to be used for down-stream analysis
-ml_input,,FC,[FC: Preferential enrichments| Fi: Fitness scores ],Optional: Whether to use Preferential enrichments or Fitness scores for identification of molecular constraints
+ml_input,,Fi,[FC: Preferential enrichments| Fi: Fitness scores ],Optional: Whether to use Preferential enrichments or Fitness scores for identification of molecular constraints
 clips,,,,Optional: Clip upstream UPTO and downstream FROM codons (space delimited) rg. 10<SPACE>167
 fsta_fh,,found in project directory,,Optional: Path to reference fasta file
 pdb_fh,,found in project directory,,Optional: Path to pdb file

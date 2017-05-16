@@ -556,7 +556,7 @@ def data_lbl2data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,type_forms=['aas']):
                 else:
                     data_fit.loc[:,'FiA']=data_fit.loc[:,'FCA_norm']           
             else:
-                data_fit.loc[:,'FiA']=data_fit.loc[:,'FCA_norm']           
+                data_fit.loc[:,'FiA']=data_fit.loc[:,'FCA_norm']
             if hasattr(info, 'mut_subset'):
                 if info.mut_subset=='N':
                     data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FiA']=np.nan
