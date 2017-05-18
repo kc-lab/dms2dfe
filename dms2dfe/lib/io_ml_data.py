@@ -153,17 +153,19 @@ def get_cols_del(data_feats):
         cols_del=cols_del+[col for col in data_feats if c in col]
     return cols_del
 
-def keep_cols(dXy,dXy_ori,ycol):
-    cols_keep=['Conservation score (inverse shannon uncertainty): gaps ignored',#'Conservation score (ConSurf)',
-     '$\\Delta\\Delta G$ per mutation',
-     '$\\Delta$(logP) per substitution',
-     'Distance from active site residue: minimum',
-     '$\\Delta$(Solubility (%)) per substitution',
-     '$\\Delta$(Polar Surface Area) per substitution',
-     'Distance from dimer interface',
-     'Temperature factor (flexibility)',
-     '$\\Delta$(Solvent Accessible Surface Area) per substitution',
-     'Residue depth']
+def keep_cols(dXy,dXy_ori,ycol,cols_keep=None):
+    if cols_keep is None:
+        cols_keep=[
+         'Conservation score (inverse shannon uncertainty): gaps ignored',#'Conservation score (ConSurf)',
+         '$\\Delta\\Delta G$ per mutation',
+         '$\\Delta$(logP) per substitution',
+         'Distance from active site residue: minimum',
+         '$\\Delta$(Solubility (%)) per substitution',
+         '$\\Delta$(Polar Surface Area) per substitution',
+         'Distance from dimer interface',
+         'Temperature factor (flexibility)',
+         '$\\Delta$(Solvent Accessible Surface Area) per substitution',
+         'Residue depth']
     for c in cols_keep:
         if not c in dXy:
             if c in dXy_ori:
@@ -202,28 +204,38 @@ def feats_inter(dXy,ycol,cols1=None,cols2=None,
     Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
     if cols1 is None and cols2 is None:
         cols_predefined=False
+    else:
+        cols_predefined=True
     if not cols_predefined:
         cols1=Xcols
-        cols2=Xcols       
+        cols2=Xcols
     if if_rescalecols:
-        if cols_predefined:
-            d=rescalecols(dXy.loc[:,cols1+cols2], kind='zscore')
-        else:
-            d=rescalecols(dXy.loc[:,cols1], kind='zscore')            
+        cols = cols1 + [i for i in cols1 if i not in cols2]
+        d=rescalecols(dXy.loc[:,cols], kind='zscore')
     dinter=pd.DataFrame(index=d.index)
     for c1i,c1 in enumerate(cols1):
         for c2i,c2 in enumerate(cols2):
-            if c1i<c2i or cols_predefined:
-                # print c1i,c2i
-                if inter=='-' or inter=='all':
-                    dinter.loc[:,'(%s) - (%s)' % (c1,c2)]=d.loc[:,c1].sub(d.loc[:,c2])
-                if inter=='*' or inter=='all':
-                    dinter.loc[:,'(%s) * (%s)' % (c1,c2)]=d.loc[:,c1].mul(d.loc[:,c2])
-                if inter=='/' or inter=='all':
-                    dinter.loc[:,'(%s) / (%s)' % (c1,c2)]=d.loc[:,c1].div(d.loc[:,c2])
+            if c1!=c2:
+                if len([c for c in dinter if ((c1 in c) and (c2 in c))])==0:
+                    # print '(%s) - (%s)' % (c1,c2)
+                    if inter=='-' or inter=='all':
+                        dinter.loc[:,'(%s) - (%s)' % (c1,c2)]=d.loc[:,c1].sub(d.loc[:,c2])
+                    if inter=='*' or inter=='all':
+                        dinter.loc[:,'(%s) * (%s)' % (c1,c2)]=d.loc[:,c1].mul(d.loc[:,c2])
+                    if inter=='/' or inter=='all':
+                        dinter.loc[:,'(%s) / (%s)' % (c1,c2)]=d.loc[:,c1].div(d.loc[:,c2])
     if join:
         dXy=dXy.join(dinter)
+    else:
+        dXy=dinter
     return dXy,[c for c in dXy.columns.tolist() if c!=ycol],ycol
+
+def feats_inter_sel_corr(dXy,ycol,Xcols,dXy_input,top_cols=None,range_coef=[0.9,0.8,0.7]):
+    dXy,Xcols,ycol=feats_inter(dXy,ycol,cols1=top_cols,cols2=top_cols)
+    dXy,Xcols,ycol=keep_cols(dXy,dXy_input,ycol,cols_keep=dXy_input.columns.tolist())
+    dXy,Xcols,ycol=feats_sel_corr(dXy,ycol,range_coef=range_coef)
+    dXy,Xcols,ycol=keep_cols(dXy,dXy_input,ycol,cols_keep=dXy_input.columns.tolist())
+    return dXy,Xcols,ycol
 
 def make_dXy(dXy,ycol,unique_quantile=0.25,index="mutids",if_rescalecols=True):
     dXy=set_index(dXy,index)
@@ -304,7 +316,7 @@ def make_reg_input(data_combo,data_cls_train,data_cls_tests,
     # data_reg_train=X_cols2binary(data_reg_train,[y_coln_cls])
     # data_reg_tests=X_cols2binary(data_reg_tests,[y_coln_cls])
     X_cols_top=feature_importances_cls.sort_values(by='Importance',ascending=False).\
-    									head(topNfeats).loc[:,'Feature'].tolist()
+                                            head(topNfeats).loc[:,'Feature'].tolist()
     X_cols_reg=[col for col in X_cols_top\
                     if col in data_reg_tests.columns.tolist()]
     data_reg_train=data_reg_train.loc[:,X_cols_reg+[y_coln_reg]]

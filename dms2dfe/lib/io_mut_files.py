@@ -362,18 +362,21 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,
 def get_data_lbl_reps(data_lbl_fn,data_lbl_type,repli,info,data_fit=None,
                       data_lbl_col='NiA_tran',type_form='aas',col_sep='.'):
     if data_lbl_fn in repli.index:
-        for rep in repli.loc[data_lbl_fn,:]:
-            if not pd.isnull(rep):
-                data_lbl_fh="%s/data_lbl/%s/%s" % (info.prj_dh,type_form,rep)
-                data_lbl=pd.read_csv(data_lbl_fh)
-                data_lbl=set_index(data_lbl,'mutids')
-                
-                data_fit_col="%s%s%s%s%s" % (rep,col_sep,data_lbl_col,col_sep,data_lbl_type)
-                data_lbl_col="%s" % (data_lbl_col)
-                if data_fit is None:
-                    data_fit=data_lbl.loc[:,['ref','refi','mut']].copy()
-                data_fit.loc[:,data_fit_col]=data_lbl.loc[:,data_lbl_col]
-        return data_fit
+        reps=repli.loc[data_lbl_fn,:].dropna()
+        for rep in reps:
+            data_lbl_fh="%s/data_lbl/%s/%s" % (info.prj_dh,type_form,rep)
+            data_lbl=pd.read_csv(data_lbl_fh)
+            data_lbl=set_index(data_lbl,'mutids')
+
+            data_fit_col="%s%s%s%s%s" % (rep,col_sep,data_lbl_col,col_sep,data_lbl_type)
+            data_lbl_col="%s" % (data_lbl_col)
+            if data_fit is None:
+                data_fit=data_lbl.loc[:,['ref','refi','mut']].copy()
+            data_fit.loc[:,data_fit_col]=data_lbl.loc[:,data_lbl_col]
+        if len(reps)==0:
+            logging.warning("no replicates found in cfg: %s" % data_lbl_fn)
+        else:
+            return data_fit
     else:
         rep=data_lbl_fn
         data_lbl_fh="%s/data_lbl/%s/%s" % (info.prj_dh,type_form,rep)
@@ -388,8 +391,6 @@ def get_data_lbl_reps(data_lbl_fn,data_lbl_type,repli,info,data_fit=None,
             return data_fit
         else:
             logging.warning('does not exists: %s' % data_lbl_fn)
-
-
 
 def get_data_lbl_type(data_fit,data_lbl_type,data_lbl_col='NiA_tran'):
     data_lbl_type_col="%s.%s" % (data_lbl_col,data_lbl_type)
@@ -409,36 +410,38 @@ def make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,data_lbl_col='NiA_tran',t
     data_fit=None
     data_lbl_type='ref'
     data_fit=get_data_lbl_reps(data_lbl_ref_fn,data_lbl_type,repli,info,data_fit=data_fit)
-    data_fit,data_lbl_ref_reps_cols=get_data_lbl_type(data_fit,data_lbl_type)
-    data_lbl_type='sel'
-    data_fit=get_data_lbl_reps(data_lbl_sel_fn,data_lbl_type,repli,info,data_fit=data_fit)
-    data_fit,data_lbl_sel_reps_cols=get_data_lbl_type(data_fit,data_lbl_type)            
+    if not data_fit is None:
+        data_fit,data_lbl_ref_reps_cols=get_data_lbl_type(data_fit,data_lbl_type)
+        data_lbl_type='sel'
+        data_fit=get_data_lbl_reps(data_lbl_sel_fn,data_lbl_type,repli,info,data_fit=data_fit)
+        if not data_fit is None:
+            data_fit,data_lbl_sel_reps_cols=get_data_lbl_type(data_fit,data_lbl_type)            
 
-    data_lbl_ref_col="%s.%s" % (data_lbl_col,'ref')
-    data_lbl_sel_col="%s.%s" % (data_lbl_col,'sel')
+            data_lbl_ref_col="%s.%s" % (data_lbl_col,'ref')
+            data_lbl_sel_col="%s.%s" % (data_lbl_col,'sel')
 
-    data_fit.loc[:,'FCA']=data_fit.loc[:,data_lbl_sel_col]-data_fit.loc[:,data_lbl_ref_col]
-    data_fit.loc[:,'FCS']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCA']
-    #get zscores
-    col_test_pval="pval %s" % test
-    col_test_stat="stat %s" % test
-    col_multitest_pval="padj %s %s" % (test,multitest)
-    col_multitest_rjct="rejectH0 %s %s" % (test,multitest)
+            data_fit.loc[:,'FCA']=data_fit.loc[:,data_lbl_sel_col]-data_fit.loc[:,data_lbl_ref_col]
+            data_fit.loc[:,'FCS']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCA']
+            #get zscores
+            col_test_pval="pval %s" % test
+            col_test_stat="stat %s" % test
+            col_multitest_pval="padj %s %s" % (test,multitest)
+            col_multitest_rjct="rejectH0 %s %s" % (test,multitest)
+            #data_fit.to_csv('test.csv')# !!
+            data_fit=testcomparison(data_fit,data_lbl_sel_reps_cols,data_lbl_ref_reps_cols,test=test)
+            if not sum(~pd.isnull(data_fit.loc[:,col_test_pval]))==0:
+                data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_rjct],\
+                data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_pval],a1,a2=\
+                multipletests(data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_test_pval].as_matrix(),alpha=0.05, method=multitest)
 
-    data_fit=testcomparison(data_fit,data_lbl_sel_reps_cols,data_lbl_ref_reps_cols,test=test)
-    if not sum(~pd.isnull(data_fit.loc[:,col_test_pval]))==0:
-        data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_rjct],\
-        data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_pval],a1,a2=\
-        multipletests(data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_test_pval].as_matrix(),alpha=0.05, method=multitest)
-
-        data_fit.loc[:,'pval']=data_fit.loc[:,col_test_pval]
-        data_fit.loc[:,'stat']=data_fit.loc[:,col_test_stat]
-        data_fit.loc[:,'padj']=data_fit.loc[:,col_multitest_pval]    
-    else:
-        data_fit.loc[:,'pval']=np.nan
-        data_fit.loc[:,'stat']=np.nan
-        data_fit.loc[:,'padj']=np.nan
-    return data_fit
+                data_fit.loc[:,'pval']=data_fit.loc[:,col_test_pval]
+                data_fit.loc[:,'stat']=data_fit.loc[:,col_test_stat]
+                data_fit.loc[:,'padj']=data_fit.loc[:,col_multitest_pval]    
+            else:
+                data_fit.loc[:,'pval']=np.nan
+                data_fit.loc[:,'stat']=np.nan
+                data_fit.loc[:,'padj']=np.nan
+            return data_fit
 
 def make_deseq2_annot(unsel,sel,data_lbl_col,prj_dh,type_form='aas'):
     repli=pd.read_csv('%s/cfg/repli' % prj_dh).set_index('varname')
@@ -538,40 +541,40 @@ def data_lbl2data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,type_forms=['aas']):
         data_fit_fh='%s/data_fit/%s/%s_WRT_%s' % (info.prj_dh,type_form,data_lbl_sel_fn,data_lbl_ref_fn)
         if not exists(data_fit_fh):
             data_fit=make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,data_lbl_col='NiA_tran',type_form='aas')
-            if info.norm_type=='GLM':
-                data_fit=make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info)
-            elif (info.norm_type=='MLE') or (info.norm_type=='syn'):
-                try:
-                    gauss_mean, gauss_sdev = fit_gauss_params(data_fit.loc[:,'FCS'])
-                    data_fit.loc[:,'FCA_norm']=(data_fit.loc[:,'FCA']-gauss_mean)/gauss_sdev
-                except:
-                    logging.error("norm wrt syn: excepted: data_fit/%s/%s" % (type_form,basename(data_fit_fh)))
-                    sys.exit()
-            elif info.norm_type == 'none':
-                data_fit.loc[:,'FCA_norm']=data_fit.loc[:,'FCA']
-            data_fit.loc[:,'FCS_norm']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCA_norm']
-            if hasattr(info, 'rescaling'):
-                if info.rescaling=='TRUE':
-                    data_fit=rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA")
+            if not data_fit is None:
+                if info.norm_type=='GLM':
+                    data_fit=make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info)
+                elif (info.norm_type=='MLE') or (info.norm_type=='syn'):
+                    try:
+                        gauss_mean, gauss_sdev = fit_gauss_params(data_fit.loc[:,'FCS'])
+                        data_fit.loc[:,'FCA_norm']=(data_fit.loc[:,'FCA']-gauss_mean)/gauss_sdev
+                    except:
+                        logging.error("norm wrt syn: excepted: data_fit/%s/%s" % (type_form,basename(data_fit_fh)))
+                        sys.exit()
+                elif info.norm_type == 'none':
+                    data_fit.loc[:,'FCA_norm']=data_fit.loc[:,'FCA']
+                data_fit.loc[:,'FCS_norm']=data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FCA_norm']
+                if hasattr(info, 'rescaling'):
+                    if info.rescaling=='TRUE':
+                        data_fit=rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA")
+                    else:
+                        data_fit.loc[:,'FiA']=data_fit.loc[:,'FCA_norm']           
                 else:
-                    data_fit.loc[:,'FiA']=data_fit.loc[:,'FCA_norm']           
-            else:
-                data_fit.loc[:,'FiA']=data_fit.loc[:,'FCA_norm']
-            if hasattr(info, 'mut_subset'):
-                if info.mut_subset=='N':
-                    data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FiA']=np.nan
-                elif info.mut_subset=='S':
-                    data_fit.loc[(data_fit.loc[:,'mut']!=data_fit.loc[:,'ref']),'FiA']=np.nan
-            else:
-                data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FiA']=np.nan                                
-            data_fit=class_fit(data_fit,col_fit="FiA")
-            if not exists(dirname(data_fit_fh)):
-                try:
-                    makedirs(dirname(data_fit_fh))
-                except:
-                    logging.info("race error /data_fit/")
-            data_fit.to_csv(data_fit_fh)
-            
+                    data_fit.loc[:,'FiA']=data_fit.loc[:,'FCA_norm']
+                if hasattr(info, 'mut_subset'):
+                    if info.mut_subset=='N':
+                        data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FiA']=np.nan
+                    elif info.mut_subset=='S':
+                        data_fit.loc[(data_fit.loc[:,'mut']!=data_fit.loc[:,'ref']),'FiA']=np.nan
+                else:
+                    data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),'FiA']=np.nan                                
+                data_fit=class_fit(data_fit,col_fit="FiA")
+                if not exists(dirname(data_fit_fh)):
+                    try:
+                        makedirs(dirname(data_fit_fh))
+                    except:
+                        logging.info("race error /data_fit/")
+                data_fit.to_csv(data_fit_fh)
 
 def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA",syn2nan=True):
     if not sum(~pd.isnull(data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),col_fit]))==0:

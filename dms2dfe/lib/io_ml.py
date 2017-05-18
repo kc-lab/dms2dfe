@@ -307,3 +307,174 @@ def data_regress2data_fit(prj_dh,data_fit_key,
     data_fit_combo=data_fit_combo.sort_values(by="refi",axis=0)
     data_fit_combo.to_csv("%s/%s_inferred" % (prj_dh,data_fit_key))
     return data_fit_combo
+
+
+#GB
+from dms2dfe.lib.io_strs import get_time
+from dms2dfe.lib.io_ml_data import feats_inter,keep_cols,feats_sel_corr,make_dXy,feats_inter_sel_corr
+# %run ../../progs/dms2dfe/dms2dfe/lib/io_ml.py
+# %run ../../progs/dms2dfe/dms2dfe/lib/io_ml_data.py
+# %run ../../1_dms_software/progs/dms2dfe/dms2dfe/lib/io_ml_metrics.py
+
+from sklearn.model_selection import cross_val_predict,cross_val_score
+from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
+from sklearn.grid_search import GridSearchCV
+from sklearn.ensemble.partial_dependence import plot_partial_dependence,partial_dependence
+def run_est(est,X,y,params,cv=True):        
+    if est=='GBR':
+        est = GradientBoostingRegressor(random_state=88)
+    elif est=='GBC':
+        est = GradientBoostingClassifier(random_state=88)
+    est.set_params(**params)
+    if cv:
+        r2s=cross_val_score(est,X,y,cv=10)
+        print [r2s,np.mean(r2s)] 
+    return r2s,est
+def est2feats_imp(est,Xcols,Xy=None):
+    try:
+        feat_imp = pd.DataFrame(est.feature_importances_, Xcols)#.sort_values(ascending=False)
+    except:
+        est.fit(Xy[0],Xy[1])
+        feat_imp = pd.DataFrame(est.feature_importances_, Xcols)#.sort_values(ascending=False)
+    feat_imp.columns=['Feature importance']
+    feat_imp=feat_imp.sort_values(by='Feature importance',ascending=False)
+    return feat_imp
+
+def dXy2ml(dXy,ycol,params=None,
+            if_gridsearch=False,
+            if_partial_dependence=False,
+           if_feats_imps=False,
+           inter=None,
+           use_top=None,
+           out_fh=None,
+          regORcls='reg',
+           force=False,):
+    if out_fh is None:
+        out_fh='%s_%s.pkl' % ('dXy2ml',get_time())
+
+    if exists(out_fh) and (not force):
+        dpkl=read_pkl(out_fh)
+    else:
+        dpkl={}
+
+    if not ('dXy_final' in dpkl.keys()) or force:
+        dpkl['dXy_input']=dXy
+        dpkl['ycol']=ycol
+        dXy_input=dXy.copy()
+        to_pkl(dpkl,out_fh) #back
+
+        dXy,Xcols,ycol=make_dXy(dXy,ycol=ycol,if_rescalecols=True,unique_quantile=0.25)
+        dpkl['dXy_preprocessed']=dXy
+        to_pkl(dpkl,out_fh) #back
+
+        dXy,Xcols,ycol=feats_sel_corr(dXy,ycol,range_coef=[0.9,0.8,0.7])
+        dpkl['dXy_feats_sel_corr']=dXy
+        to_pkl(dpkl,out_fh) #back
+
+        dXy,Xcols,ycol=keep_cols(dXy,dXy_input,ycol)
+        dpkl['dXy_feats_indi']=dXy
+        to_pkl(dpkl,out_fh) #back
+
+        if inter=='pre':
+            dXy,Xcols,ycol=feats_inter_sel_corr(dXy,ycol,Xcols,dpkl['dXy_feats_indi'].copy(),
+                                                top_cols=[
+         'Conservation score (inverse shannon uncertainty): gaps ignored',#'Conservation score (ConSurf)',
+         'Distance from active site residue: minimum',
+         'Distance from dimer interface',
+         'Temperature factor (flexibility)',
+         'Residue depth'])
+        
+        dpkl['dXy_feats_inter_sel_corr']=dXy
+        dpkl['dXy_final']=dXy
+    else:
+        dXy_input=dpkl['dXy_input']
+        dXy=dpkl['dXy_final']
+        ycol=dpkl['ycol']
+
+    to_pkl(dpkl,out_fh) #back
+
+    Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
+    X=dXy.loc[:,Xcols].as_matrix()
+    y=dXy.loc[:,ycol].as_matrix()
+    dpkl['X_final']=X
+    dpkl['y_final']=y
+    if regORcls=='reg':
+        est_method='GBR'
+    elif regORcls=='cls':
+        est_method='GBC'
+
+    if (if_gridsearch) or (params is None):
+        if not ('gs_cv' in dpkl.keys()) or force:
+            param_grid = {'learning_rate':[0.005,0.001,0.0001],#[0.1,0.01,0.005],# tuned with n estimators
+                          'n_estimators':[1500,2000,3000,5000], # tuned with learning rate
+                          'min_samples_leaf':[50,125], # lower -> less overfitting
+                          'max_features':[None], 
+                          'max_depth':[6],
+                          'min_samples_split':[int(len(dXy)*0.05),int(len(dXy)*0.1),int(len(dXy)*0.25),int(len(dXy)*0.5)], # 0.5 to 1 of samples
+                          'subsample':[0.8],
+                          }
+            if regORcls=='reg':
+                param_grid['loss']=['ls', 'lad', 'huber']
+                est_method='GBR'
+                est = GradientBoostingRegressor(random_state=88)
+            elif regORcls=='cls':
+                param_grid['loss']=['deviance', 'exponential']
+                est_method='GBC'
+                est = GradientBoostingClassifier(random_state=88)
+            gs_cv = GridSearchCV(est, param_grid, n_jobs=8,cv=10).fit(X, y)
+            print [gs_cv.best_params_,gs_cv.best_score_]
+            params=gs_cv.best_params_
+            dpkl['gs_cv']=gs_cv
+            to_pkl(dpkl,out_fh) #back
+            dpkl['params']=params
+    
+    if 'params' in dpkl.keys() and not force:
+        params= dpkl['params']
+    elif params is None:
+        dpkl['params']=params
+        
+    if not ('est_all_feats_r2s' in dpkl.keys()) or force:
+        r2s,est=run_est(est=est_method,X=X,y=y,params=params)
+        dpkl['est_all_feats']=est
+        dpkl['est_all_feats_r2s']=r2s
+
+    if not ('feat_imp' in dpkl.keys()) or force:
+        if if_gridsearch:
+            feat_imp=est2feats_imp(dpkl['gs_cv'].best_estimator_,Xcols,Xy=None)
+        else:
+            feat_imp=est2feats_imp(est,Xcols,Xy=[X,y])
+        dpkl['feat_imp']=feat_imp
+        to_pkl(dpkl,out_fh) #back
+
+    if if_feats_imps:
+        fig=plt.figure(figsize=(5,10))
+        ax=plt.subplot(111)
+        feat_imp.plot(kind='barh', title='Feature Importances',ax=ax)
+        ax.set_ylabel('Feature Importance Score')
+        to_pkl(dpkl,out_fh) #back
+
+    if not use_top is None:
+        Xcols=dpkl['feat_imp'].head(use_top).index.tolist() #int(len(feat_imp)*0.15)
+#         print Xcols[:use_top//5]
+        if inter=='top':
+            dXy,Xcols,ycol=feats_inter_sel_corr(dXy,ycol,Xcols,dXy_input,top_cols=Xcols[:len(Xcols)//5])
+        X=dXy.loc[:,Xcols].as_matrix()
+        y=dXy.loc[:,ycol].as_matrix()        
+        r2s,est=run_est(est=est_method,X=X,y=y,params=params)
+        feat_imp=est2feats_imp(est,Xcols,Xy=[X,y])
+        dpkl['feat_imp_top_feats']=feat_imp
+        dpkl['dXy_top_feats']=dXy
+        dpkl['est_top_feats']=est
+        dpkl['est_top_feats_r2s']=r2s
+        to_pkl(dpkl,out_fh) #back
+        
+    if if_partial_dependence:
+        feats_indi=[s for s in Xcols if not ((') ' in s) and (' (' in s))]
+        features=[Xcols.index(f) for f in feats_indi]
+        fig, axs = plot_partial_dependence(est, X, features,
+                                           feature_names=Xcols,
+                                           n_jobs=3, grid_resolution=50,
+                                          figsize=[10,30])
+    to_pkl(dpkl,out_fh) #back
+    return est,dXy,dpkl
+

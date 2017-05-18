@@ -17,18 +17,21 @@ from statsmodels.sandbox.stats.multicomp import multipletests
 from dms2dfe.lib.io_dfs import debad 
 
 def testcomparison(df,smp1_cols,smp2_cols,test='ttest'):
-    col_stat='stat %s' % test
-    col_pval='pval %s' % test
-    df.loc[:,col_stat]=np.nan
-    df.loc[:,col_pval]=np.nan
-    for i in df.index:
-        X=DescrStatsW(df.loc[i,smp1_cols].as_matrix())
-        Y=DescrStatsW(df.loc[i,smp2_cols].as_matrix())
-        if test=='ttest':
-            df.loc[i,col_stat],df.loc[i,col_pval],tmp=CompareMeans(X,Y).ttest_ind()
-        if test=='ztest':
-            df.loc[i,col_stat],df.loc[i,col_pval]=CompareMeans(X,Y).ztest_ind()
-    return df
+    if len(smp1_cols)==0 or len(smp2_cols)==0:
+        logging.warning("data not exist for comparison")
+    else:
+        col_stat='stat %s' % test
+        col_pval='pval %s' % test
+        df.loc[:,col_stat]=np.nan
+        df.loc[:,col_pval]=np.nan
+        for i in df.index:
+            X=DescrStatsW(df.loc[i,smp1_cols].as_matrix())
+            Y=DescrStatsW(df.loc[i,smp2_cols].as_matrix())
+            if test=='ttest':
+                df.loc[i,col_stat],df.loc[i,col_pval],tmp=CompareMeans(X,Y).ttest_ind()
+            if test=='ztest':
+                df.loc[i,col_stat],df.loc[i,col_pval]=CompareMeans(X,Y).ztest_ind()
+        return df
 
 from scipy import stats
 from dms2dfe.lib.io_dfs import denan

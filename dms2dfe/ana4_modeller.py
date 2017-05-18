@@ -55,9 +55,9 @@ def main(prj_dh,test=False):
     else:
         ml_input='FCA_norm'    
     
-    global prj_dh_global,data_feats,ml_input_global
-    prj_dh_global=prj_dh
-    ml_input_global=ml_input
+    # global prj_dh_global,data_feats,ml_input_global
+    # prj_dh_global=prj_dh
+    # ml_input_global=ml_input
     type_form="aas"
     if not exists("%s/plots/%s" % (prj_dh,type_form)):
         makedirs("%s/plots/%s" % (prj_dh,type_form))
@@ -79,9 +79,11 @@ def main(prj_dh,test=False):
                 # for data_fit_key in data_fit_keys:
                 #     pooled_io_ml(data_fit_key)
             else:
-                pool_io_ml=Pool(processes=int(cores)) 
-                pool_io_ml.map(pooled_io_ml,data_fit_keys)
-                pool_io_ml.close(); pool_io_ml.join()
+                for data_fit_key in data_fit_keys:
+                    pooled_io_ml(data_fit_key)
+                # pool_io_ml=Pool(processes=int(cores)) 
+                # pool_io_ml.map(pooled_io_ml,data_fit_keys)
+                # pool_io_ml.close(); pool_io_ml.join()
         else:
             logging.info("already processed")
     elif mut_type=='double':
@@ -119,8 +121,11 @@ def pooled_io_ml(data_fit_key):
     
     :param data_fit_key: in the form <data_fit>/<aas/cds>/<name of file>.
     """
-    data_fit2ml(data_fit_key,prj_dh_global,data_feats,
-               data_fit_col=ml_input_global,data_fit_col_alt=ml_input_global)
+    from dms2dfe.tmp import info
+    dX_fh="%s/data_feats/aas/data_feats_all" % (info.prj_dh)
+    dy_fh='%s/%s' % (info.prj_dh,data_fit_key)
+
+    data_fit2ml(dX_fh,dy_fh,info,regORcls='cls')
     
 if __name__ == '__main__':
     if len(sys.argv)==3:

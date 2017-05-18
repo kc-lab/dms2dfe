@@ -80,12 +80,12 @@ def main(prj_dh,test=False):
             logging.info("transforming frequencies: %s" % transform_type)
             transform_data_lbl(prj_dh,transform_type)
         #FITNESS
-        fits_pairs_list    =getusable_fits_list(prj_dh,data_fit_dh='data_fit')    
+        fits_pairs_list=getusable_fits_list(prj_dh,data_fit_dh='data_fit')    
         if len(fits_pairs_list)!=0:
             if test:
-                pooled_data_lbl2data_fit(fits_pairs_list[0])      
-                # for fits_pairs in fits_pairs_list:
-                #     pooled_data_lbl2data_fit(fits_pairs)
+                # pooled_data_lbl2data_fit(fits_pairs_list[0])      
+                for fits_pairs in fits_pairs_list:
+                    pooled_data_lbl2data_fit(fits_pairs)
             else:
                 pool_data_lbl2data_fit=Pool(processes=int(cores)) 
                 pool_data_lbl2data_fit.map(pooled_data_lbl2data_fit,
