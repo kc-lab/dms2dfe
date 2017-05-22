@@ -478,3 +478,35 @@ def dXy2ml(dXy,ycol,params=None,
     to_pkl(dpkl,out_fh) #back
     return est,dXy,dpkl
 
+def data_fit2ml(dX_fh,dy_fh,info,regORcls='cls'):
+
+    dy=pd.read_csv(dy_fh).set_index('mutids')
+    dX=pd.read_csv(dX_fh).set_index('mutids')
+    out_fh='%s/data_ml/%s.pkl' % (info.prj_dh,basename(dy))
+    if regORcls=='reg':
+        ycol='FiA'
+        dXy=pd.concat([dy.loc[:,ycol],dX],axis=1)
+        dXy.index.name='mutids'
+        params={'loss': 'ls', 'learning_rate': 0.001, 'min_samples_leaf': 50, 'n_estimators': 5000, 'subsample': 0.8, 'min_samples_split': 38, 'max_features': None, 'max_depth': 6}
+    elif regORcls=='cls':
+        ycol='class_fit_binary'
+        dy.loc[(dy.loc[:,'class_fit']=='enriched'),ycol]=1
+        dy.loc[(dy.loc[:,'class_fit']=='neutral'),ycol]=np.nan
+        dy.loc[(dy.loc[:,'class_fit']=='depleted'),ycol]=0
+        dXy=pd.concat([dy.loc[:,ycol],dX],axis=1)
+        dXy.index.name='mutids'
+    #     params={'loss': 'deviance', 'learning_rate': 0.0001, 'min_samples_leaf': 50, 'n_estimators': 3000, 'subsample': 0.8, 'min_samples_split': 23, 'max_features': None, 'max_depth': 6}
+        params={'loss': 'exponential', 'learning_rate': 0.001, 'min_samples_leaf': 50, 'n_estimators': 1500, 'subsample': 0.8, 'min_samples_split': 23, 'max_features': None, 'max_depth': 6}
+    e,d,p=dXy2ml(dXy,ycol,      
+    #         params=params,
+            if_gridsearch=True,
+            if_partial_dependence=False,
+    #        if_feats_imps=True,
+            out_fh=out_fh,
+            inter='pre',
+            force=True,
+    #         use_top=25,
+            regORcls=regORcls)
+    
+    # get metrics plots 
+    get_GB_cls_metrics(data_fh=out_fh,info=info)
