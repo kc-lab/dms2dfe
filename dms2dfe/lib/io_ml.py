@@ -318,7 +318,7 @@ from dms2dfe.lib.io_ml_data import feats_inter,keep_cols,feats_sel_corr,make_dXy
 
 from sklearn.model_selection import cross_val_predict,cross_val_score
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble.partial_dependence import plot_partial_dependence,partial_dependence
 def run_est(est,X,y,params,cv=True):        
     if est=='GBR':
@@ -364,6 +364,8 @@ def dXy2ml(dXy,ycol,params=None,
         to_pkl(dpkl,out_fh) #back
 
         dXy,Xcols,ycol=make_dXy(dXy,ycol=ycol,if_rescalecols=True,unique_quantile=0.25)
+        if len(dXy)<100:
+            return False
         dpkl['dXy_preprocessed']=dXy
         to_pkl(dpkl,out_fh) #back
 
@@ -476,13 +478,15 @@ def dXy2ml(dXy,ycol,params=None,
                                            n_jobs=3, grid_resolution=50,
                                           figsize=[10,30])
     to_pkl(dpkl,out_fh) #back
-    return est,dXy,dpkl
+    # return est,dXy,dpkl
+
+from dms2dfe.lib.io_ml_metrics import get_GB_cls_metrics
 
 def data_fit2ml(dX_fh,dy_fh,info,regORcls='cls'):
 
     dy=pd.read_csv(dy_fh).set_index('mutids')
     dX=pd.read_csv(dX_fh).set_index('mutids')
-    out_fh='%s/data_ml/%s.pkl' % (info.prj_dh,basename(dy))
+    out_fh='%s/data_ml/%s.pkl' % (info.prj_dh,basename(dy_fh))
     if regORcls=='reg':
         ycol='FiA'
         dXy=pd.concat([dy.loc[:,ycol],dX],axis=1)
@@ -497,14 +501,14 @@ def data_fit2ml(dX_fh,dy_fh,info,regORcls='cls'):
         dXy.index.name='mutids'
     #     params={'loss': 'deviance', 'learning_rate': 0.0001, 'min_samples_leaf': 50, 'n_estimators': 3000, 'subsample': 0.8, 'min_samples_split': 23, 'max_features': None, 'max_depth': 6}
         params={'loss': 'exponential', 'learning_rate': 0.001, 'min_samples_leaf': 50, 'n_estimators': 1500, 'subsample': 0.8, 'min_samples_split': 23, 'max_features': None, 'max_depth': 6}
-    e,d,p=dXy2ml(dXy,ycol,      
+    dXy2ml(dXy,ycol,      
     #         params=params,
             if_gridsearch=True,
             if_partial_dependence=False,
     #        if_feats_imps=True,
             out_fh=out_fh,
             inter='pre',
-            force=True,
+            # force=True,
     #         use_top=25,
             regORcls=regORcls)
     

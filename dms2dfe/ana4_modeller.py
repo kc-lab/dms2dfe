@@ -20,7 +20,7 @@ from dms2dfe.lib.io_strs import get_logger
 logging=get_logger()
 from dms2dfe import configure
 from dms2dfe.lib.io_dfs import set_index
-#from dms2dfe.lib.io_ml import data_fit2ml,get_cols_del,make_data_combo,data_combo2ml
+from dms2dfe.lib.io_ml import data_fit2ml#,get_cols_del,make_data_combo,data_combo2ml
 
 def main(prj_dh,test=False):
     """
@@ -64,8 +64,8 @@ def main(prj_dh,test=False):
     if not exists("%s/data_ml/%s" % (prj_dh,type_form)):
         makedirs("%s/data_ml/%s" % (prj_dh,type_form))
     data_feats=pd.read_csv("%s/data_feats/aas/data_feats_all" % (prj_dh))
-    for col in get_cols_del(data_feats):
-        del data_feats[col]
+    # for col in get_cols_del(data_feats):
+    #     del data_feats[col]
         
     if mut_type=='single':
         data_fit_keys = ["data_fit/%s/%s" % (type_form,basename(fh)) \
@@ -79,7 +79,7 @@ def main(prj_dh,test=False):
                 # for data_fit_key in data_fit_keys:
                 #     pooled_io_ml(data_fit_key)
             else:
-                for data_fit_key in data_fit_keys:
+                for data_fit_key in data_fit_keys[:2]:
                     pooled_io_ml(data_fit_key)
                 # pool_io_ml=Pool(processes=int(cores)) 
                 # pool_io_ml.map(pooled_io_ml,data_fit_keys)
@@ -124,7 +124,7 @@ def pooled_io_ml(data_fit_key):
     from dms2dfe.tmp import info
     dX_fh="%s/data_feats/aas/data_feats_all" % (info.prj_dh)
     dy_fh='%s/%s' % (info.prj_dh,data_fit_key)
-
+    logging.info('processing: %s' % basename(dy_fh))
     data_fit2ml(dX_fh,dy_fh,info,regORcls='cls')
     
 if __name__ == '__main__':

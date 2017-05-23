@@ -11,7 +11,7 @@
 from os.path import abspath,dirname,exists,basename
 from os import makedirs
 
-from sklearn.cross_validation import train_test_split,KFold
+from sklearn.model_selection import train_test_split,KFold
 from sklearn.preprocessing import LabelEncoder,label_binarize
 from sklearn.metrics import roc_curve, auc
 from sklearn.grid_search import GridSearchCV
@@ -276,12 +276,15 @@ def get_RF_classi_metrics(data_classi_fh,data_dh='data_ml/',plot_dh='plots/'):
     get_RF_cr(y_test,y_pred,classes,data_out_fh=data_out_fh)
 
 def get_GB_cls_metrics(data_fh,info):
-
+    from pylab import figtext
     dpkl=read_pkl(data_fh)
+    if not 'gs_cv' in dpkl.keys():
+        return False
     dXy=dpkl['dXy_final']
     ycol=dpkl['ycol']
     gs_cv=dpkl['gs_cv']
-    
+    feat_imp = dpkl['feat_imp']
+
     Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
     est=gs_cv.best_estimator_
     X=dXy.loc[:,Xcols].as_matrix()
@@ -289,28 +292,33 @@ def get_GB_cls_metrics(data_fh,info):
 
     #partial dep 
     plot_type='partial_dep'
-    feats_indi=[s for s in dpkl['feat_imp'].head(6).index.tolist() if not ((') ' in s) and (' (' in s))]
-    features=[Xcols.index(f) for f in feats_indi]
-    feature_names=linebreaker(Xcols)
-    fig, axs = plot_partial_dependence(est, X, features,#[[features[1],features[2]]],
-                                       feature_names=feature_names,
-                                       n_jobs=8, grid_resolution=50,
-                                       n_cols=2,
-                                       line_kw={'color':'r'},
-                                      figsize=[5,7])
-    figtext(0.9,-0.2,'AUC = %.2f' % gs_cv.best_score_,ha='right',color='b')
-    saveplot('%s/data_ml/%s.%s.pdf' % (info.prj_dh,plot_type,basename(data_fh)),tight_layout=False)
+    plot_fh='%s/data_ml/%s.%s.pdf' % (info.prj_dh,plot_type,basename(data_fh))
+    if not exists(plot_fh):
+        feats_indi=[s for s in dpkl['feat_imp'].head(6).index.tolist() if not ((') ' in s) and (' (' in s))]
+        features=[Xcols.index(f) for f in feats_indi]
+        feature_names=linebreaker(Xcols)
+        from sklearn.ensemble.partial_dependence import plot_partial_dependence
+        fig, axs = plot_partial_dependence(est, X, features,#[[features[1],features[2]]],
+                                           feature_names=feature_names,
+                                           n_jobs=8, grid_resolution=50,
+                                           n_cols=2,
+                                           line_kw={'color':'r'},
+                                          figsize=[5,7])
+        figtext(0.9,-0.2,'AUC = %.2f' % gs_cv.best_score_,ha='right',color='b')
+        saveplot(plot_fh,form='pdf',tight_layout=False)
     
     #relimp
     plot_type='featimps'
-    featst=10
-    fig=plt.figure(figsize=(3,featst*0.5))
-    fig = plt.figure(figsize=(8,featst*0.25))#figsize=(11,5))
-    ax=plt.subplot(111)
-    feat_imp=feat_imp.sort_values(by='Feature importance',ascending=True)
-    feat_imp.index=linebreaker(feat_imp.index, break_pt=30)
-    feat_imp.tail(featst).plot(kind='barh',ax=ax, color='red')
-    ax.set_xlabel('Feature Importance')
-    ax.legend([])    
-    figtext(0.9,-0.2,'AUC = %.2f' % gs_cv.best_score_,ha='right',color='b')
-    saveplot('%s/data_ml/%s.%s.pdf' % (info.prj_dh,plot_type,basename(data_fh)),tight_layout=False)
+    plot_fh='%s/data_ml/%s.%s.pdf' % (info.prj_dh,plot_type,basename(data_fh))
+    if not exists(plot_fh):
+        featst=10
+        fig=plt.figure(figsize=(3,featst*0.75))
+        # fig = plt.figure(figsize=(8,featst*0.25))#figsize=(11,5))
+        ax=plt.subplot(111)
+        feat_imp=feat_imp.sort_values(by='Feature importance',ascending=True)
+        feat_imp.index=linebreaker(feat_imp.index, break_pt=30)
+        feat_imp.tail(featst).plot(kind='barh',ax=ax, color='red')
+        ax.set_xlabel('Feature Importance')
+        ax.legend([])    
+        figtext(0.9,-0.2,'AUC = %.2f' % gs_cv.best_score_,ha='right',color='b')
+        saveplot(plot_fh,form='pdf',tight_layout=False)

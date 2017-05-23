@@ -26,7 +26,7 @@ from dms2dfe.lib.plot_mut_data import plot_data_lbl_repli,plot_data_fit_scatter,
 from dms2dfe.lib.plot_mut_data_heatmaps import plot_data_fit_heatmap,make_plot_cluster_sub_matrix
 from dms2dfe.lib.plot_pdb import vector2bfactor
 from dms2dfe.lib.global_vars import mut_types_form
-from dms2dfe.lib.io_dfs import denanrows
+from dms2dfe.lib.io_dfs import denanrows,set_index
 from dms2dfe.lib.io_mut_files import mutids_converter
 # from dms2dfe.lib.io_plot_files import plot_coverage,plot_heatmap,plot_clustermap,plot_multisca,plot_violin,plot_pies,plot_pdb
 
@@ -108,6 +108,7 @@ def plot_submap(info,data_fit_fhs=None,plot_type="submap",
                 ):
     data_feats_all_fh='%s/data_feats/aas/data_feats_all' % info.prj_dh
     data_feats_all=pd.read_csv(data_feats_all_fh).set_index('mutids')
+    data_feats_all=set_index(data_feats_all,col_index='mutids')
     if data_fit_fhs is None:
         data_fit_fhs=get_fhs('%s/data_fit/aas/' % info.prj_dh,
                             include='_WRT_',exclude='_inferred')
@@ -115,7 +116,9 @@ def plot_submap(info,data_fit_fhs=None,plot_type="submap",
     for data_fit_fh in data_fit_fhs:
         data_fit_fn=basename(data_fit_fh)
         data_fit=pd.read_csv(data_fit_fh)
-        data_plot=pd.concat([data_fit,data_feats_all],axis=1)
+        # data_plot=pd.concat([data_fit,data_feats_all],axis=1)
+        data_plot=data_fit.join(data_feats_all)
+        data_plot.to_csv('test.csv')
         plot_fh="%s/plots/%s/%s.%s.pdf" % (info.prj_dh,type_form,data_fit_fn,plot_type) 
         if not exists(plot_fh):
             for c in ['FiAcol','FiArow']:

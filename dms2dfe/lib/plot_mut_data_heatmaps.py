@@ -135,7 +135,7 @@ def plotacc(data_feats,ax,refi_lims,fontsize=20,ticks=False):
             ax.text(refi_lims[1]+1,0,"%sSolvent accessibility" % (r'$\leftarrow$'),fontdict={'size': fontsize})
             return ax    
             break
-    print [c for c in data_feats.columns if 'ccessib' in c]
+    # print [c for c in data_feats.columns if 'ccessib' in c]
     return ax
 
 def plot_data_fit_heatmap(data_fit,type_form,col,
@@ -402,6 +402,7 @@ def make_plot_cluster_sub_matrix(data_combo,xcol,boundaries,
     cols=[xcol,'mut','ref','refrefi']+feats
     for col in cols:
         if not col in data_combo:
+            # print col
             data_combo.loc[:,col]=mutids_converter(data_combo.loc[:,'mutids'],
                                                    col, 'aas')
             # break
@@ -416,7 +417,7 @@ def make_plot_cluster_sub_matrix(data_combo,xcol,boundaries,
                                                aggfunc='mean').sum()
     data_feat_ref.loc[(data_feat_ref.loc[:,featn]==0),featn]=data_feat_ref.loc[:,featn].min()
 #     print data_feat_ref.loc[:,featn]
-    print data_feat_ref.loc[:,featn]
+    # print data_feat_ref.loc[:,featn]
     col_colors=get_rgb_colors(data_feat_ref.loc[:,featn])
     featn=feats[0]
     data_feat_ref.loc[:,featn]=data2sub_matrix(data_combo, featn,
