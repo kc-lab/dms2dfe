@@ -1,17 +1,17 @@
-#dms2dfe
+# dms2dfe
 
-##Overview
+## Overview
 
 dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of **F**itness **E**ffects (DFE)) is designed for analyzing Deep Mutational Scaning [1] data in terms of Distribution of Fitness Effects.
 
-##Installation
+## Installation
 
 Download the latest release from https://github.com/kc-lab/dms2dfe/releases .
 
 	cd dms2dfe
 	pip install .
 
-##Usage
+## Usage
 
 From bash command line, create a project directory
 
@@ -23,20 +23,20 @@ Run the analysis,
 
     dms2dfe path/to/project_directory
 
-##Full documentation
+## Full documentation
 
 Version 1.x.x: http://kc-lab.github.io/dms2dfe/v1.0.0/html/  
 
-##Publication
+## Publication
 
 **dms2dfe: Comprehensive Workflow for Analysis of Deep Mutational Scanning Data**  
 Rohan Dandage, Kausik Chakraborty  
 doi: http://dx.doi.org/10.1101/072645  
 
-##Questions
+## Questions
 
 Please mention them here: https://github.com/rraadd88/dms2dfe/issues .
 
-##Footnotes
+## Footnotes
 
 [1] Fowler, D.M., and S. Fields. 2014. Deep mutational scanning: a new style of protein science. Nature methods. 11: 801–7.

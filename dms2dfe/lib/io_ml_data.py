@@ -250,16 +250,16 @@ def make_dXy(dXy,ycol,unique_quantile=0.25,index="mutids",if_rescalecols=True):
         dXy.loc[:,Xcols]=rescalecols(dXy.loc[:,Xcols])
     return dXy,Xcols,ycol
 
-from boruta import BorutaPy
-def feats_sel_boruta(model,dXy,Xcols,ycol):
-    model_boruta = BorutaPy(model, n_estimators='auto', random_state=88)
-    X=dXy.loc[:,Xcols].as_matrix()
-    y=dXy.loc[:,ycol].as_matrix()
-    model_boruta.fit(X,y)
-#     print Xcols,model_boruta.support_
-    Xcols=np.array(Xcols)
-    Xcols=Xcols[np.array(model_boruta.support_)]
-    return dXy.loc[:,Xcols.tolist()+[ycol]],Xcols,ycol
+# from boruta import BorutaPy
+# def feats_sel_boruta(model,dXy,Xcols,ycol):
+#     model_boruta = BorutaPy(model, n_estimators='auto', random_state=88)
+#     X=dXy.loc[:,Xcols].as_matrix()
+#     y=dXy.loc[:,ycol].as_matrix()
+#     model_boruta.fit(X,y)
+# #     print Xcols,model_boruta.support_
+#     Xcols=np.array(Xcols)
+#     Xcols=Xcols[np.array(model_boruta.support_)]
+#     return dXy.loc[:,Xcols.tolist()+[ycol]],Xcols,ycol
 
 # def make_input(d,ycol,index="mutids",if_rescalecols=True):
 #     d=set_index(d,index)
