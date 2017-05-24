@@ -515,6 +515,7 @@ def make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info):
         data_deseq2_res=pd.read_csv(data_deseq2_res_fh).set_index('Unnamed: 0')
     except:
         logging.error('check deseq2 log for more info: %s' % basename(log_fh))
+        logging.error('to install deseq2 refer to http://kc-lab.github.io/kc-lab.github.io/dms2dfe/v1.0.0/html/1installation_deps.html#manually-installed-dependencies')
     data_deseq2_res.index.name='mutids'
 #     baseMean  log2FoldChange  lfcSE   stat    pvalue  padj
     test='Waldtest'
