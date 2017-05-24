@@ -14,7 +14,7 @@ from os import makedirs
 from sklearn.model_selection import train_test_split,KFold
 from sklearn.preprocessing import LabelEncoder,label_binarize
 from sklearn.metrics import roc_curve, auc
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import confusion_matrix,classification_report,regression
 
 from dms2dfe.lib.io_data_files import read_pkl,to_pkl
