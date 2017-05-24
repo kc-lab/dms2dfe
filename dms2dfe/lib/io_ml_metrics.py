@@ -303,7 +303,7 @@ def get_GB_cls_metrics(data_fh,info):
         from sklearn.ensemble.partial_dependence import plot_partial_dependence
         fig, axs = plot_partial_dependence(est, X, features,#[[features[1],features[2]]],
                                            feature_names=feature_names,
-                                           n_jobs=8, grid_resolution=50,
+                                           n_jobs=int(info.cores), grid_resolution=50,
                                            n_cols=2,
                                            line_kw={'color':'r'},
                                           figsize=[5,7])

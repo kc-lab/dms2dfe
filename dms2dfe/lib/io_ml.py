@@ -348,7 +348,7 @@ def dXy2ml(dXy,ycol,params=None,
            use_top=None,
            out_fh=None,
           regORcls='reg',
-           force=False,):
+           force=False,cores=8):
     if out_fh is None:
         out_fh='%s_%s.pkl' % ('dXy2ml',get_time())
 
@@ -426,7 +426,7 @@ def dXy2ml(dXy,ycol,params=None,
                 param_grid['loss']=['deviance', 'exponential']
                 est_method='GBC'
                 est = GradientBoostingClassifier(random_state=88)
-            gs_cv = GridSearchCV(est, param_grid, n_jobs=8,cv=10).fit(X, y)
+            gs_cv = GridSearchCV(est, param_grid, n_jobs=cores,cv=10).fit(X, y)
             print [gs_cv.best_params_,gs_cv.best_score_]
             params=gs_cv.best_params_
             dpkl['gs_cv']=gs_cv
@@ -478,7 +478,7 @@ def dXy2ml(dXy,ycol,params=None,
         features=[Xcols.index(f) for f in feats_indi]
         fig, axs = plot_partial_dependence(est, X, features,
                                            feature_names=Xcols,
-                                           n_jobs=3, grid_resolution=50,
+                                           n_jobs=cores, grid_resolution=50,
                                           figsize=[10,30])
     to_pkl(dpkl,out_fh) #back
     # return est,dXy,dpkl
@@ -513,7 +513,8 @@ def data_fit2ml(dX_fh,dy_fh,info,regORcls='cls'):
             inter='pre',
             # force=True,
     #         use_top=25,
-            regORcls=regORcls)
+            regORcls=regORcls,
+            cores=int(info.cores))
     
     # get metrics plots 
     get_GB_cls_metrics(data_fh=out_fh,info=info)

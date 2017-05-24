@@ -76,26 +76,30 @@ def main(prj_dh,inputs=None):
         bowtie2_fh="dms2dfe_dependencies/bowtie2-2.2.1/bowtie2"   
         if not exists(dirname(bowtie2_fh)):
             logging.info("configuring: bowtie2")
-            bowtie2_lnk="http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.1/bowtie2-2.2.1-linux-x86_64.zip"
-            com="wget -q %s --directory-prefix=dms2dfe_dependencies" % bowtie2_lnk
-            subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
-            subprocess.call("unzip dms2dfe_dependencies/bowtie2-2.2.1-linux-x86_64.zip -d dms2dfe_dependencies",\
+            bowtie2_src='dms2dfe_dependencies/v2.2.1.zip'
+            if not exists(bowtie2_src):        
+                bowtie2_lnk="https://github.com/BenLangmead/bowtie2/archive/v2.2.1.zip"
+                com="wget -q %s --directory-prefix=dms2dfe_dependencies" % bowtie2_lnk
+                subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+            subprocess.call("unzip %s -d dms2dfe_dependencies" % bowtie2_src,\
                             shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             subprocess.call("chmod +x %s" % bowtie2_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT) 
         #samtools
-        samtools_fh="dms2dfe_dependencies/samtools-0.1.18/samtools"        
+        samtools_fh="dms2dfe_dependencies/samtools-0.1.20/samtools"        
         if not exists(dirname(samtools_fh)):
             logging.info("configuring: samtools")
-            samtools_lnk="https://sourceforge.net/projects/samtools/files/samtools/0.1.18/samtools-0.1.18.tar.bz2"
-            com="wget -q %s --directory-prefix=dms2dfe_dependencies" % samtools_lnk
-            subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
-            subprocess.call("bzip2 -dc dms2dfe_dependencies/samtools-0.1.18.tar.bz2 | tar xvf - -C dms2dfe_dependencies",\
-                            shell=True,stdout=log_f, stderr=subprocess.STDOUT)
-        if not exists(samtools_fh):
-            std=subprocess.Popen("cd dms2dfe_dependencies/samtools-0.1.18; make",shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+            samtools_src='dms2dfe_dependencies/0.1.20.zip'
+            if not exists(samtools_src):
+                samtools_lnk="https://github.com/samtools/samtools/archive/0.1.20.zip"
+                com="wget -q %s --directory-prefix=dms2dfe_dependencies" % samtools_lnk
+                subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+            else:
+                subprocess.call("unzip %s -d dms2dfe_dependencies" % samtools_src,\
+                                shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+            std=subprocess.Popen("cd dms2dfe_dependencies/samtools-0.1.20; make",shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             log_f.close();log_f=open(log_fh,'r');log_lines=log_f.readlines();log_f.close();log_f = open(log_fh,'a')
             if len([l for l in log_lines if "fatal error: zlib.h" in l])>0:
-                print "\n###   TROUBLESHOOT   ###\nFor interference issues (with htslib) installation of samtools dependency gave following error,\n.. zlib.h: No such file or directory\nPlease use following command before installing samtools. i.e.\n\nsudo apt-get install zlib1g-dev libncurses5-dev;sudo apt-get update\n\ndms2dfe_dependencies/samtools-0.1.18/make\nAfter the successfull installation, please configure dms2dfe by following command.\nfrom dms2dfe import configure\nconfigure.main(prj_dh)\n\n"
+                print "\n###   TROUBLESHOOT   ###\nFor interference issues (with htslib) installation of samtools dependency gave following error,\n.. zlib.h: No such file or directory\nPlease use following command before installing samtools. i.e.\n\nsudo apt-get install zlib1g-dev libncurses5-dev;sudo apt-get update\n\ndms2dfe_dependencies/samtools-0.1.20/make\nAfter the successfull installation, please configure dms2dfe by following command.\nfrom dms2dfe import configure\nconfigure.main(prj_dh)\n\n"
                 # sys.exit()
             else:
                 subprocess.call("chmod +x %s" % samtools_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
