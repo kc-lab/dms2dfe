@@ -426,6 +426,7 @@ def dXy2ml(dXy,ycol,params=None,
                 param_grid['loss']=['deviance', 'exponential']
                 est_method='GBC'
                 est = GradientBoostingClassifier(random_state=88)
+            logging.info('running grid search')
             gs_cv = GridSearchCV(est, param_grid, n_jobs=cores,cv=10).fit(X, y)
             print [gs_cv.best_params_,gs_cv.best_score_]
             params=gs_cv.best_params_

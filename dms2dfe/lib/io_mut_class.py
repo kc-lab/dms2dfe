@@ -147,46 +147,49 @@ def get_data_metrics(prj_dh):
                 data_fit_metrics.loc[fn,'$n_{depleted}$']=len(mutids_dw)
                 data_fit_metrics.loc[fn,'$F$ mean']=d.loc[:,'FiA'].mean()
     
-    data_fit_metrics['$n_{enriched}$%%']=data_fit_metrics['$n_{enriched}$']\
-    /(data_fit_metrics['$n_{enriched}$']+data_fit_metrics['$n_{depleted}$'])*100
-    data_fit_metrics['$n_{depleted}$%%']=data_fit_metrics['$n_{depleted}$']\
-    /(data_fit_metrics['$n_{enriched}$']+data_fit_metrics['$n_{depleted}$'])*100
-    data_fit_metrics['$n_{enriched}$%']=data_fit_metrics['$n_{enriched}$']/data_fit_metrics['$n$']*100
-    data_fit_metrics['$n_{depleted}$%']=data_fit_metrics['$n_{depleted}$']/data_fit_metrics['$n$']*100
-    data_fit_metrics['$n_{neutral}$%']=data_fit_metrics['$n_{neutral}$']/data_fit_metrics['$n$']*100
+    if len(data_fit_metrics.columns)>0:
+        data_fit_metrics['$n_{enriched}$%%']=data_fit_metrics['$n_{enriched}$']\
+        /(data_fit_metrics['$n_{enriched}$']+data_fit_metrics['$n_{depleted}$'])*100
+        data_fit_metrics['$n_{depleted}$%%']=data_fit_metrics['$n_{depleted}$']\
+        /(data_fit_metrics['$n_{enriched}$']+data_fit_metrics['$n_{depleted}$'])*100
+        data_fit_metrics['$n_{enriched}$%']=data_fit_metrics['$n_{enriched}$']/data_fit_metrics['$n$']*100
+        data_fit_metrics['$n_{depleted}$%']=data_fit_metrics['$n_{depleted}$']/data_fit_metrics['$n$']*100
+        data_fit_metrics['$n_{neutral}$%']=data_fit_metrics['$n_{neutral}$']/data_fit_metrics['$n$']*100
 
-    data_fit_metrics['$E$']=data_fit_metrics['$n_{enriched}$']/\
-    (data_fit_metrics['$n_{enriched}$']+data_fit_metrics['$n_{depleted}$'])
-    # print data_fit_metrics.index
-    # print data_fit_metrics.columns
-    
-    data_fit_metrics.loc[:,'labels']=[data_fit_fns_all2labels[i] for i in data_fit_metrics.index]
+        data_fit_metrics['$E$']=data_fit_metrics['$n_{enriched}$']/\
+        (data_fit_metrics['$n_{enriched}$']+data_fit_metrics['$n_{depleted}$'])
+        # print data_fit_metrics.index
+        # print data_fit_metrics.columns
+        
+        data_fit_metrics.loc[:,'labels']=[data_fit_fns_all2labels[i] for i in data_fit_metrics.index]
 
-    for c in ctrls:
-        fh= '%s/data_fit/aas/%s' % (prj_dh,ctrls[c])
-        dA=pd.read_csv(fh).set_index('mutids')
-        for fni,fn in enumerate(data_fit_fns_all):
-            fh= '%s/data_fit/aas/%s' % (prj_dh,fn)
-            dB=pd.read_csv(fh).set_index('mutids')            
-            dc=get_repli_FiA(dA).join(get_repli_FiA(dB),lsuffix='_ctrl',rsuffix='_test')
-            up=data_fit2cutoffs(dc,sA='_reps_test',sB='_reps_ctrl',N=False)
-            dw=-1*up
-            data_fit_metrics.loc[fn,'$\mu+2\sigma$ comparison %s' % c]=up
+        for c in ctrls:
+            fh= '%s/data_fit/aas/%s' % (prj_dh,ctrls[c])
+            dA=pd.read_csv(fh).set_index('mutids')
+            for fni,fn in enumerate(data_fit_fns_all):
+                fh= '%s/data_fit/aas/%s' % (prj_dh,fn)
+                dB=pd.read_csv(fh).set_index('mutids')            
+                dc=get_repli_FiA(dA).join(get_repli_FiA(dB),lsuffix='_ctrl',rsuffix='_test')
+                up=data_fit2cutoffs(dc,sA='_reps_test',sB='_reps_ctrl',N=False)
+                dw=-1*up
+                data_fit_metrics.loc[fn,'$\mu+2\sigma$ comparison %s' % c]=up
 
-            diff=dB.loc[:,'FiA']-dA.loc[:,'FiA']
-            diff=diff.reset_index()
-            mutids_up=diff.loc[(diff.loc[:,'FiA']>up),'mutids'].tolist()
-            mutids_dw=diff.loc[(diff.loc[:,'FiA']<dw),'mutids'].tolist()
-            mutids_updw=mutids_up+mutids_dw
-            diff=diff.set_index('mutids')
-            data_fit_metrics.loc[fn,'$n$ %s' % c]=len(diff.dropna())
-            data_fit_metrics.loc[fn,'$n_{positive}$ %s' % c]=len(mutids_up)
-            data_fit_metrics.loc[fn,'$n_{negative}$ %s' % c]=len(mutids_dw)
+                diff=dB.loc[:,'FiA']-dA.loc[:,'FiA']
+                diff=diff.reset_index()
+                mutids_up=diff.loc[(diff.loc[:,'FiA']>up),'mutids'].tolist()
+                mutids_dw=diff.loc[(diff.loc[:,'FiA']<dw),'mutids'].tolist()
+                mutids_updw=mutids_up+mutids_dw
+                diff=diff.set_index('mutids')
+                data_fit_metrics.loc[fn,'$n$ %s' % c]=len(diff.dropna())
+                data_fit_metrics.loc[fn,'$n_{positive}$ %s' % c]=len(mutids_up)
+                data_fit_metrics.loc[fn,'$n_{negative}$ %s' % c]=len(mutids_dw)
 
-        data_fit_metrics['$\Delta n$ %s' % c]=(data_fit_metrics['$n$']-data_fit_metrics.loc[ctrls[c],'$n$'])
-        data_fit_metrics['$\Delta n_{enriched}$ %s' % c]=(data_fit_metrics['$n_{enriched}$']-data_fit_metrics.loc[ctrls[c],'$n_{enriched}$'])
-        data_fit_metrics['$\Delta n_{enriched}$%% %s' % c]=(data_fit_metrics['$n_{enriched}$%']-data_fit_metrics.loc[ctrls[c],'$n_{enriched}$%'])
-        data_fit_metrics['$\Delta F$ %s' % c]=(data_fit_metrics['$F$ mean']-data_fit_metrics.loc[ctrls[c],'$F$ mean'])
-    data_fit_metrics_fh='%s/data_fit_metrics' % prj_dh
-    data_fit_metrics.to_csv(data_fit_metrics_fh)
-    return data_fit_metrics
+            data_fit_metrics['$\Delta n$ %s' % c]=(data_fit_metrics['$n$']-data_fit_metrics.loc[ctrls[c],'$n$'])
+            data_fit_metrics['$\Delta n_{enriched}$ %s' % c]=(data_fit_metrics['$n_{enriched}$']-data_fit_metrics.loc[ctrls[c],'$n_{enriched}$'])
+            data_fit_metrics['$\Delta n_{enriched}$%% %s' % c]=(data_fit_metrics['$n_{enriched}$%']-data_fit_metrics.loc[ctrls[c],'$n_{enriched}$%'])
+            data_fit_metrics['$\Delta F$ %s' % c]=(data_fit_metrics['$F$ mean']-data_fit_metrics.loc[ctrls[c],'$F$ mean'])
+        data_fit_metrics_fh='%s/data_fit_metrics' % prj_dh
+        data_fit_metrics.to_csv(data_fit_metrics_fh)
+        return data_fit_metrics
+    else: 
+        logging.info('data_metrics has 0 cols')

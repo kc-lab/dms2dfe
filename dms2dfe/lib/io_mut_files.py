@@ -235,10 +235,10 @@ def transform_data_lbl_deseq(prj_dh,transform_type,rscript_fh,type_form='aas'):
             # print data_lbl_all_tran.columns.tolist()
             # print len(data_lbl_all_tran)
         if len(data_lbl_all_tran.columns.tolist())>0:
-	        data_lbl_all_tran.to_csv(data_lbl_all_tran_fh)
-     	else:
-     		logging.error('transform_type can not be %s: no replicates found' % transform_type)
-     		sys.exit()
+            data_lbl_all_tran.to_csv(data_lbl_all_tran_fh)
+        else:
+            logging.error('transform_type can not be %s: no replicates found' % transform_type)
+            sys.exit()
     else:        
         data_lbl_all_tran=pd.read_csv(data_lbl_all_tran_fh).set_index('mutids')
 
@@ -336,7 +336,7 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,
                         data_lbl=data_lbl.reset_index()
                         data_lbl.loc[:,'NiA_norm']=data_lbl.loc[:,'NiAcut']/data_lbl.loc[:,'depth_ref']*data_lbl.loc[:,'depth_ref'].max()
                     else:
-                    	logging.info('no depth information')
+                        logging.info('no depth information')
                         data_lbl.loc[:,'NiA_norm']=data_lbl.loc[:,'NiAcut']
                     #clip ends
                     if not clips is None:
@@ -365,14 +365,17 @@ def get_data_lbl_reps(data_lbl_fn,data_lbl_type,repli,info,data_fit=None,
         reps=repli.loc[data_lbl_fn,:].dropna()
         for rep in reps:
             data_lbl_fh="%s/data_lbl/%s/%s" % (info.prj_dh,type_form,rep)
-            data_lbl=pd.read_csv(data_lbl_fh)
-            data_lbl=set_index(data_lbl,'mutids')
+            if exists(data_lbl_fh):
+                data_lbl=pd.read_csv(data_lbl_fh)
+                data_lbl=set_index(data_lbl,'mutids')
 
-            data_fit_col="%s%s%s%s%s" % (rep,col_sep,data_lbl_col,col_sep,data_lbl_type)
-            data_lbl_col="%s" % (data_lbl_col)
-            if data_fit is None:
-                data_fit=data_lbl.loc[:,['ref','refi','mut']].copy()
-            data_fit.loc[:,data_fit_col]=data_lbl.loc[:,data_lbl_col]
+                data_fit_col="%s%s%s%s%s" % (rep,col_sep,data_lbl_col,col_sep,data_lbl_type)
+                data_lbl_col="%s" % (data_lbl_col)
+                if data_fit is None:
+                    data_fit=data_lbl.loc[:,['ref','refi','mut']].copy()
+                data_fit.loc[:,data_fit_col]=data_lbl.loc[:,data_lbl_col]
+            else:
+                logging.warning('%s does not exist' % basename(data_lbl_fh))
         if len(reps)==0:
             logging.warning("no replicates found in cfg: %s" % data_lbl_fn)
         else:
@@ -429,19 +432,20 @@ def make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,data_lbl_col='NiA_tran',t
             col_multitest_rjct="rejectH0 %s %s" % (test,multitest)
             #data_fit.to_csv('test.csv')# !!
             data_fit=testcomparison(data_fit,data_lbl_sel_reps_cols,data_lbl_ref_reps_cols,test=test)
-            if not sum(~pd.isnull(data_fit.loc[:,col_test_pval]))==0:
-                data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_rjct],\
-                data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_pval],a1,a2=\
-                multipletests(data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_test_pval].as_matrix(),alpha=0.05, method=multitest)
+            if not data_fit is None:
+                if not sum(~pd.isnull(data_fit.loc[:,col_test_pval]))==0:
+                    data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_rjct],\
+                    data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_multitest_pval],a1,a2=\
+                    multipletests(data_fit.loc[~pd.isnull(data_fit.loc[:,col_test_pval]),col_test_pval].as_matrix(),alpha=0.05, method=multitest)
 
-                data_fit.loc[:,'pval']=data_fit.loc[:,col_test_pval]
-                data_fit.loc[:,'stat']=data_fit.loc[:,col_test_stat]
-                data_fit.loc[:,'padj']=data_fit.loc[:,col_multitest_pval]    
-            else:
-                data_fit.loc[:,'pval']=np.nan
-                data_fit.loc[:,'stat']=np.nan
-                data_fit.loc[:,'padj']=np.nan
-            return data_fit
+                    data_fit.loc[:,'pval']=data_fit.loc[:,col_test_pval]
+                    data_fit.loc[:,'stat']=data_fit.loc[:,col_test_stat]
+                    data_fit.loc[:,'padj']=data_fit.loc[:,col_multitest_pval]    
+                else:
+                    data_fit.loc[:,'pval']=np.nan
+                    data_fit.loc[:,'stat']=np.nan
+                    data_fit.loc[:,'padj']=np.nan
+                return data_fit
 
 def make_deseq2_annot(unsel,sel,data_lbl_col,prj_dh,type_form='aas'):
     repli=pd.read_csv('%s/cfg/repli' % prj_dh).set_index('varname')
@@ -497,8 +501,8 @@ def make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info):
                                                              data_deseq2_annot,data_lbl_col,info.prj_dh)
     data_deseq2_count=set_index(data_deseq2_count,'mutids')
     if len(data_deseq2_count.columns)==2:
-    	logging.error('transform_type can not be GLM: no replicates found')
-    	sys.exit()
+        logging.error('transform_type can not be GLM: no replicates found')
+        sys.exit()
     log_fh="%s.log" % data_deseq2_annot_fh
     data_deseq2_res_fh="%s.deseq2_res.csv" % data_deseq2_annot_fh
     if not exists(data_deseq2_res_fh):
@@ -598,7 +602,7 @@ def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="Fi
             data_fit.loc[(data_fit.loc[:,'ref']==data_fit.loc[:,'mut']),col_fit_rescaled]=np.nan
         return data_fit
     else:
-    	logging.info('no synonymous mutations available')
+        logging.info('no synonymous mutations available')
         data_fit.loc[:,col_fit_rescaled]=np.nan
         # data_fit.loc[:,col_fit_rescaled]
         return data_fit
