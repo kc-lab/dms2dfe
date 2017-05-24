@@ -146,6 +146,7 @@ def get_data_metrics(prj_dh):
                 data_fit_metrics.loc[fn,'$n_{enriched}$']=len(mutids_up)
                 data_fit_metrics.loc[fn,'$n_{depleted}$']=len(mutids_dw)
                 data_fit_metrics.loc[fn,'$F$ mean']=d.loc[:,'FiA'].mean()
+    
     data_fit_metrics['$n_{enriched}$%%']=data_fit_metrics['$n_{enriched}$']\
     /(data_fit_metrics['$n_{enriched}$']+data_fit_metrics['$n_{depleted}$'])*100
     data_fit_metrics['$n_{depleted}$%%']=data_fit_metrics['$n_{depleted}$']\
