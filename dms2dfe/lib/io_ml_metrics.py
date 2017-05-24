@@ -277,7 +277,10 @@ def get_RF_classi_metrics(data_classi_fh,data_dh='data_ml/',plot_dh='plots/'):
 
 def get_GB_cls_metrics(data_fh,info):
     from pylab import figtext
-    dpkl=read_pkl(data_fh)
+    try:
+        dpkl=read_pkl(data_fh)
+    except:
+        return False
     if not 'gs_cv' in dpkl.keys():
         return False
     dXy=dpkl['dXy_final']

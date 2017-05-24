@@ -353,7 +353,10 @@ def dXy2ml(dXy,ycol,params=None,
         out_fh='%s_%s.pkl' % ('dXy2ml',get_time())
 
     if exists(out_fh) and (not force):
-        dpkl=read_pkl(out_fh)
+        try:
+            dpkl=read_pkl(out_fh)
+        except:
+            return False
     else:
         dpkl={}
 
