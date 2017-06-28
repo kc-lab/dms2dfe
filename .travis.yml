@@ -3,6 +3,7 @@
 # https://github.com/uwescience/shablona
 
 language: python
+cache: pip
 sudo: false
 
 env:
@@ -34,6 +35,6 @@ install:
 - python setup.py install --record installed_files.txt
 
 script:
-- pytest $PACKAGENAME
-
-
+- pytest test/test_configure.py
+after_success:
+- coveralls
