@@ -189,7 +189,7 @@ def plot_pdb(info,data_fit_fhs=None,plot_type="pdb",
     else:
         logging.info("already processed")
     plot_pdb_chimera_fhs_f.close()
-    if check_chimera_compatibility():
+    if not check_chimera_compatibility() is None:
         if not stat(plot_pdb_chimera_fhs_fh).st_size == 0:
             subprocess.call("%s/bin/chimera --silent %s/lib/plot_pdb_chimera.py" % (chimera_dh,abspath(dirname(__file__))),shell=True)
         # else:
@@ -200,14 +200,14 @@ def check_chimera_compatibility():
         chimera_dh=guess_chimera_path()[0]
     except:
         logging.info("1install UCSF-Chimera for PDB vizs")      
-        return False
+        # return False
     if exists(chimera_dh):
         # Monitor is On
         std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
         if std.stdout.read():
             std=subprocess.Popen("xset q",shell=True,stdout=subprocess.PIPE)
             if 'Monitor is On' in std.stdout.read():
-                return True
+                return chimera_dh
             else:
                 logging.error("skipping: pdb vizs: X11 not available.")                 
         else:
@@ -215,7 +215,7 @@ def check_chimera_compatibility():
             logging.info("To configure graphics drivers for UCSF-Chimera please install mesa-utils: sudo apt-get install mesa-utils;sudo apt-get update ")  
     else:
         logging.info("2install UCSF-Chimera for PDB vizs")      
-        return False
+        # return False
 
 from dms2dfe.lib.plot_mut_data_dists import plot_data_comparison_multiviolin
 
