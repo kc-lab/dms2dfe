@@ -8,14 +8,12 @@ sudo: false
 env:
   global:
     - PACKAGENAME="dms2dfe"
-    - CONDA_DEPS="pip flake8 pytest numpy scipy matplotlib pandas" 
+    - CONDA_DEPS="pip flake8 pytest numpy scipy matplotlib pandas scikit-bio" 
 #    - PIP_DEPS="coveralls pytest-cov" -
     - MINICONDA_URL="https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 
 python:
   - '2.7'
-  - '3.5'
-  - '3.6'
   
 before_install:
 - export MINICONDA=$HOME/miniconda
@@ -27,8 +25,8 @@ before_install:
 - conda config --set always_yes yes
 - conda update conda
 - conda info -a
-- conda install -c https://conda.anaconda.org/biocore scikit-bio==0.4.1
-- conda config --add channels conda-forge
+- conda config --add channels biocore 
+- conda config --add channels conda-forge 
 - conda install python=$TRAVIS_PYTHON_VERSION $CONDA_DEPS
 - travis_retry pip install $PIP_DEPS
 
