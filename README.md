@@ -1,5 +1,10 @@
 # dms2dfe
 
+[![build status](
+  http://img.shields.io/travis/rraadd88/dms2dfe/master.svg?style=flat)](
+ https://travis-ci.org/rraadd88/dms2dfe)
+
+
 ## Overview
 
 dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of **F**itness **E**ffects (DFE)) is designed for analyzing Deep Mutational Scaning [1] data in terms of Distribution of Fitness Effects.
