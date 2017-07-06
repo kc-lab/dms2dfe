@@ -1,0 +1,30 @@
+{
+  "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+    {
+      "@id": "0000-0002-6421-2067",
+      "@type": "Person",
+      "email": "rohan@igib.in",
+      "name": "Rohan Dandage",
+      "affiliation": "CSIR-Institute of Genomics and Integrative Biology: New Delhi, Delhi, India"
+    },
+    {
+      "@id": "0000-0001-6000-8379",
+      "@type": "Person",
+      "email": "kausik@igib.in",
+      "name": "Kausik Chakraborty",
+      "affiliation": "CSIR-Institute of Genomics and Integrative Biology: New Delhi, Delhi, India"
+    }
+  ],
+  "identifier": "10.5281/zenodo.569492",
+  "codeRepository": "https://github.com/kc-lab/dms2dfe",
+  "datePublished": "2017-00-00",
+  "dateModified": "2017-00-00",
+  "dateCreated": "2017-00-00",
+  "description": "dms2dfe is a python package for analysis of Deep Mutational Scanning data (https://github.com/kc-lab/dms2dfe).",
+  "keywords": "deep-sequencing","mutation",
+  "license": "GPL-3.0",
+  "title": "dms2dfe",
+  "version": "1.0.6"
+}
