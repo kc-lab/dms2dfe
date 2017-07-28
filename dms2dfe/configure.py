@@ -143,9 +143,10 @@ def main(prj_dh,inputs=None):
         rate4site_fh="dms2dfe_dependencies/rate4site/rate4site-3.0.0/src/rate4site/rate4site"
         if not exists(rate4site_fh):
             logging.info("configuring: rate4site")
-            soft_lnk="ftp://rostlab.org/rate4site/rate4site-3.0.0.tar.gz"
+            soft_lnk="https://launchpadlibrarian.net/155121258/rate4site_3.0.0.orig.tar.gz"
+	    #soft_lnk="ftp://rostlab.org/rate4site/rate4site-3.0.0.tar.gz"
             com="wget -q %s --directory-prefix=dms2dfe_dependencies/rate4site;\
-                tar -xvzf dms2dfe_dependencies/rate4site/rate4site-3.0.0.tar.gz -C dms2dfe_dependencies/rate4site;\
+                tar -xvzf dms2dfe_dependencies/rate4site/rate4site*.tar.gz -C dms2dfe_dependencies/rate4site;\
                 cd dms2dfe_dependencies/rate4site/rate4site-3.0.0;\
                 ./configure;make" % soft_lnk
             subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
