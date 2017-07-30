@@ -10,9 +10,9 @@ tranformORnormalize=args[3]
 # counts_fh="/data_lbl/aas_all/all.csv"
 # annots_fh="data_fit/aas_annot/KKA2_S__Kan14_L__avg_WRT_KKA2_Bkg__avg"
 
-colData <- read.csv(annots_fh, row.names=1)
+colData <- read.csv(annots_fh, row.names=1, check.names = FALSE)
 rownames(colData) <- gsub(" ", ".", rownames(colData))
-countData <- read.csv(counts_fh,sep=",",row.names="mutids")
+countData <- read.csv(counts_fh,sep=",",row.names="mutids", check.names = FALSE)
 rownames(colData)
 head(countData)
 countData <- as.matrix(countData[,rownames(colData)])

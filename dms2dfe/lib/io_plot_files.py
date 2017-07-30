@@ -199,6 +199,7 @@ def check_chimera_compatibility():
     try:
         chimera_dh=guess_chimera_path()[0]
     except:
+        chimera_dh=''
         logging.info("1install UCSF-Chimera for PDB vizs")      
         # return False
     if exists(chimera_dh):

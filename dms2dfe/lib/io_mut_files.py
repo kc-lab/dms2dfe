@@ -128,6 +128,8 @@ def collate_cctmr(lbl_mat_cds,cctmr):
         lbl_mat_cds_cctmr1=lbl_mat_cds.iloc[(cctmr[0][0]-1):(cctmr[0][1]-1),:]
         lbl_mat_cds_cctmr2=lbl_mat_cds.iloc[(cctmr[1][0]-1):(cctmr[1][1]-1),:]
         lbl_mat_cds=lbl_mat_cds_cctmr1.fillna(0)+lbl_mat_cds_cctmr2.fillna(0)
+	#print lbl_mat_cds.index.name
+	#print lbl_mat_cds.columns.tolist()
         lbl_mat_cds.loc[:,"refi"]=lbl_mat_cds_cctmr1.loc[:,"refi"]
     else:
         logging.error("cctmr do not conform %s!=%s or %s!=%s" % (lbl_mat_cds.index.values[(cctmr[0][0]-1)], \

@@ -81,9 +81,10 @@ def info2src(prj_dh):
     info_paths=[info.loc[info_path_var,"input"] for info_path_var in info_path_vars]
     for info_path in info_paths:
         if not pd.isnull(info_path):
-            if not exists(info_path):                
-                logging.error('Path to files do not exist. Include correct path in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
-                return None
+	     if not exists(info_path):
+                if (info_path!='bowtie2') or (info_fh!='samtools'):
+	            logging.error('Path to files do not exist. Include correct path in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
+        	    return None
         else:
             logging.error('Path to file is missing. Check in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
             return None

@@ -251,7 +251,7 @@ def plot_data_fit_heatmap(data_fit,type_form,col,
                 data_feats.loc[:,'aasi']=data_feats.loc[:,'refi']
             elif 'refrefi' in data_feats:
                 data_feats.loc[:,'aasi']=[str2num(s) for s in data_feats.loc[:,'refrefi']]
-        data_feats=data_feats.sort('aasi',ascending=True)
+        data_feats=data_feats.sort_values('aasi',ascending=True)
         ax_ss = plt.subplot(gs[0])
         ax_acc = plt.subplot(gs[1])
 

@@ -83,7 +83,8 @@ def main(prj_dh,inputs=None):
                 subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             subprocess.call("unzip %s -d dms2dfe_dependencies" % bowtie2_src,\
                             shell=True,stdout=log_f, stderr=subprocess.STDOUT)
-            subprocess.call("chmod +x %s" % bowtie2_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT) 
+            #subprocess.call("chmod +x %s" % bowtie2_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT) 
+            subprocess.call("cd %s;make all; cd -;" % dirname(bowtie2_fh),shell=True,stdout=log_f, stderr=subprocess.STDOUT)
         #samtools
         samtools_fh="dms2dfe_dependencies/samtools-0.1.20/samtools"        
         if not exists(dirname(samtools_fh)):

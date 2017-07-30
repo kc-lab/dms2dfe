@@ -298,8 +298,10 @@ def cctmr_fasta2ref_fasta(fsta_fh,cctmr):
 
     fsta_cctmr1_fh="%s_cctmr1.fasta" % (splitext(fsta_fh)[0])
     with open(fsta_fh,'r') as fsta_data:
+	#print [i for i in SeqIO.parse(fsta_data, "fasta")]
         for fsta_record in SeqIO.parse(fsta_data, "fasta") :
             fsta_id=fsta_record.id
+            #print fsta_id
             fsta_seq=str(fsta_record.seq)
             fsta_cctmr1_seq=fsta_seq[(cctmr[0]-1)*3:(cctmr[1]-1)*3]
             break
