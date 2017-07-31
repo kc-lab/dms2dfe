@@ -35,7 +35,7 @@ setup(
 name='dms2dfe',
 author='Rohan Dandage',
 author_email='rraadd_8@hotmail.com,rohan@igib.in',
-version='1.0.0',
+version='1.0.7',
 url='https://github.com/rraadd88/dms2dfe',
 download_url='https://github.com/rraadd88/dms2dfe/archive/master.zip',
 description='Pipeline to analyse Deep Mutational Scanning (DMS) experiments in terms of Distribution of Fitness Effects (DFE)',
@@ -62,3 +62,42 @@ entry_points={
     'console_scripts': ['dms2dfe = dms2dfe.pipeline:main',],
     },
 )
+
+
+## JUNK ##
+##make tags
+#git tag -a v$(python setup.py --version) -m "http://kc-lab.github.io/dms2dfe/v1.0.0/html/"
+#git push --tags
+##rewrite old tags
+#git tag new old
+#git tag -d old
+#git push origin :refs/tags/old
+#git push --tags
+#undo last commit
+###git reset --hard HEAD~
+## ignore tmp files
+# git update-index --assume-unchanged FILE_NAME
+# cd docs
+# make html
+# cd ../
+# rsync -avv docs/_build/html docs/latest
+# rsync -avv docs/_build/html docs/v1.0.0
+
+# cd ../kc_lab_dms2dfe
+# git fetch upstream
+# git rebase upstream/master
+# git push
+# git fetch upstream --tags
+# git push --tags
+# cd ../dms2dfe
+
+# cd ../kc_lab_io
+# rsync -avv ../dms2dfe/docs/latest dms2dfe
+# rsync -avv ../dms2dfe/docs/stable dms2dfe
+# rsync -avv ../dms2dfe/docs/v1.0.0 dms2dfe
+# git add --all
+# git commit -m "update"
+# git push
+# cd ../dms2dfe
+
+## JUNK ##

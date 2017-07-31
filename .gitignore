@@ -70,3 +70,4 @@ test_dataset/cov
 test_dataset/cov_mut
 test_dataset/cov_per_cds
 test_dataset/data_cov
+paper/latex.template
