@@ -239,6 +239,7 @@ def feats_inter_sel_corr(dXy,ycol,Xcols,dXy_input,top_cols=None,range_coef=[0.9,
 
 def make_dXy(dXy,ycol,unique_quantile=0.25,index="mutids",if_rescalecols=True):
     dXy=set_index(dXy,index)
+    # print 'len(cols_del)=%s' % len(get_cols_del(dXy))
     dXy=dXy.drop(get_cols_del(dXy),axis=1)
     Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
     Xunique=pd.DataFrame({'unique':[len(np.unique(dXy[c])) for c in Xcols]},index=[c for c in Xcols])

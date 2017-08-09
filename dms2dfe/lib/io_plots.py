@@ -173,15 +173,18 @@ def plot_scatter_reg(data_all,cols,
 
     # r, _ = stats.pearsonr(data_all.loc[:,cols[0]],
     #                      data_all.loc[:,cols[1]])
-    results,_,_=get_regression_metrics(data_all.loc[:,cols[0]],data_all.loc[:,cols[1]])
-    if results_n:
-        results='%s\nn=%s' % (results,len(denanrows(data_all.loc[:,cols])))
-    if not results_RMSE:
-        results=results.split('\n')[0]
-    if result_spearman:
-        results='%s = %.2f' % (r'$\rho$',data_all.loc[:,cols].corr(method='spearman').iloc[0,:][1])
     if results:
-        ax.text(0, 1, results,
+        res,_,_=get_regression_metrics(data_all.loc[:,cols[0]],data_all.loc[:,cols[1]])
+    else:
+        res=''
+    if results_n:
+        res='%s\nn=%s' % (res,len(denanrows(data_all.loc[:,cols])))
+    if not results_RMSE:
+        res=res.split('\n')[0]
+    if result_spearman:
+        res='%s = %.2f' % (r'$\rho$',data_all.loc[:,cols].corr(method='spearman').iloc[0,:][1])
+    if results:
+        ax.text(0, 1, res,
             horizontalalignment='left',
             verticalalignment='top',
             transform=ax.transAxes)
@@ -301,6 +304,7 @@ def annot_corners(labels,X,Y,ax,space=-0.2,fontsize=18):
 def plot_contourf(x,y,z,contourlevels=15,xlabel=None,ylabel=None,
                 scatter=False,contour=False,
                 annot_fit_land=True,
+                streamlines=False,
                 cmap="coolwarm",cbar=True,cbar_label="",
                 a=0.5,vmin=None,vmax=None,interp='linear',#'nn',
                 xlog=False,
@@ -326,6 +330,23 @@ def plot_contourf(x,y,z,contourlevels=15,xlabel=None,ylabel=None,
     CS = ax.contourf(xi, yi, zi, contourlevels, 
                       cmap=cmap,
                       vmax=vmax, vmin=vmin)
+
+    #streamlines
+    # Plot flowlines
+    if streamlines:
+        dy, dx = np.gradient(-zi.T) # Flow goes down gradient (thus -zi)
+        print [np.shape(xi),np.shape(yi)]
+        print [np.shape(dx),np.shape(dy)]
+        # ax.streamplot(xi[:,0], yi[0,:], dx, dy, color='0.5', density=0.5)
+        ax.streamplot(xi, yi, dx, dy, color='k', density=1,
+                         linewidth=1,minlength=3.5,arrowsize=4)
+
+    # # Contour gridded head observations
+    # contours = ax.contour(xi, yi, zi, linewidths=3,cmap='RdBu')
+    # ax.clabel(contours)
+
+    # CS=contours
+
     if cbar:
         # colorbar_ax = fig.add_axes([0.55, 0.15, 0.035, 0.5]) #[left, bottom, width, height]
         colorbar_ax = fig.add_axes([0.55, 0.3, 0.035, 0.5]) #[left, bottom, width, height]
@@ -356,6 +377,7 @@ def get_grid(x,y,n=100):
 #     return np.linspace(np.min(x),np.max(x),n)
     return np.mgrid[np.min(x):np.max(x), np.min(y):n:np.max(y)]
 
+from dms2dfe.lib.io_nums import is_numeric
 def scatter_colorby_groups(data,x_col,y_col,group_col,contour_col,
                            scatter_groups=True,contourf=False,
                            contourlevels=15,
@@ -405,7 +427,8 @@ def scatter_colorby_groups(data,x_col,y_col,group_col,contour_col,
                           s=ms, c=data.loc[:,group_col],cmap=cmap,edgecolor='none',
                           alpha=scatter_groups_alpha,zorder=zorder)
     #         colorbar_ax = fig.add_axes([1, 0.15, 0.05, 0.8]) #[left, bottom, width, height]
-            colorbar_ax = fig.add_axes([0.55, 0.15, 0.035, 0.8]) #[left, bottom, width, height]
+            # colorbar_ax = fig.add_axes([0.55, 0.15, 0.035, 0.8]) #[left, bottom, width, height]
+            colorbar_ax = fig.add_axes([1, 0.15, 0.035, 0.7]) #[left, bottom, width, height]
             colorbar_ax2=fig.colorbar(s, cax=colorbar_ax)
             colorbar_ax2.set_label(cbar_label)
     # print contourf     

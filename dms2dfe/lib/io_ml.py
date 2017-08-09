@@ -364,9 +364,10 @@ def dXy2ml(dXy,ycol,params=None,
         dpkl['dXy_input']=dXy
         dpkl['ycol']=ycol
         dXy_input=dXy.copy()
-        to_pkl(dpkl,out_fh) #back
-
-        dXy,Xcols,ycol=make_dXy(dXy,ycol=ycol,if_rescalecols=True,unique_quantile=0.25)
+        to_pkl(dpkl,out_fh) #back        
+        dXy,Xcols,ycol=make_dXy(dXy,ycol=ycol,
+            if_rescalecols=True,
+            unique_quantile=0.25)
         if len(dXy)<100:
             return False
         dpkl['dXy_preprocessed']=dXy
