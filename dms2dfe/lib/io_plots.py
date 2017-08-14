@@ -65,8 +65,11 @@ def saveplot(plot_fh,form='both',
         plt.close()
 
 def get_axlims(X,Y,space=0.2,equal=False):
-    xmin=np.min(X)
-    xmax=np.max(X)
+    try:
+        xmin=np.min(X)
+        xmax=np.max(X)
+    except:
+        print X
     xlen=xmax-xmin
     ymin=np.min(Y)
     ymax=np.max(Y)
@@ -202,7 +205,57 @@ def plot_scatter_reg(data_all,cols,
         ax.set_ylabel(ylabel)
     saveplot(plot_fh,form='both',transparent=False)
     return ax
+def get_medians(combo,col_median,col_unique):
+    medians=pd.DataFrame(columns=[col_unique,col_median])
+    medians[col_unique]=combo.loc[:,col_unique].unique()
+    for i in medians.index:
+        medians.loc[i,col_median]=combo.loc[combo.loc[:,col_unique]==medians.loc[i,col_unique],col_median].median()
+    return medians
 
+def correlate(data_all,cols,cols_lables,linear_reg=False,median_reg=False,color='k',plot_fh=None):
+    import seaborn as sns
+    sns.axes_style("whitegrid")
+    combo=data_all.loc[:,cols]
+    combo.columns=cols_lables    
+
+    if median_reg!=False:        
+        if median_reg=="x":
+            medians=get_medians(combo,cols_lables[0],cols_lables[1])
+        elif median_reg=="y":
+            medians=get_medians(combo,cols_lables[1],cols_lables[0])
+        from dms2dfe.lib.io_ml import denanrows
+        medians=denanrows(medians)
+        medians=medians.astype(float)
+        medians_reg_m,medians_reg_c = np.polyfit(medians[cols_lables[0]], medians[cols_lables[1]], deg=1)    
+    
+    xlim=[combo.loc[:,cols_lables[0]].min(),combo.loc[:,cols_lables[0]].max()]
+    ymin=combo.loc[:,cols_lables[1]].min()
+    ymax=combo.loc[:,cols_lables[1]].max()
+    ylen=ymax-ymin
+    space=0.2
+    ylim=[ymin,ymax+space*ylen]
+    if linear_reg:
+        ax=sns.jointplot(data=combo,x=cols_lables[0],y=cols_lables[1],
+                         color=color,size=3.5,alpha=0.40,ratio=10,
+    #                      kind="reg",
+    #                      joint_kws={'line_kws':{'color':"r"}},
+                         xlim=xlim,ylim=ylim,
+                        )
+    elif linear_reg==False:
+        ax=sns.jointplot(data=combo,x=cols_lables[0],y=cols_lables[1],
+                         color=color,size=3.5,alpha=0.40,ratio=12,
+                         xlim=xlim,ylim=ylim,
+                        )
+    if median_reg!=False:        
+#         ax.ax_joint.plot(medians[cols_lables[0]], medians_reg_m * medians[cols_lables[0]] + medians_reg_c,
+#                          color='red')        
+        ax.ax_joint.plot(np.array(xlim), medians_reg_m * np.array(xlim) + medians_reg_c,
+                         color='red')
+    if plot_fh!=None:
+        plt.savefig(plot_fh,format="pdf")
+#     print plot_fh
+    return ax
+    
 def heatmap(data,label_suffix=None,
                       clim=[None,None],cmap='winter',
                       rescale=None,
@@ -287,7 +340,8 @@ def heatmap(data,label_suffix=None,
 
 def annot_corners(labels,X,Y,ax,space=-0.2,fontsize=18):
     xlims,ylims=get_axlims(X,Y,space=space)
-    
+    print 'corners xlims,ylims='
+    print xlims,ylims
     labeli=0
     for x in xlims:
         for y in ylims:
@@ -438,7 +492,7 @@ def scatter_colorby_groups(data,x_col,y_col,group_col,contour_col,
                      contourlevels,interp=contourinterp,
                       vmin=cbar_min,vmax=cbar_max,
                       cbar=cbar,cbar_label=cbar_label,
-              xlabel=x_col,ylabel=y_col,fig=fig,ax=ax,
+                      xlabel=x_col,ylabel=y_col,fig=fig,ax=ax,
                       xlog=xlog,
              )        
     return ax 
@@ -459,66 +513,89 @@ def scatter_colorby_control(ax,x_ctrl,y_ctrl,x_lim,y_lim,
 #corr withfeats
 
 
-def get_medians(combo,col_median,col_unique):
-    medians=pd.DataFrame(columns=[col_unique,col_median])
-    medians[col_unique]=combo.loc[:,col_unique].unique()
-    for i in medians.index:
-        medians.loc[i,col_median]=combo.loc[combo.loc[:,col_unique]==medians.loc[i,col_unique],col_median].median()
-    return medians
 
-def correlate(data_all,cols,cols_lables,linear_reg=False,median_reg=False,color='k',plot_fh=None):
-    import seaborn as sns
-    sns.axes_style("whitegrid")
-    combo=data_all.loc[:,cols]
-    combo.columns=cols_lables    
 
-    if median_reg!=False:        
-        if median_reg=="x":
-            medians=get_medians(combo,cols_lables[0],cols_lables[1])
-        elif median_reg=="y":
-            medians=get_medians(combo,cols_lables[1],cols_lables[0])
-        from dms2dfe.lib.io_ml import denanrows
-        medians=denanrows(medians)
-        medians=medians.astype(float)
-        medians_reg_m,medians_reg_c = np.polyfit(medians[cols_lables[0]], medians[cols_lables[1]], deg=1)    
-    
-    xlim=[combo.loc[:,cols_lables[0]].min(),combo.loc[:,cols_lables[0]].max()]
-    ymin=combo.loc[:,cols_lables[1]].min()
-    ymax=combo.loc[:,cols_lables[1]].max()
-    ylen=ymax-ymin
-    space=0.2
-    ylim=[ymin,ymax+space*ylen]
-    if linear_reg:
-        ax=sns.jointplot(data=combo,x=cols_lables[0],y=cols_lables[1],
-                         color=color,size=3.5,alpha=0.40,ratio=10,
-    #                      kind="reg",
-    #                      joint_kws={'line_kws':{'color':"r"}},
-                         xlim=xlim,ylim=ylim,
-                        )
-    elif linear_reg==False:
-        ax=sns.jointplot(data=combo,x=cols_lables[0],y=cols_lables[1],
-                         color=color,size=3.5,alpha=0.40,ratio=12,
-                         xlim=xlim,ylim=ylim,
-                        )
-    if median_reg!=False:        
-#         ax.ax_joint.plot(medians[cols_lables[0]], medians_reg_m * medians[cols_lables[0]] + medians_reg_c,
-#                          color='red')        
-        ax.ax_joint.plot(np.array(xlim), medians_reg_m * np.array(xlim) + medians_reg_c,
-                         color='red')
-    if plot_fh!=None:
-        plt.savefig(plot_fh,format="pdf")
-#     print plot_fh
+def scatter_contour(x,y,z,ax=None,ifgrid=True,
+                    streamlines=True,
+                    contourlines=False,
+                    contoursurf=False,
+                    contourlabels=True,
+                    axlim_rescale_back=True,
+                    sca=False,
+                    cmap='RdBu_r',
+                    function='linear',smooth=0,    
+                    contourlevels=10,
+                    streamlines_color='0.1',
+                    streamlines_density=1,
+                    streamlines_linewidth=1,
+                    streamlines_minlength=0.1,
+                    streamlines_arrowsize=1,
+                    streamlines_gouphill=True,
+                    cbar_label='',
+                    clim=[-4,4],
+                    fig=None,
+                   ):    
+    if fig is None:
+        fig=plt.figure()
+    if ax is None:
+        ax=plt.subplot(111)        
+    from scipy.interpolate import Rbf
+    # Plot flowlines
+    if ifgrid:
+        if axlim_rescale_back:        
+            xi, yi = np.mgrid[np.min(x):np.max(x):100j, np.min(y):np.max(y):100j]
+        else:
+            xi, yi = np.mgrid[0:1:100j, 0:1:100j]
+        func = Rbf(x, y, z, function=function,smooth=smooth)
+        zi = func(xi, yi)
+    else:
+        xi, yi, zi=x,y,z
+    if streamlines_gouphill:
+        dy, dx = np.gradient(zi.T) # Flow goes down gradient (thus -zi)
+    else:
+        dy, dx = np.gradient(-zi.T) # Flow goes down gradient (thus -zi)    
+    if contourlines:
+        contours = ax.contour(xi, yi, zi, linewidths=3,cmap=cmap)
+        ax.clabel(contours)
+    if contoursurf:
+        contours = ax.contourf(xi, yi, zi,N=contourlevels, 
+                               cmap=cmap,
+                               linewidths=None,
+                               vmin=clim[0],
+                               vmax=clim[1],)
+    if contourlabels:
+        ax.clabel(contours)
+    if streamlines:
+        ax.streamplot(xi[:,0], yi[0,:], dx, dy, color=streamlines_color, 
+                density=streamlines_density,
+                linewidth=streamlines_linewidth,
+                minlength=streamlines_minlength,
+                arrowsize=streamlines_arrowsize,
+                )
+    if sca:
+        ax.scatter(x, y)  
+    if contourlines or contoursurf:
+        colorbar_ax = fig.add_axes([0.55, 0.3, 0.035, 0.5]) #[left, bottom, width, height]
+        colorbar_ax2=fig.colorbar(contours, cax=colorbar_ax,extend='both')
+        colorbar_ax2.set_label(cbar_label)
+        colorbar_ax2.set_clim(clim[0],clim[1])
     return ax
 
 def scatter(data_all,x_col,y_col,
-    x_err_col,y_err_col,
-    groups_cols,contour_cols,
+            x_err_col,y_err_col,
+            groups_cols,contour_cols,
             ctrl=None,x_ctrl=None,y_ctrl=None,ctrl_label=None,
-            errorbar=True,scatter=True,scatter_groups=False,
+            errorbar=True,scatter=True,
+            scatter_groups=False,
+            contour=False,
+            kwscatter_contour={},
+            annot_fit_land=False,
             contourf=False,
             contourlevels=10,
             contourinterp='nn',
             ms=10,
+            ax=None,
+            fig=None,
             scatter_color="gray",scatter_alpha=0.5,
             scatter_groups_order=None,
             scatter_groups_cmap='YlGn',
@@ -559,32 +636,45 @@ def scatter(data_all,x_col,y_col,
         ylims=set_ylims
 #     print(plt.style.available)
     # plt.style.use('seaborn-white')#'classic')#'seaborn-white')#'fivethirtyeight')#'ggplot')
-#     fig=plt.figure(figsize=(4,4),dpi=400)
-#     ax=plt.subplot(111)
-    fig=plt.figure(figsize=figsize,dpi=400)
-    ax=plt.subplot(121)
+    if fig is None:
+        fig=plt.figure(figsize=figsize,dpi=400)
+    if ax is None:
+        ax=plt.subplot(121)
     if ctrl:
         scatter_colorby_control(ax,x_ctrl,y_ctrl,x_lim,y_lim,
                                 ctrl_label,zorder_span=0,zorder_label=3)
-    for i in range(len(contour_cols)):
-        # group_col = groups_cols[i]        
-        contour_col = contour_cols[i]        
-        ax=scatter_colorby_groups(data,x_col,y_col,
-                                  group_col=None,
-                                  contour_col=contour_col,
-                                  scatter_groups=scatter_groups,
-                                  contourf=contourf,
-                                  contourlevels=contourlevels,
-                                  contourinterp=contourinterp,
-                                  scatter_groups_order=scatter_groups_order,
-                                  scatter_groups_cmap=scatter_groups_cmap,
-                                  scatter_groups_legend=scatter_groups_legend,
-                                  ms=ms,
-                                  cbar=cbar,cbar_label=cbar_label,
-                                  cbar_min=cbar_min,cbar_max=cbar_max,
-                                  cmap=cmap,
-                                  xlog=xlog,
-                                  ax=ax,fig=fig)
+    for i,contour_col in enumerate(contour_cols):
+        if not contour:
+            ax=scatter_colorby_groups(data,x_col,y_col,
+                                      group_col=None,
+                                      contour_col=contour_col,
+                                      scatter_groups=scatter_groups,
+                                      contourf=contourf,
+                                      contourlevels=contourlevels,
+                                      contourinterp=contourinterp,
+                                      scatter_groups_order=scatter_groups_order,
+                                      scatter_groups_cmap=scatter_groups_cmap,
+                                      scatter_groups_legend=scatter_groups_legend,
+                                      ms=ms,
+                                      cbar=cbar,cbar_label=cbar_label,
+                                      cbar_min=cbar_min,cbar_max=cbar_max,
+                                      cmap=cmap,
+                                      xlog=xlog,
+                                      ax=ax,fig=fig)
+        else:
+            ax=scatter_contour(data[x_col],data[y_col],data[contour_col],
+                            fig=fig,
+                            ax=ax,
+                            cmap=cmap,
+                            cbar_label=cbar_label,  
+                            contourlevels=contourlevels,clim=[cbar_min,cbar_max],
+                            **kwscatter_contour)
+            if annot_fit_land:
+                labels=["$F:cB$","$F:B$","$cF:cB$","$cF:B$"]
+                if xlog:
+                    x=x/1.61
+                ax=annot_corners(labels,data[x_col],data[y_col],ax,fontsize=15)
+
     for i in range(len(groups_cols)):
         group_col = groups_cols[i]        
         ax=scatter_colorby_groups(data,x_col,y_col,
@@ -639,7 +729,7 @@ def scatter(data_all,x_col,y_col,
     if title!=None:
         ax.set_title(title)
     saveplot(plot_fh,form='both')
-    return ax
+    return ax,fig
 
 def get_cbarlims(data_plot,mn=0.25,mx=0.75,log=False):
     if log:
