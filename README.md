@@ -9,14 +9,18 @@
 
 dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of **F**itness **E**ffects (DFE)) is designed for analyzing Deep Mutational Scaning [1] data in terms of Distribution of Fitness Effects.
 
-## Installation
+## Full documentation
 
-Download the latest release from https://github.com/kc-lab/dms2dfe/releases .
+Version 1.x.x: http://kc-lab.github.io/dms2dfe/v1.0.0/html/  
 
-	cd dms2dfe
-	pip install .
+## Quick installation
 
-## Usage
+Requires python 2.7 environment. Tested on Ubuntu 12.04. To install download the latest release from https://github.com/kc-lab/dms2dfe/releases and execute following commands.  
+
+    cd dms2dfe
+    pip install .
+
+## Quick usage
 
 From bash command line, create a project directory
 
@@ -28,9 +32,6 @@ Run the analysis,
 
     dms2dfe path/to/project_directory
 
-## Full documentation
-
-Version 1.x.x: http://kc-lab.github.io/dms2dfe/v1.0.0/html/  
 
 ## Publication
 
@@ -40,7 +41,7 @@ doi: http://dx.doi.org/10.1101/072645
 
 ## Questions
 
-Please mention them here: https://github.com/rraadd88/dms2dfe/issues .
+Please mention them here: https://github.com/kc-lab/dms2dfe/issues .
 
 ## Footnotes
 

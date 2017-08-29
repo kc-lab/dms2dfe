@@ -42,6 +42,7 @@ def get_rgb_colors(series,cmap='Greens',res=10):
 def saveplot(plot_fh,form='both',
             transparent=False,
             tight_layout=True,
+            dpi=300,
             print_fh=False):
     if not plot_fh is None:
         def save(plot_fh,form,transparent):
@@ -53,7 +54,7 @@ def saveplot(plot_fh,form='both',
                 print plot_out_fh
             plt.savefig(plot_out_fh,format=form,
                 transparent=transparent,
-                dpi=300)
+                dpi=dpi)
         if tight_layout:
             plt.tight_layout()
         if plot_fh!=None:

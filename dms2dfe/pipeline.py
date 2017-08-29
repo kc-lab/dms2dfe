@@ -4,7 +4,7 @@
 # This program is distributed under General Public License v. 3.  
 
 import sys
-from os.path import exists,splitext
+from os.path import exists,splitext,dirname
 import argparse
 import logging
 from dms2dfe import configure, ana0_fastq2dplx,ana0_fastq2sbam,ana0_getfeats,ana1_sam2mutmat,ana2_mutmat2fit,ana3_fit2comparison,ana4_modeller,ana4_plotter
@@ -40,8 +40,8 @@ def main():
     args = parser.parse_args()
     pipeline(args.prj_dh,test=args.test,step=args.step)
 
-def pipeline(prj_dh,step=None,test=False):
-    if exists(prj_dh) :
+def pipeline(prj_dh,step=None,test=False):        
+    if exists(prj_dh):
         if step==0 or step==None:
             configure.main(prj_dh,"deps")
             configure.main(prj_dh)          
@@ -55,8 +55,8 @@ def pipeline(prj_dh,step=None,test=False):
             ana1_sam2mutmat.main(prj_dh)
         if step==2 or step==None:
             ana2_mutmat2fit.main(prj_dh,test)
-        # if step==3 or step==None:
-            # ana4_modeller.main(prj_dh,test)
+        if step==3 or step==None:
+            ana4_modeller.main(prj_dh,test)
         if step==4 or step==None:
             ana3_fit2comparison.main(prj_dh,test)
         if step==5 or step==None:

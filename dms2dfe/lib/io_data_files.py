@@ -50,18 +50,24 @@ def auto_find_missing_paths(prj_dh):
         try:
             fsta_fhs=glob("%s/*.fasta" % prj_dh)
             for fsta_fh in fsta_fhs:
-                if 'prt' not in fsta_fh:
+                if not (('prt' in fsta_fh) or ('_cctmr1.' in fsta_fh)):
                     info.loc["fsta_fh","input"]=fsta_fh
                     break
         except:
-            logging.error("could not find .fasta file")     
+            logging.error("could not find .fasta file")
     info_paths=[info.loc[info_path_var,"input"] for info_path_var in info_path_vars]
     info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     # if any(pd.isnull(info_paths)):
     if np.nan in info_paths:
         from dms2dfe import configure
-        configure.main(prj_dh,"deps")  
+        configure.main(prj_dh,"deps")
     # return 
+
+def get_raw_input(info,var):
+    # from dms2dfe.lib.io_dfs import set_index
+    # info=set_index(info,'var')
+    val=raw_input("%s: %s (default: %s) =" % (var,info.loc[var, "description"],info.loc[var, "default"]))
+    return val
 
 from dms2dfe.lib.io_seq_files import cctmr_fasta2ref_fasta
 def info2src(prj_dh):
@@ -69,7 +75,8 @@ def info2src(prj_dh):
     This converts `.csv` configuration file to `.py` source file saved in `/tmp/`.
     
     :param prj_dh: path to project directory
-    """        
+    """
+    csv2src("%s/../cfg/info" % abspath(dirname(__file__)),"%s/../tmp/info.py" % (abspath(dirname(__file__))))
     from dms2dfe.lib.io_seq_files import fasta_nts2prt
     auto_find_missing_paths(prj_dh)
     info=pd.read_csv(prj_dh+"/cfg/info")
@@ -79,33 +86,30 @@ def info2src(prj_dh):
 
     # find still missing paths ones
     info_paths=[info.loc[info_path_var,"input"] for info_path_var in info_path_vars]
-    for info_path in info_paths:
-        if not pd.isnull(info_path):
-	     if not exists(info_path):
-                if (info_path!='bowtie2') or (info_fh!='samtools'):
-	            logging.error('Path to files do not exist. Include correct path in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
-        	    return None
-        else:
-            logging.error('Path to file is missing. Check in cfg/info. %s : %s' % (info_path_vars[info_paths.index(info_path)],info_path))
-            return None
+    for info_path_var,info_path in zip(info_path_vars,info_paths):
+       # if not exists(info_path):
+        if not (('bowtie' in info_path) or ('samtools' in info_path)):
+            while not exists(info_path):
+                logging.error('Path to files do not exist. Include correct path in cfg/info. %s : %s' % (info_path_var,info_path))
+                print glob('%s/*' % prj_dh)
+                info_path=get_raw_input(info,info_path_var)
+            info.loc[info_path_var,'input']=info_path
 
     if not pd.isnull(info.loc['cctmr','input']):
-        
         cctmr=info.loc['cctmr','input']
         cctmr=[int("%s" % i) for i in cctmr.split(" ")]
-        # aas_len=cctmr[1]-1
         fsta_fh=cctmr_fasta2ref_fasta(info.loc['fsta_fh','input'],cctmr)
     else:
-
         fsta_fh=info.loc['fsta_fh','input']
     info.loc['prj_dh','input']=abspath(prj_dh)
     info.loc['fsta_id','input'],info.loc['fsta_seq','input'],info.loc['fsta_len','input']=get_fsta_feats(fsta_fh)
     host=info.loc['host','input']
     if pd.isnull(host):
-        host=info.loc['host','default']    	
+        host=info.loc['host','default']        
     info.loc['prt_seq','input']=fasta_nts2prt(fsta_fh,host=host).replace('*','X')
     info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     csv2src(prj_dh+"/cfg/info","%s/../tmp/info.py" % (abspath(dirname(__file__))))
+    csv2src(prj_dh+"/cfg/info",prj_dh+"/cfg/info.py")
     logging.info("configuration compiled: %s/cfg/info" % prj_dh)
 
 def csv2src(csv_fh,src_fh):

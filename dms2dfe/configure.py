@@ -5,7 +5,7 @@
 
 
 import sys
-from os.path import exists,splitext,abspath,dirname
+from os.path import exists,splitext,abspath,dirname,basename    
 from os import makedirs
 from glob import glob
 import pandas as pd
@@ -47,11 +47,26 @@ def main(prj_dh,inputs=None):
     :param prj_dh: path to project directory.
 
     """
+    while prj_dh.endswith('/'):
+        prj_dh=prj_dh[:-1]
+    if not dirname(prj_dh)==dirname(dirname(prj_dh)):
+        logging.error("dms2dfe should be executed from the directory containing project directory. ie. move to '%s' and execute: 'dms2dfe %s'." % (dirname(prj_dh),basename(prj_dh)))
+        sys.exit()
     #SET VARS
     cfgs=['lbls', 'fit', 'comparison', 'info', 'repli',
           'feats_mut','feats_sub','feats_pos',
           'barcodes']
     cfg_dh=prj_dh+"/cfg"
+    
+    if not exists(cfg_dh):
+        makedirs(cfg_dh)
+        subprocess.call("cp -r %s/cfg %s"% (abspath(dirname(__file__)),prj_dh) ,shell=True)
+        logging.info("new project directory created!: %s " % prj_dh)
+        logging.info("modify configurations in %s" % cfg_dh)
+        is_new_prj_dh=True
+    else:
+        is_new_prj_dh=False
+        # sys.exit()
 
     if inputs=="inputs":
         raw_input2info(prj_dh,"input")        
@@ -174,14 +189,9 @@ def main(prj_dh,inputs=None):
         info.loc["rate4site_fh","input"]=rate4site_fh
         info.reset_index().to_csv("%s/cfg/info" % (prj_dh), index=False)
         logging.info("dependencies installed!")
-    elif not exists(cfg_dh) :
-        makedirs(cfg_dh)
-        subprocess.call("cp -r %s/cfg %s"% (abspath(dirname(__file__)),prj_dh) ,shell=True)
-        logging.info("new project directory created!: %s " % prj_dh)
-        logging.info("modify configurations in %s" % cfg_dh)
-        # sys.exit()
-    else :
-        if is_cfg_ok(cfg_dh,cfgs) :
+
+    if exists(cfg_dh) and not is_new_prj_dh:
+        if is_cfg_ok(cfg_dh,cfgs):
             info2src(prj_dh)
         else:
             logging.info("check the configuration again.")

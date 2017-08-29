@@ -165,6 +165,29 @@ def plot_multisca(info,data_fit_fhs=None,plot_type='multisca'):
                                      plot_fh=plot_fh,
                                      space=0.1,
                                     )    
+
+def check_chimera_compatibility():
+    try:
+        chimera_dh=guess_chimera_path()[0]
+    except:
+        chimera_dh=''
+        logging.info("1install UCSF-Chimera for PDB vizs")      
+        # return False
+    if exists(chimera_dh):
+        # Monitor is On
+        std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
+        if std.stdout.read():
+            std=subprocess.Popen("xset q",shell=True,stdout=subprocess.PIPE)
+            if 'Monitor is On' in std.stdout.read():
+                return chimera_dh
+            else:
+                logging.error("skipping: pdb vizs: X11 not available.")                 
+        else:
+            logging.error("skipping: pdb vizs: graphics drivers not present/configured.") 
+            logging.info("To configure graphics drivers for UCSF-Chimera please install mesa-utils: sudo apt-get install mesa-utils;sudo apt-get update ")  
+    else:
+        logging.info("2install UCSF-Chimera for PDB vizs")      
+        # return False
     
 def plot_pdb(info,data_fit_fhs=None,plot_type="pdb",
             plot_pdb_chimera_fhs_fh=None):
@@ -191,32 +214,9 @@ def plot_pdb(info,data_fit_fhs=None,plot_type="pdb",
     plot_pdb_chimera_fhs_f.close()
     if not check_chimera_compatibility() is None:
         if not stat(plot_pdb_chimera_fhs_fh).st_size == 0:
-            subprocess.call("%s/bin/chimera --silent %s/lib/plot_pdb_chimera.py" % (chimera_dh,abspath(dirname(__file__))),shell=True)
+            subprocess.call("%s/bin/chimera --silent %s/lib/plot_pdb_chimera.py" % (check_chimera_compatibility(),abspath(dirname(__file__))),shell=True)
         # else:
         #     logging.info("already processed")  
-
-def check_chimera_compatibility():
-    try:
-        chimera_dh=guess_chimera_path()[0]
-    except:
-        chimera_dh=''
-        logging.info("1install UCSF-Chimera for PDB vizs")      
-        # return False
-    if exists(chimera_dh):
-        # Monitor is On
-        std=subprocess.Popen("which glxinfo",shell=True,stdout=subprocess.PIPE)
-        if std.stdout.read():
-            std=subprocess.Popen("xset q",shell=True,stdout=subprocess.PIPE)
-            if 'Monitor is On' in std.stdout.read():
-                return chimera_dh
-            else:
-                logging.error("skipping: pdb vizs: X11 not available.")                 
-        else:
-            logging.error("skipping: pdb vizs: graphics drivers not present/configured.") 
-            logging.info("To configure graphics drivers for UCSF-Chimera please install mesa-utils: sudo apt-get install mesa-utils;sudo apt-get update ")  
-    else:
-        logging.info("2install UCSF-Chimera for PDB vizs")      
-        # return False
 
 from dms2dfe.lib.plot_mut_data_dists import plot_data_comparison_multiviolin
 
