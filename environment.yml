@@ -3,4 +3,9 @@ channels:
 - conda-forge
 - biocore
 dependencies:
-- python=2.7
+- python=2.7.13=1
+- pip=9.0.1=py27_0
+- ca-certificates=2017.7.27.1=0
+- certifi=2017.7.27.1=py27_0
+- setuptools=36.2.2=py27_0
+- wheel=0.29.0=py27_0
