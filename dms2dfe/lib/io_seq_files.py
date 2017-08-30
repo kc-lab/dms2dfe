@@ -405,7 +405,7 @@ def getdepth_ref(sbam_fh,fsta_fh,
     # print lbl_mat_mut_cds_fh
     lbl_mat_mut_cds=lbl_mat_mut_cds.fillna(0).set_index("ref_cd",drop=True)
     lbl_mat_mut_cds=lbl_mat_mut_cds.loc[:,cds_64]
-    if cctmr!=None:
+    if (not cctmr is None) and (len(lbl_mat_mut_cds)>reflen*1.25):
         lbl_mat_mut_cds_cctmr1=lbl_mat_mut_cds.iloc[(cctmr[0][0]-1):(cctmr[0][1]-1),:]
         lbl_mat_mut_cds_cctmr2=lbl_mat_mut_cds.iloc[(cctmr[1][0]-1):(cctmr[1][1]-1),:]
         lbl_mat_mut_cds=lbl_mat_mut_cds_cctmr1+lbl_mat_mut_cds_cctmr2

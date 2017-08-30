@@ -306,7 +306,7 @@ def get_GB_cls_metrics(data_fh,info):
                                            n_jobs=int(info.cores), grid_resolution=50,
                                            n_cols=2,
                                            line_kw={'color':'r'},
-                                          figsize=[5,7])
+                                          figsize=[7,9])
         figtext(0.9,-0.2,'AUC = %.2f' % gs_cv.best_score_,ha='right',color='b')
         saveplot(plot_fh,form='pdf',tight_layout=False)
     
