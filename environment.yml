@@ -10,5 +10,5 @@ dependencies:
 - scipy
 - matplotlib
 - pandas
--pip:
+- pip:
   - scikit-bio==0.4.1
