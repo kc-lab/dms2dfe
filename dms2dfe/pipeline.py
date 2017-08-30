@@ -34,8 +34,8 @@ def main():
     parser.add_argument("prj_dh", help="path to project directory", 
                         action="store", default=False)    
     parser.add_argument("--test", help="Debug mode on", dest="test", 
-                        action="store", default=False)    
-    parser.add_argument("--step", help="0: configure project directory, 0.1: get molecular features, 0.2: demultiplex fastq by provided borcodes, 0.3: alignment, 1: variant calling, 2: get preferential enrichments, 3: identify molecular determinants, 4: identify relative selection pressures, 5: make visualizations", dest="step", 
+                        action='store_true', default=False)    
+    parser.add_argument("--step", help="0: configure project directory,\n0.1: demultiplex fastq by provided borcodes,\n0.2: alignment,\n0.3: get molecular features,\n1: variant calling,\n2: get preferential enrichments,\n3: identify molecular determinants,\n4: identify relative selection pressures,\n5: make visualizations", dest="step", 
                         type=float,action="store", choices=[0,0.1,0.2,0.3,1,2,3,4,5],default=None)  
     args = parser.parse_args()
     pipeline(args.prj_dh,test=args.test,step=args.step)
@@ -46,20 +46,22 @@ def pipeline(prj_dh,step=None,test=False):
             configure.main(prj_dh,"deps")
             configure.main(prj_dh)          
         if step==0.1 or step==None:
-            ana0_getfeats.main(prj_dh)
-        if step==0.2 or step==None:
             ana0_fastq2dplx.main(prj_dh)
-        if step==0.3 or step==None:
+        if step==0.2 or step==None:
             ana0_fastq2sbam.main(prj_dh,test)
+        if step==0.3 or step==None:
+            ana0_getfeats.main(prj_dh)
         if step==1 or step==None:
             ana1_sam2mutmat.main(prj_dh)
         if step==2 or step==None:
             ana2_mutmat2fit.main(prj_dh,test)
         if step==3 or step==None:
+            ana0_getfeats.main(prj_dh)
             ana4_modeller.main(prj_dh,test)
         if step==4 or step==None:
             ana3_fit2comparison.main(prj_dh,test)
         if step==5 or step==None:
+            ana0_getfeats.main(prj_dh)
             ana4_plotter.main(prj_dh)
         if step==None:
             logging.info("Location of output data: %s/plots/aas/data_comparison" % (prj_dh))

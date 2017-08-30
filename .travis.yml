@@ -9,8 +9,8 @@ sudo: false
 env:
   global:
     - PACKAGENAME="dms2dfe"
-    - CONDA_DEPS="pip flake8 pytest numpy scipy matplotlib pandas scikit-bio" 
-#    - PIP_DEPS="coveralls pytest-cov" -
+#   - CONDA_DEPS="pip flake8 pytest numpy scipy matplotlib pandas scikit-bio" 
+#   - PIP_DEPS="coveralls pytest-cov" -
     - MINICONDA_URL="https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 
 python:
@@ -26,16 +26,18 @@ before_install:
 - conda config --set always_yes yes
 - conda update conda
 - conda info -a
-- conda config --add channels biocore 
-- conda config --add channels conda-forge 
-- conda install python=$TRAVIS_PYTHON_VERSION $CONDA_DEPS
-- travis_retry pip install $PIP_DEPS
+- conda env create -f environment.yml
+# - conda config --add channels biocore 
+# - conda config --add channels conda-forge 
+# - conda install python=$TRAVIS_PYTHON_VERSION $CONDA_DEPS
+# - travis_retry pip install $PIP_DEPS
 
 install:
 - python setup.py install --record installed_files.txt
 
 script:
 - pytest test/test_configure.py
+- pytest test/test_datasets.py
 after_success:
 - coveralls
 deploy:

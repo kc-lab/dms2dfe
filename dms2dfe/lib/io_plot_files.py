@@ -118,7 +118,7 @@ def plot_submap(info,data_fit_fhs=None,plot_type="submap",
         data_fit=pd.read_csv(data_fit_fh)
         # data_plot=pd.concat([data_fit,data_feats_all],axis=1)
         data_plot=data_fit.join(data_feats_all)
-        data_plot.to_csv('test.csv')
+        # data_plot.to_csv('test.csv')
         plot_fh="%s/plots/%s/%s.%s.pdf" % (info.prj_dh,type_form,data_fit_fn,plot_type) 
         if not exists(plot_fh):
             for c in ['FiAcol','FiArow']:

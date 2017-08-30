@@ -284,7 +284,8 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,
         lbl_mat_cds.index.name='ref'
         if cctmr != None:
             reflen=(cctmr[0][1]-1)*3
-            lbl_mat_cds=collate_cctmr(lbl_mat_cds,cctmr)
+            if len(lbl_mat_cds)>reflen*1.25:
+                lbl_mat_cds=collate_cctmr(lbl_mat_cds,cctmr)
         lbl_mat_aas=mat_cds2mat_aas(lbl_mat_cds,host)# convert to aa data
         # lbl_mat_cds.to_csv('test')
         for type_form in mut_types_form : # get aas or cds  

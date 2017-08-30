@@ -1,4 +1,4 @@
-name: d2d_test
+name: dms2dfe
 channels:
 - conda-forge
 - biocore
@@ -68,4 +68,3 @@ dependencies:
   - traitlets==4.3.2
   - urllib3==1.22
   - wcwidth==0.1.7
-prefix: /home/kclabws1/anaconda/envs/d2d_test

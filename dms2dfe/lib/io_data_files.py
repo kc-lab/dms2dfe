@@ -8,7 +8,7 @@
 ``io_data_files``
 ================================
 """
-# import sys
+import sys
 import pandas as pd
 from os.path import exists,basename,abspath,dirname,expanduser
 import logging
@@ -58,10 +58,12 @@ def auto_find_missing_paths(prj_dh):
     info_paths=[info.loc[info_path_var,"input"] for info_path_var in info_path_vars]
     info.reset_index().to_csv(prj_dh+"/cfg/info",index=False)
     # if any(pd.isnull(info_paths)):
-    if np.nan in info_paths:
-        from dms2dfe import configure
-        configure.main(prj_dh,"deps")
-    # return 
+    info_paths_missing=[v for v in info_path_vars if (pd.isnull(info.loc[v,"input"]) and info.loc[v,"default"])]
+    if len(info_paths_missing)>0:
+        logging.error("Values for following variables are missing in 'project_dir/cfg/info' file.")
+        # print [p for p in info_paths if pd.isnull(p)]
+        print info_paths_missing
+        sys.exit()
 
 def get_raw_input(info,var):
     # from dms2dfe.lib.io_dfs import set_index
