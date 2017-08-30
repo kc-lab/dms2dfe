@@ -24,4 +24,4 @@ samtools_fh,,,,Optional: path to samtools source file
 clustalo_fh,,,,Optional: path to clustal omega source file
 msms_fh,,,,Optional: path to MSMS source file (for calculation of residue depths)
 rate4site_fh,,,,Optional: path to rate4site source file (for calculation of conservation scores)
-rscript_fh,/usr/bin/Rscript,,,Optional: path to Rscript (for use of Deseq2) can be identified by executing command 'which R'
+rscript_fh,~/anaconda/envs/dms2dfe/bin/Rscript,/usr/bin/Rscript,,Optional: path to Rscript (for use of Deseq2) can be identified by executing command 'which R'
