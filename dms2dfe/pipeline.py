@@ -49,13 +49,13 @@ def pipeline(prj_dh,step=None,test=False):
             ana0_fastq2dplx.main(prj_dh)
         if step==0.2 or step==None:
             ana0_fastq2sbam.main(prj_dh,test)
-        if step==0.3 or step==None:
+        if step==0.3:
             ana0_getfeats.main(prj_dh)
         if step==1 or step==None:
             ana1_sam2mutmat.main(prj_dh)
         if step==2 or step==None:
             ana2_mutmat2fit.main(prj_dh,test)
-        if step==3 or step==None:
+        if step==3:
             ana0_getfeats.main(prj_dh)
             ana4_modeller.main(prj_dh,test)
         if step==4 or step==None:
