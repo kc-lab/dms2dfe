@@ -1,11 +1,12 @@
-def test_configure():
+def test_datasets():
     import subprocess
     import os
     from os.path import exists
     # from dms2dfe import pipeline
     repo_n='ms_datasets'
     repo_v='0.0.3'
-    datasets=['Firnberg_et_al_2014',
+    datasets=[
+              # 'Firnberg_et_al_2014',
               # 'Melnikov_et_al_2014',
               'Olson_et_al_2014',]
     datasets_dh='%s-%s' % (repo_n,repo_v)

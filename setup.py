@@ -62,8 +62,7 @@ entry_points={
 #git push --tags
 ##rewrite old tags
 #git tag new old
-#git tag -d old
-#git push origin :old
+#git tag -d old;git push origin :old
 #git push --tags
 #undo last commit
 ###git reset --hard HEAD~
