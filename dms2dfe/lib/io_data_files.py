@@ -78,8 +78,10 @@ def info2src(prj_dh):
     
     :param prj_dh: path to project directory
     """
-    csv2src("%s/../cfg/info" % abspath(dirname(__file__)),"%s/../tmp/info.py" % (abspath(dirname(__file__))))
+    import subprocess
     from dms2dfe.lib.io_seq_files import fasta_nts2prt
+
+    csv2src("%s/../cfg/info" % abspath(dirname(__file__)),"%s/../tmp/info.py" % (abspath(dirname(__file__))))
     auto_find_missing_paths(prj_dh)
     info=pd.read_csv(prj_dh+"/cfg/info")
     # info=auto_find_missing_paths(prj_dh)
@@ -91,9 +93,12 @@ def info2src(prj_dh):
     for info_path_var,info_path in zip(info_path_vars,info_paths):
        # if not exists(info_path):
         if not (('bowtie' in info_path) or ('samtools' in info_path)):
+            if not exists(info_path):
+                if info_path_var=='rscript_fh':
+                    info_path = subprocess.check_output(["which", "Rscript"]).replace('\n','')
+                    # print info_path
             while not exists(info_path):
                 logging.error('Path to files do not exist. Include correct path in cfg/info. %s : %s' % (info_path_var,info_path))
-                print glob('%s/*' % prj_dh)
                 info_path=get_raw_input(info,info_path_var)
             info.loc[info_path_var,'input']=info_path
 
