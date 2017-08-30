@@ -1,9 +1,8 @@
-# dms2dfe
+# `dms2dfe`
 
 [![build status](
   http://img.shields.io/travis/rraadd88/dms2dfe/master.svg?style=flat)](
- https://travis-ci.org/rraadd88/dms2dfe)
-
+ https://travis-ci.org/rraadd88/dms2dfe) [![PyPI version](https://badge.fury.io/py/dms2dfe.svg)](https://pypi.python.org/pypi/dms2dfe)
 
 ## Overview
 
