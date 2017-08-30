@@ -4,3 +4,9 @@ channels:
 - biocore
 dependencies:
 - python=2.7
+- flake8
+- pytest
+- numpy
+- scipy
+- matplotlib
+- pandas
