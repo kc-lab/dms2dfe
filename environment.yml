@@ -6,7 +6,9 @@ dependencies:
 - python=2.7
 - flake8
 - pytest
-- numpy
+- numpy==1.13.1
 - scipy
 - matplotlib
 - pandas
+-pip:
+  - scikit-bio==0.4.1
