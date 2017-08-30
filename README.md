@@ -14,10 +14,9 @@ Version 1.x.x: http://kc-lab.github.io/dms2dfe/v1.0.0/html/
 
 ## Quick installation
 
-Requires python 2.7 environment. Tested on Ubuntu 12.04. To install download the latest release from https://github.com/kc-lab/dms2dfe/releases and execute following commands.  
+To install `dms2dfe` simply execute following command.
 
-    cd dms2dfe
-    pip install .
+    pip install dms2dfe
 
 ## Quick usage
 
