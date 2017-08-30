@@ -27,6 +27,7 @@ before_install:
 - conda update conda
 - conda info -a
 - conda env create -f environment.yml
+- source activate dms2dfe
 # - conda config --add channels biocore 
 # - conda config --add channels conda-forge 
 # - conda install python=$TRAVIS_PYTHON_VERSION $CONDA_DEPS
