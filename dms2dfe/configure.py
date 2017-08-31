@@ -75,96 +75,97 @@ def main(prj_dh,inputs=None):
         raw_input2info((abspath(dirname(__file__))),"default")
         logging.info("configuration defaults modified!")
     elif inputs=="dependencies" or inputs=="deps":
-        if not exists("dms2dfe_dependencies"):
-            makedirs("dms2dfe_dependencies")
-        log_fh="dms2dfe_dependencies/dms2dfe_dependencies.log"
+        deps_dh="%s/dms2dfe_dependencies" % abspath(dirname(__file__)) 
+        if not exists(deps_dh):
+            makedirs(deps_dh)
+        log_fh="%s/%s.log" % (deps_dh,basename(deps_dh))
         log_f = open(log_fh,'a')
         #dssp
-        dssp_fh="dms2dfe_dependencies/dssp-2.0.4-linux-amd64"
+        dssp_fh=deps_dh+"/dssp-2.0.4-linux-amd64"
         if not exists(dssp_fh):
             logging.info("configuring: dssp")
             dssp_lnk="ftp://ftp.cmbi.ru.nl/pub/software/dssp/dssp-2.0.4-linux-amd64"
-            com="wget -q %s --directory-prefix=dms2dfe_dependencies" % dssp_lnk
+            com="wget -q %s --directory-prefix=%s" % (dssp_lnk,deps_dh)
             subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             subprocess.call("chmod +x %s" % dssp_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT)            
         #bowtie2
-        bowtie2_fh="dms2dfe_dependencies/bowtie2-2.2.1/bowtie2"   
+        bowtie2_fh=deps_dh+"/bowtie2-2.2.1/bowtie2"   
         if not exists(dirname(bowtie2_fh)):
             logging.info("configuring: bowtie2")
-            bowtie2_src='dms2dfe_dependencies/v2.2.1.zip'
+            bowtie2_src=deps_dh+'/v2.2.1.zip'
             if not exists(bowtie2_src):        
                 bowtie2_lnk="https://github.com/BenLangmead/bowtie2/archive/v2.2.1.zip"
-                com="wget -q %s --directory-prefix=dms2dfe_dependencies" % bowtie2_lnk
+                com="wget -q %s --directory-prefix=%s" % (bowtie2_lnk,deps_dh)
                 subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
-            subprocess.call("unzip %s -d dms2dfe_dependencies" % bowtie2_src,\
+            subprocess.call("unzip %s -d %s" % (bowtie2_src,deps_dh),
                             shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             #subprocess.call("chmod +x %s" % bowtie2_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT) 
             subprocess.call("cd %s;make all; cd -;" % dirname(bowtie2_fh),shell=True,stdout=log_f, stderr=subprocess.STDOUT)
         #samtools
-        samtools_fh="dms2dfe_dependencies/samtools-0.1.20/samtools"        
+        samtools_fh=deps_dh+"/samtools-0.1.20/samtools"        
         if not exists(dirname(samtools_fh)):
             logging.info("configuring: samtools")
-            samtools_src='dms2dfe_dependencies/0.1.20.zip'
+            samtools_src=deps_dh+'/0.1.20.zip'
             if not exists(samtools_src):
                 samtools_lnk="https://github.com/samtools/samtools/archive/0.1.20.zip"
-                com="wget -q %s --directory-prefix=dms2dfe_dependencies" % samtools_lnk
+                com="wget -q %s --directory-prefix=%s" % (samtools_lnk,deps_dh)
                 subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             else:
-                subprocess.call("unzip %s -d dms2dfe_dependencies" % samtools_src,\
+                subprocess.call("unzip %s -d %s" % (samtools_src,deps_dh),\
                                 shell=True,stdout=log_f, stderr=subprocess.STDOUT)
-            std=subprocess.Popen("cd dms2dfe_dependencies/samtools-0.1.20; make",shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+            std=subprocess.Popen("cd %s/samtools-0.1.20; make" % deps_dh,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             log_f.close();log_f=open(log_fh,'r');log_lines=log_f.readlines();log_f.close();log_f = open(log_fh,'a')
             if len([l for l in log_lines if "fatal error: zlib.h" in l])>0:
-                print "\n###   TROUBLESHOOT   ###\nFor interference issues (with htslib) installation of samtools dependency gave following error,\n.. zlib.h: No such file or directory\nPlease use following command before installing samtools. i.e.\n\nsudo apt-get install zlib1g-dev libncurses5-dev;sudo apt-get update\n\ndms2dfe_dependencies/samtools-0.1.20/make\nAfter the successfull installation, please configure dms2dfe by following command.\nfrom dms2dfe import configure\nconfigure.main(prj_dh)\n\n"
+                print "\n###   TROUBLESHOOT   ###\nFor interference issues (with htslib) installation of samtools dependency gave following error,\n.. zlib.h: No such file or directory\nPlease use following command before installing samtools. i.e.\n\nsudo apt-get install zlib1g-dev libncurses5-dev;sudo apt-get update\n\n%s/samtools-0.1.20/make\nAfter the successfull installation, please configure dms2dfe by following command.\nfrom dms2dfe import configure\nconfigure.main(prj_dh)\n\n" % deps_dh
                 # sys.exit()
             else:
                 subprocess.call("chmod +x %s" % samtools_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
         #trimmomatic
-        trimmomatic_fh="dms2dfe_dependencies/Trimmomatic-0.33/trimmomatic-0.33.jar"
+        trimmomatic_fh=deps_dh+"/Trimmomatic-0.33/trimmomatic-0.33.jar"
         if not exists(trimmomatic_fh):
             logging.info("configuring: trimmomatic")
             trimmomatic_lnk="http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.33.zip"
-            com="wget -q %s --directory-prefix=dms2dfe_dependencies" % trimmomatic_lnk
+            com="wget -q %s --directory-prefix=%s" % (trimmomatic_lnk,deps_dh)
             subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
-            subprocess.call("unzip dms2dfe_dependencies/Trimmomatic-0.33.zip -d dms2dfe_dependencies/",\
+            subprocess.call("unzip %s/Trimmomatic-0.33.zip -d %s/" % (deps_dh,deps_dh),\
                             shell=True,stdout=log_f, stderr=subprocess.STDOUT)
 
         #clustalo
-        clustalo_fh="dms2dfe_dependencies/clustalo-1.2.2-Ubuntu-x86_64"
+        clustalo_fh=deps_dh+"/clustalo-1.2.2-Ubuntu-x86_64"
         if not exists(clustalo_fh):
             logging.info("configuring: clustalo")
             soft_lnk="http://www.clustal.org/omega/clustalo-1.2.2-Ubuntu-x86_64"
-            com="wget -q %s --directory-prefix=dms2dfe_dependencies" % soft_lnk
+            com="wget -q %s --directory-prefix=%s" % (soft_lnk,deps_dh)
             subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             subprocess.call("chmod +x %s" % clustalo_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
 
         #msms
-        msms_fh="dms2dfe_dependencies/msms/msms.x86_64Linux2.2.6.1"
+        msms_fh=deps_dh+"/msms/msms.x86_64Linux2.2.6.1"
         if not exists(msms_fh):
             logging.info("configuring: msms")
             soft_lnk="http://mgltools.scripps.edu/downloads/tars/releases/MSMSRELEASE/REL2.6.1/msms_i86_64Linux2_2.6.1.tar.gz"
-            com="wget -q %s --directory-prefix=dms2dfe_dependencies/msms; tar -xvzf dms2dfe_dependencies/msms/msms_i86_64Linux2_2.6.1.tar.gz -C dms2dfe_dependencies/msms" % soft_lnk
+            com="wget -q %s --directory-prefix=%s/msms; tar -xvzf %s/msms/msms_i86_64Linux2_2.6.1.tar.gz -C %s/msms" % (soft_lnk,deps_dh,deps_dh,deps_dh)
             subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             pdb_to_xyzr_fh="%s/pdb_to_xyzr" % dirname(msms_fh)
-            # pdb_to_xyzr_fh="dms2dfe_dependencies/msms/pdb_to_xyzr"
+            # pdb_to_xyzr_fh=deps_dh+"/msms/pdb_to_xyzr"
             with open(pdb_to_xyzr_fh, 'r') as f:
                 line = f.read()
-                line=line.replace("./atmtypenumbers","./dms2dfe_dependencies/msms/atmtypenumbers")
+                line=line.replace("./atmtypenumbers","./%s/msms/atmtypenumbers" % deps_dh)
             with open(pdb_to_xyzr_fh, 'w') as f:
                 f.write(line)    
             # with open(pdb_to_xyzr_fh,"w") as f:
             #     if 
             
         #rate4site
-        rate4site_fh="dms2dfe_dependencies/rate4site/rate4site-3.0.0/src/rate4site/rate4site"
+        rate4site_fh=deps_dh+"/rate4site/rate4site-3.0.0/src/rate4site/rate4site"
         if not exists(rate4site_fh):
             logging.info("configuring: rate4site")
             soft_lnk="https://launchpadlibrarian.net/155121258/rate4site_3.0.0.orig.tar.gz"
 	    #soft_lnk="ftp://rostlab.org/rate4site/rate4site-3.0.0.tar.gz"
-            com="wget -q %s --directory-prefix=dms2dfe_dependencies/rate4site;\
-                tar -xvzf dms2dfe_dependencies/rate4site/rate4site*.tar.gz -C dms2dfe_dependencies/rate4site;\
-                cd dms2dfe_dependencies/rate4site/rate4site-3.0.0;\
-                ./configure;make" % soft_lnk
+            com="wget -q %s --directory-prefix=%s/rate4site;\
+                tar -xvzf %s/rate4site/rate4site*.tar.gz -C %s/rate4site;\
+                cd %s/rate4site/rate4site-3.0.0;\
+                ./configure;make" % (soft_lnk,deps_dh,deps_dh,deps_dh,deps_dh)
             subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
 
         std=subprocess.Popen("which java",shell=True,stdout=log_f, stderr=subprocess.STDOUT)
