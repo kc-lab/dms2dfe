@@ -24,13 +24,13 @@ To install the package written in python 2.7, simply execute following command:
 
 From bash command line, create a project directory
 
-    dms2dfe path/to/project_directory
+    dms2dfe project_directory
 
 Insert input parameters in the configuration files (.csv) located in `project_directory/cfg`   
 
 Run the analysis,
 
-    dms2dfe path/to/project_directory
+    dms2dfe project_directory
 
 
 ## Publication
