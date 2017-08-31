@@ -49,6 +49,7 @@ from dms2dfe.lib.plot_mut_data import data2mut_matrix,data2sub_matrix
 from dms2dfe.lib.io_plots import repel_labels
 def plot_sc(data,ax,xcol,ycol,ylabel='',
            heads=[],tails=[],repel=0.045,
+           annot_headtails=True,
             color_sca=None,
             color_dots='both',
             color_heads='r',color_tails='b',
@@ -75,7 +76,8 @@ def plot_sc(data,ax,xcol,ycol,ylabel='',
                   )
         ax.set_xlabel(xcol)
     if len(heads)==0 and len(tails)==0:
-        heads,tails=gettopnlastdiff(data,ycol,xcol,zcol=zcol,zcol_threshold=zcol_threshold)
+        if annot_headtails:
+            heads,tails=gettopnlastdiff(data,ycol,xcol,zcol=zcol,zcol_threshold=zcol_threshold)
     color_sca='none'
     color_edge='royalblue'
     if (color_dots=='heads') or (color_dots=='both'):
@@ -121,6 +123,7 @@ def plot_scatter_mutilayered(data_all,xcol,ycol,
                              mutids_heads=[],mutids_tails=[],
                              repel=0.045,
                              color_dots='both',
+                             annot_headtails=True,
                              color_heads='r',color_tails='b',
                              note_text='',                             
                              stds_sub_pos=None,
@@ -179,9 +182,11 @@ def plot_scatter_mutilayered(data_all,xcol,ycol,
                      zorder=0)
     ax1,mutids_heads,mutids_tails,axlims=plot_sc(data_all_mut,ax1,xcol,ycol,ylabel=ycol,
                 heads=mutids_heads,tails=mutids_tails,
+                annot_headtails=False,
                 zcol=col_z_mutations,zcol_threshold=zcol_threshold,
                 repel=repel,
                 color_dots=color_dots,color_heads=color_heads,color_tails=color_tails,diagonal=diagonal,space=space,)
+
     repel_sub=repel*len(data_all_sub)/(len(data_all_mut))*5
     if repel_sub>repel:
         repel_sub=repel
@@ -192,6 +197,7 @@ def plot_scatter_mutilayered(data_all,xcol,ycol,
     # print data_all_sub.shape
     ax2,_,_,_=plot_sc(data_all_sub,ax2,xcol,ycol,
                heads=[mutids2subid(i) for i in mutids_heads],tails=[mutids2subid(i) for i in mutids_tails],
+                annot_headtails=False,
                repel=repel_sub,
                 color_dots=color_dots,color_heads=color_heads,color_tails=color_tails,diagonal=diagonal,space=space,
                      # axlims=axlims
@@ -202,6 +208,7 @@ def plot_scatter_mutilayered(data_all,xcol,ycol,
     # print repel_pos
     ax3,_,_,_=plot_sc(data_all_pos,ax3,xcol,ycol,
                heads=[mutids2refrei(i) for i in mutids_heads],tails=[mutids2refrei(i) for i in mutids_tails],
+                annot_headtails=False,
                repel=repel_pos,
                 color_dots=color_dots,color_heads=color_heads,color_tails=color_tails,diagonal=diagonal,space=space,
                      # axlims=axlims
