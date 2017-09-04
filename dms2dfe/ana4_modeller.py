@@ -22,7 +22,7 @@ from dms2dfe import configure
 
 def main(prj_dh,test=False,ml=False):
     """
-    This modules trains a Random Forest classifier with given data in `data_fit` format.
+    **--step 3**. Identifies molecular features that may determine fitness scores.
     
     This plots the results in following visualisations.
     

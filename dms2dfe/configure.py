@@ -17,7 +17,7 @@ from dms2dfe.lib.io_data_files import is_cfg_ok,info2src,raw_input2info
 # GET INPTS    
 def main(prj_dh,inputs=None):
     """
-    Generates and compiles configurations.
+    **--step 0**. Configures a project_directory.
     
     Firstly, to create a new project directory (`prj_dh`) in current directory, 
 

@@ -16,7 +16,8 @@ from dms2dfe.lib.io_mut_files import getusable_lbls_list,getusable_fits_list,mut
 
 def main(prj_dh,test=False):
     """
-    This modules converts mutation matrices (.mat files produced in upstream ana1_sam2mutmat module) and calculates the fitness values for samples.
+    **--step 2**. Converts mutation matrices (.mat files produced in upstream ana1_sam2mutmat module) and calculates the fitness scores.
+    
     The output data is saved in `data_fit` format as described in :ref:`io`.
     
     :param prj_dh: path to project directory.

@@ -20,7 +20,7 @@ from dms2dfe.lib.get_protein_features import get_data_feats_pos,get_data_feats_s
 
 def main(prj_dh):
     """
-    This optional module extracts following structural features of reference protein.
+    **--step 0.3**. Extracts molecular features of the gene.
     
     The out files are created in `prj_dh/data_feats`
 

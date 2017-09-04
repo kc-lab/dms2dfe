@@ -14,7 +14,7 @@ from dms2dfe.lib.io_plot_files import plot_coverage,plot_mutmap,plot_submap,plot
 
 def main(prj_dh):
     """
-    This module makes vizualization for output of `dms2dfe`.
+    **--step 5**. Generates vizualizations.
 
     #. Scatter grid plots raw counts in replicates, if present.
     #. Mutation matrix. of frequencies of mutants (log scaled). 

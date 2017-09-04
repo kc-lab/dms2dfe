@@ -13,7 +13,7 @@ from dms2dfe.lib.io_seq_files import fastq2qcd,fastq2dplx
 
 def main(prj_dh):
     """
-    This optional module demultipexes the .fastq files based on barcodes configuration (located at `prj_dh/cfg/barcodes`).
+    **--step 0.1**. Demultipexes .fastq files based on barcodes located at `prj_dh/cfg/barcodes`.
 
     :param prj_dh: path to project directory
     """

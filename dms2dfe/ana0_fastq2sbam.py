@@ -17,7 +17,7 @@ from dms2dfe.lib.io_seq_files import getusablefastqs_list,fastq2qcd,qcd2sbam
 
 def main(prj_dh,test=False):
     """
-    This optional modules preprocesses unaligned .fastq files.
+    **--step 0.2**. Preprocesses and aligns sequencing files.
 
     The steps and required dependendencies are following. 
 

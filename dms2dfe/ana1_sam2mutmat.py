@@ -19,7 +19,7 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(
 
 def main(prj_dh,test=False):
     """
-    This module processes alignment (.sam file)  and produces codon level mutation matrix of frequencies of mutations in the respective sample.
+    **--step 1**. Processes alignment (.sam file) and produces codon level mutation matrix of counts of mutations.
     
     :param prj_dh: path to project directory.
     """

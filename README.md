@@ -4,9 +4,14 @@
   http://img.shields.io/travis/rraadd88/dms2dfe/master.svg?style=flat)](
  https://travis-ci.org/rraadd88/dms2dfe) [![PyPI version](https://badge.fury.io/py/dms2dfe.svg)](https://pypi.python.org/pypi/dms2dfe)
 
+<!--
+pandoc --from=markdown --to=rst --output=README.rst R
+EADME.md
+-->
+
 ## Overview
 
-dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of **F**itness **E**ffects (DFE)) is an integrative analysis workflow designed for end-to-end enrichment analysis of Deep Mutational Scaning [1] data. Among many experimental designs Deep Mutational Scaning asssay, this workflow, currently, is only applicable for pairwise comparisons of samples.
+dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of **F**itness **E**ffects (DFE)) is an integrative analysis workflow designed for end-to-end enrichment analysis of Deep Mutational Scaning [1] data. Among many experimental designs Deep Mutational Scaning asssay, this workflow, currently, is only applicable for **pairwise comparisons** of samples.
 
 ## Full documentation
 

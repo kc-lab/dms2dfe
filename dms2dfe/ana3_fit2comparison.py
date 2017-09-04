@@ -23,7 +23,8 @@ from dms2dfe.lib.io_mut_class import get_data_metrics
 
 def main(prj_dh,test=False):
     """
-    This modules makes the comparison between test (eg. treated) and control (eg. untreated) experiments. 
+    **--step 4**. Compares test (eg. treated) and control (eg. untreated) experiments.
+    
     The output data is saved in `data_comparison` format as described in :ref:`io`.
     
     :param prj_dh: path to project directory.
