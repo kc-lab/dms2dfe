@@ -163,7 +163,8 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
         if not exists(blast_fasta_fh):
             if not exists(blast_fh):
                 # get blast
-                blast_handle = NCBIWWW.qblast(blast_method, blast_db, sequence=prt_seq)
+                blast_handle = NCBIWWW.qblast(blast_method, 
+                               blast_db, sequence=prt_seq)
                 blast_results = blast_handle.read()
                 blast_f=open(blast_fh, 'w')
                 blast_f.write(blast_results)
@@ -174,15 +175,17 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
             # blast to fasta
             blast_fasta_f=open(blast_fasta_fh, 'w')
             fsta_data=[]
-            fsta_data.append(SeqRecord.SeqRecord(Seq.Seq(prt_seq,IUPAC.protein),id = ref_id,description=''))
+            fsta_data.append(SeqRecord.SeqRecord(Seq.Seq(prt_seq,IUPAC.protein),
+                                 id = ref_id,description=''))
             for rec in blast_records:
                 for aln in rec.alignments:
                     for hsp in aln.hsps:
-                        fsta_data.append(SeqRecord.SeqRecord(Seq.Seq(hsp.sbjct,IUPAC.protein),id = aln.hit_id,description=''))
+                        fsta_data.append(SeqRecord.SeqRecord(Seq.Seq(hsp.sbjct,IUPAC.protein),
+                                 id = aln.hit_id,description=''))
             SeqIO.write(fsta_data, blast_fasta_f, "fasta")
             blast_fasta_f.close()
     # blast fasta to msa : clustaw
-        clustalo_com="./%s -i %s -o %s --outfmt=fasta --log=%s.log" % (clustalo_fh,blast_fasta_fh,msa_fh,msa_fh)
+        clustalo_com="%s -i %s -o %s --outfmt=fasta --log=%s.log" % (clustalo_fh,blast_fasta_fh,msa_fh,msa_fh)
         log_fh="%s.log" % clustalo_fh
         log_f = open(log_fh,'a')
         subprocess.call(clustalo_com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
@@ -223,7 +226,7 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
         for rate4site_tree in rate4site_trees:
             rate4site_out_csv_fh="%s/%s.csv%s%s" % (dirname(rate4site_out_fh),ref_id,rate4site_rate,rate4site_tree)
             if not exists(rate4site_out_csv_fh):
-                rate4site_com="./%s -s %s -o %s -x %s_x -y %s_y -a %s %s %s;rm r4s.res" % \
+                rate4site_com="%s -s %s -o %s -x %s_x -y %s_y -a %s %s %s;rm r4s.res" % \
                 (rate4site_fh,msa_fh,rate4site_out_fh,rate4site_out_fh,rate4site_out_fh,ref_id,rate4site_rate,rate4site_tree)
                 # print rate4site_com
                 log_fh="%s.log" % rate4site_out_csv_fh
@@ -258,10 +261,11 @@ def get_residue_depth(pdb_fh,msms_fh):
     if not exists(surface_fh):
         pdb_to_xyzr_fh="%s/pdb_to_xyzr" % dirname(msms_fh)
         xyzr_fh="%s/%s.xyzr" % (dirname(msms_fh),basename(pdb_fh))
-        pdb_to_xyzr_com="./%s %s > %s" % (pdb_to_xyzr_fh,pdb_fh,xyzr_fh)
-        msms_com="./%s -probe_radius 1.5 -if %s -of %s > %s.log" % (msms_fh,xyzr_fh,splitext(surface_fh)[0],splitext(surface_fh)[0])
+        pdb_to_xyzr_com="%s %s > %s" % (pdb_to_xyzr_fh,pdb_fh,xyzr_fh)
+        msms_com="%s -probe_radius 1.5 -if %s -of %s > %s.log" % (msms_fh,xyzr_fh,splitext(surface_fh)[0],splitext(surface_fh)[0])
         log_fh="%s.log" % msms_fh
         log_f = open(log_fh,'a')
+        log_f.write("%s;\n%s\n" % (pdb_to_xyzr_com,msms_com))
         subprocess.call("%s;%s" % (pdb_to_xyzr_com,msms_com) , shell=True,stdout=log_f, stderr=subprocess.STDOUT)
         log_f.close()
 
@@ -446,12 +450,12 @@ def get_data_feats_pos(prj_dh,info,data_out_fh):
                 elif feats_type=="depth":
                     logging.info("getting structural features")
                     if not exists(data_feats_fh):
-                        try:
-                            depth_df=get_residue_depth(pdb_fh,msms_fh)
-                            depth_df.reset_index().to_csv(data_feats_fh,index=False)
-                        except:
-                            depth_df=pd.DataFrame(index=data_feats.index)
-                            logging.error("nawk not installed")
+                        # try:
+                        depth_df=get_residue_depth(pdb_fh,msms_fh)
+                        depth_df.reset_index().to_csv(data_feats_fh,index=False)
+                        # except:
+                        #     depth_df=pd.DataFrame(index=data_feats.index)
+                        #     logging.error("nawk not installed")
                     else:
                         depth_df=pd.read_csv(data_feats_fh)
                         depth_df=depth_df.set_index("aasi",drop=True)                        

@@ -55,7 +55,7 @@ def pipeline(prj_dh,step=None,test=False):
             ana1_sam2mutmat.main(prj_dh)
         if step==2 or step==None:
             ana2_mutmat2fit.main(prj_dh,test)
-        if step==3:
+        if step==3 or step==None:
             ana0_getfeats.main(prj_dh)
             ana4_modeller.main(prj_dh,test)
         if step==4 or step==None:

@@ -6,7 +6,7 @@
 
 ## Overview
 
-dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of **F**itness **E**ffects (DFE)) is designed for analyzing Deep Mutational Scaning [1] data in terms of Distribution of Fitness Effects.
+dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of **F**itness **E**ffects (DFE)) is an integrative analysis workflow designed for end-to-end enrichment analysis of Deep Mutational Scaning [1] data. Among many experimental designs Deep Mutational Scaning asssay, this workflow, currently, is only applicable for pairwise comparisons of samples.
 
 ## Full documentation
 

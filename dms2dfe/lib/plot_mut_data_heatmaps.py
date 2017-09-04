@@ -453,3 +453,48 @@ def make_plot_cluster_sub_matrix(data_combo,xcol,boundaries,
         if test:
             return ax
             break
+
+# sns.set(font="monaco")
+def clustermap(df,highlight_xywhs=[],
+               highlight_col=None,
+               vlim=[-0.8,0.8],
+               if_xticks_rotate=False,
+              figsize=(4, 4),
+              plot_fh=None):
+    import seaborn as sns
+    import scipy.cluster.hierarchy as sch
+    from scipy.cluster.hierarchy import fcluster
+    Y = sch.linkage(df, method='centroid')
+    clusters=fcluster(Y,t=0.75)
+    # feats2clusters=pd.DataFrame({'feature':df.columns,
+    #                             'cluster':clusters})
+    pal=sns.color_palette("husl", len(np.unique(clusters)))
+    lut = dict(zip(map(str, np.unique(clusters)), pal))
+    # Convert the palette to vectors that will be drawn on the side of the matrix 
+    colors=[lut[str(i)] for i in clusters]
+    colors = pd.Series(colors, index=df.columns)
+    colors.name='Cluster'
+    g=sns.clustermap(df.corr(), row_colors=colors,
+                   col_colors=colors, 
+                     figsize=figsize,
+                    vmin=vlim[0],vmax=vlim[1],
+                   cmap='RdBu_r',
+                    cbar_kws={'label': '$\\rho$'})
+    plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
+    ax = g.ax_heatmap
+    if not highlight_col is None:
+        xticklabels=[s.get_text() for s in g.ax_heatmap.get_xticklabels()]
+        yticklabels=[s.get_text() for s in g.ax_heatmap.get_yticklabels()]
+        highlight_xywhs.append([0,yticklabels.index(highlight_col),df.shape[1],1])
+        highlight_xywhs.append([xticklabels.index(highlight_col),0,1,df.shape[0]])        
+    for xywh in highlight_xywhs:
+        from matplotlib.patches import Rectangle        
+        ax.add_patch(Rectangle((xywh[0], xywh[1]), xywh[2], xywh[3],
+                               fill=False, edgecolor='lime', lw=3))
+    ax.figure.subplots_adjust(left=0,right=0.55,
+                              bottom=0.35,top=0.9,
+                              wspace = 0.5,hspace = 0.5,
+                             ) 
+    if not plot_fh is None:
+        saveplot(plot_fh,tight_layout=False)
+    return g,ax

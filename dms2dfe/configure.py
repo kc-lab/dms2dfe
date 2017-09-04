@@ -150,7 +150,7 @@ def main(prj_dh,inputs=None):
             # pdb_to_xyzr_fh=deps_dh+"/msms/pdb_to_xyzr"
             with open(pdb_to_xyzr_fh, 'r') as f:
                 line = f.read()
-                line=line.replace("./atmtypenumbers","./%s/msms/atmtypenumbers" % deps_dh)
+                line=line.replace("./atmtypenumbers","%s/msms/atmtypenumbers" % deps_dh)
             with open(pdb_to_xyzr_fh, 'w') as f:
                 f.write(line)    
             # with open(pdb_to_xyzr_fh,"w") as f:

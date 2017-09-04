@@ -188,7 +188,7 @@ def get_data_metrics(prj_dh):
             data_fit_metrics['$\Delta n_{enriched}$ %s' % c]=(data_fit_metrics['$n_{enriched}$']-data_fit_metrics.loc[ctrls[c],'$n_{enriched}$'])
             data_fit_metrics['$\Delta n_{enriched}$%% %s' % c]=(data_fit_metrics['$n_{enriched}$%']-data_fit_metrics.loc[ctrls[c],'$n_{enriched}$%'])
             data_fit_metrics['$\Delta F$ %s' % c]=(data_fit_metrics['$F$ mean']-data_fit_metrics.loc[ctrls[c],'$F$ mean'])
-        data_fit_metrics_fh='%s/data_fit_metrics' % prj_dh
+        data_fit_metrics_fh='%s/data_comparison/data_fit_metrics' % prj_dh
         data_fit_metrics.to_csv(data_fit_metrics_fh)
         return data_fit_metrics
     else: 

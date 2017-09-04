@@ -10,15 +10,10 @@
 """
 from os.path import abspath,dirname,exists,basename
 from os import makedirs
-
-from sklearn.preprocessing import LabelEncoder,label_binarize
-from sklearn.metrics import roc_curve, auc
-from sklearn.metrics import confusion_matrix,classification_report,regression
+from sklearn.preprocessing import label_binarize
 
 from dms2dfe.lib.io_data_files import read_pkl,to_pkl
 from dms2dfe.lib.io_dfs import set_index,denan,denanrows,del_Unnamed
-from dms2dfe.lib.io_nums import is_numeric
-from dms2dfe.lib.io_plots import saveplot,get_axlims
 
 import numpy as np
 import pandas as pd
@@ -26,7 +21,6 @@ import matplotlib
 matplotlib.use('Agg') # no Xwindows
 
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
@@ -35,6 +29,36 @@ logging=get_logger()
 # logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
 
+
+def corrplot(info):
+    from dms2dfe.lib.io_dfs import fhs2data_combo
+    from glob import glob
+    from dms2dfe.lib.plot_mut_data_heatmaps import clustermap
+    from dms2dfe.lib.io_ml_data import make_dXy
+
+    ml_input=info.ml_input
+    prj_dh=info.prj_dh
+    data_fit_fhs=glob('%s/data_fit/aas/*' % prj_dh)
+    data_feats_all_fh='%s/data_feats/aas/data_feats_all' % prj_dh
+    data_feats_all=pd.read_csv(data_feats_all_fh).set_index('mutids')
+    data_fit_all=fhs2data_combo(data_fit_fhs,['%sA' % ml_input],'mutids')
+    data_fit_all.columns=[c.split(': ')[0] for c in data_fit_all]
+
+    for c in data_fit_all:
+        plot_fh='%s/plots/aas/%s.corr.pdf' % (prj_dh,c)
+        if not exists(plot_fh):
+            if not exists(dirname(plot_fh)):
+                makedirs(dirname(plot_fh))
+            dXy=data_feats_all.join(data_fit_all[c])
+            dXy,Xcols,ycol=make_dXy(dXy,ycol=c,
+                if_rescalecols=False,
+                unique_quantile=0.25)
+            dXy,Xcols,ycol=feats_sel_corr(dXy,ycol,range_coef=[0.9,0.8])
+            g,ax=clustermap(dXy.corr(method='spearman'),
+                        highlight_col=c,
+                   vlim=[-0.5,0.5],figsize=[10,10],
+                       plot_fh=plot_fh,
+           )
 
 def run_RF_classi(data_all,X_cols,y_coln,
            test_size=0.34,data_test=None,data_out_fh=None):

@@ -20,7 +20,8 @@ tags:
 
 # Summary
 
-`dms2dfe` is a python package that integrates steps in the analysis of Deep Mutational Scanning [@Fowler2014a] data. Using this end-to-end workflow, users can implement various processing methods and downstream applications in the deep sequencing based bulk mutational scanning experiments.
+`dms2dfe` is an integrative analysis workflow designed for end-to-end enrichment analysis of Deep Mutational Scaning [@Fowler2014a] data. 
+Using this end-to-end workflow, users can implement various processing methods and downstream applications for pairwise analysis of samples.
 
 Recently, owing to evolution of sequencing and phenotyping technologies, large scale genotype to phenotype data is increasingly being generated. Along this line of research, Deep Mutational Scanning method allows comprehensive assessment of all the substitutions of a given gene. In the analysis of Deep Mutational Scanning data, `dms2dfe` allows end-to-end workflow that addresses issue of noise control and offers variety of crucial downstream analyses. In downstream analyses, `dms2dfe` workflow provides estimation of distributions of effect sizes, identification of potential molecular constraints and generation of data-rich visualizations [@Dandage2016]. While a number of tools have been developed for analysis of DMS data [@Fowler2011;@Bloom2015;@Rubin2016b], `dms2dfe` workflow integrates various state-of-art analysis tools such as Trimmomatic [@Bolger2014], Bowtie [@Langmead2012], samtools [@Li2009] and DESeq2 [@Love2014] for an end-to-end pairwise analysis of samples. Users familiar with such widely used tools can opt for `dms2dfe` workflow.
 

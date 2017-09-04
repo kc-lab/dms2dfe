@@ -141,6 +141,7 @@ def plot_scatter_reg(data_all,cols,
                      xlabel=None,ylabel=None,title=None,
                      color_scatter="gray",
                      ms_scatter=20,
+                     alpha=0.5,
                      color_line='k',
                      logscale=False,
                      std=False,
@@ -166,8 +167,9 @@ def plot_scatter_reg(data_all,cols,
                     ax=ax)
     else:
         data_all.plot.scatter(x=cols[0],y=cols[1],
-                              color='b',
-                              alpha=0.3,
+                              color=color_scatter,
+                              s=ms_scatter,
+                              alpha=alpha,
                               ax=ax)
     # if std:
     #     ax.scatter(data_all.loc[:,cols[0]],data_all.loc[:,cols[1]],
