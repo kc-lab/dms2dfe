@@ -166,7 +166,18 @@ def main(prj_dh,inputs=None):
                 tar -xvzf %s/rate4site/rate4site*.tar.gz -C %s/rate4site;\
                 cd %s/rate4site/rate4site-3.0.0;\
                 ./configure;make" % (soft_lnk,deps_dh,deps_dh,deps_dh,deps_dh)
-            subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+            sub_call_return=subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+            #print sub_call_return
+            if int(sub_call_return)!=0:
+            	logging.error("rate4site could not be installed. Error code=%s. More details in %s/dms2dfe_dependencies.log ." % (sub_call_return,deps_dh))
+                inpt=raw_input("On a debian system, install 'rate4site' by this command:\n$ sudo apt-get install rate4site; sudo apt-get update\n, \nand THEN input 'y':")
+                if 'y' in inpt:
+                    com='ln -s /usr/bin/rate4site %s/rate4site/rate4site-3.0.0/src/rate4site/rate4site' % (deps_dh)
+                    #print com
+                    subprocess.call(com,shell=True)
+                else:
+                    logging.error('rate4site could not be installed. aborting..')
+                    sys.exit() 
 
         std=subprocess.Popen("which java",shell=True,stdout=log_f, stderr=subprocess.STDOUT)
         log_f.close();log_f=open(log_fh,'r');log_lines=log_f.readlines();log_f.close();log_f = open(log_fh,'a')
