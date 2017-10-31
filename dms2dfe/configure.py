@@ -112,10 +112,10 @@ def main(prj_dh,inputs=None):
                 samtools_lnk="https://github.com/samtools/samtools/archive/0.1.20.zip"
                 com="wget -q %s --directory-prefix=%s" % (samtools_lnk,deps_dh)
                 subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
-                subprocess.call("unzip -f %s -d %s;" % (samtools_src,deps_dh),\
+                subprocess.call("unzip -o %s -d %s;" % (samtools_src,deps_dh),\
                                 shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             else:
-                subprocess.call("unzip -f %s -d %s;" % (samtools_src,deps_dh),\
+                subprocess.call("unzip -o %s -d %s;" % (samtools_src,deps_dh),\
                                 shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             com='cd %s/samtools-0.1.20;make' % deps_dh
             sub_call_return=subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
