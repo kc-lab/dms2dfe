@@ -486,7 +486,8 @@ def clustermap(df,highlight_xywhs=[],
         xticklabels=[s.get_text() for s in g.ax_heatmap.get_xticklabels()]
         yticklabels=[s.get_text() for s in g.ax_heatmap.get_yticklabels()]
         highlight_xywhs.append([0,yticklabels.index(highlight_col),df.shape[1],1])
-        highlight_xywhs.append([xticklabels.index(highlight_col),0,1,df.shape[0]])        
+        highlight_xywhs.append([xticklabels.index(highlight_col),0,1,df.shape[0]]) 
+    #print highlight_xywhs 
     for xywh in highlight_xywhs:
         from matplotlib.patches import Rectangle        
         ax.add_patch(Rectangle((xywh[0], xywh[1]), xywh[2], xywh[3],
