@@ -92,7 +92,7 @@ def info2src(prj_dh):
     info_paths=[info.loc[info_path_var,"input"] for info_path_var in info_path_vars]
     for info_path_var,info_path in zip(info_path_vars,info_paths):
        # if not exists(info_path):
-        if not (('bowtie' in info_path) or ('samtools' in info_path)):
+        if not ('bowtie' in info_path):
             if not exists(info_path):
                 if info_path_var=='rscript_fh':
                     info_path = subprocess.check_output(["which", "Rscript"]).replace('\n','')

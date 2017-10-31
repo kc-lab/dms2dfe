@@ -101,25 +101,32 @@ def main(prj_dh,inputs=None):
                             shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             #subprocess.call("chmod +x %s" % bowtie2_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT) 
             subprocess.call("cd %s;make all; cd -;" % dirname(bowtie2_fh),shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+
         #samtools
+	depn='samtools'
         samtools_fh=deps_dh+"/samtools-0.1.20/samtools"        
-        if not exists(dirname(samtools_fh)):
+        if not exists(samtools_fh):
             logging.info("configuring: samtools")
             samtools_src=deps_dh+'/0.1.20.zip'
             if not exists(samtools_src):
                 samtools_lnk="https://github.com/samtools/samtools/archive/0.1.20.zip"
                 com="wget -q %s --directory-prefix=%s" % (samtools_lnk,deps_dh)
                 subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
-            else:
-                subprocess.call("unzip %s -d %s" % (samtools_src,deps_dh),\
+                subprocess.call("unzip -f %s -d %s;" % (samtools_src,deps_dh),\
                                 shell=True,stdout=log_f, stderr=subprocess.STDOUT)
-            std=subprocess.Popen("cd %s/samtools-0.1.20; make" % deps_dh,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
-            log_f.close();log_f=open(log_fh,'r');log_lines=log_f.readlines();log_f.close();log_f = open(log_fh,'a')
-            if len([l for l in log_lines if "fatal error: zlib.h" in l])>0:
-                print "\n###   TROUBLESHOOT   ###\nFor interference issues (with htslib) installation of samtools dependency gave following error,\n.. zlib.h: No such file or directory\nPlease use following command before installing samtools. i.e.\n\nsudo apt-get install zlib1g-dev libncurses5-dev;sudo apt-get update\n\n%s/samtools-0.1.20/make\nAfter the successfull installation, please configure dms2dfe by following command.\nfrom dms2dfe import configure\nconfigure.main(prj_dh)\n\n" % deps_dh
-                # sys.exit()
             else:
-                subprocess.call("chmod +x %s" % samtools_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+                subprocess.call("unzip -f %s -d %s;" % (samtools_src,deps_dh),\
+                                shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+            com='cd %s/samtools-0.1.20;make' % deps_dh
+            sub_call_return=subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+            while int(sub_call_return)!=0:
+                inpt=raw_input("On a debian system, missing packages requred for installation of '%s' by running this command:\n\n$ sudo apt-get install zlib1g-dev libncurses5-dev;sudo apt-get update\n\nand THEN input 'y' (otherwise 'n').:" % (depn))
+                if 'y' in inpt:
+                    sub_call_return=subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+                    subprocess.call("chmod +x %s" % samtools_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
+                else:
+                    logging.error("%s could not be installed. Error code=%s. More details in %s/dms2dfe_dependencies.log ." % (depn,sub_call_return,deps_dh))
+                    sub_call_return=0
         #trimmomatic
         trimmomatic_fh=deps_dh+"/Trimmomatic-0.33/trimmomatic-0.33.jar"
         if not exists(trimmomatic_fh):
@@ -170,7 +177,7 @@ def main(prj_dh,inputs=None):
             #print sub_call_return
             if int(sub_call_return)!=0:
             	logging.error("rate4site could not be installed. Error code=%s. More details in %s/dms2dfe_dependencies.log ." % (sub_call_return,deps_dh))
-                inpt=raw_input("On a debian system, install 'rate4site' by this command:\n$ sudo apt-get install rate4site; sudo apt-get update\n, \nand THEN input 'y':")
+                inpt=raw_input("On a debian system, install 'rate4site' by this command:\n\n$ sudo apt-get install rate4site; sudo apt-get update\n\nand THEN input 'y' (otherwise 'n').:")
                 if 'y' in inpt:
                     com='ln -s /usr/bin/rate4site %s/rate4site/rate4site-3.0.0/src/rate4site/rate4site' % (deps_dh)
                     #print com

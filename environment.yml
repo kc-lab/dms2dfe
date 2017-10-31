@@ -11,7 +11,7 @@ dependencies:
 - scipy
 - matplotlib
 - pandas
-# - bioconductor-deseq2=1.6.3=r3.2.2
+- biopython==1.70
 - bioconductor-deseq2=1.14.1=r3.3.2_0
 - pip:
   - scikit-bio==0.4.1
