@@ -120,7 +120,7 @@ def main(prj_dh,inputs=None):
             com='cd %s/samtools-0.1.20;make' % deps_dh
             sub_call_return=subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             while int(sub_call_return)!=0:
-                inpt=raw_input("On a debian system, missing packages requred for installation of '%s' by running this command:\n\n$ sudo apt-get install zlib1g-dev libncurses5-dev;sudo apt-get update\n\nand THEN input 'y' (otherwise 'n').:" % (depn))
+                inpt=raw_input("On a debian system, missing packages required for the installation of '%s' can be installed by running this command:\n\n$ sudo apt-get install zlib1g-dev libncurses5-dev;sudo apt-get update\n\nand THEN input 'y' (otherwise 'n').:" % (depn))
                 if 'y' in inpt:
                     sub_call_return=subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
                     subprocess.call("chmod +x %s" % samtools_fh,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
