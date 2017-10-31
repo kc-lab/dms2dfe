@@ -231,7 +231,7 @@ def plot_violin(info,data_comparison_fhs=None,plot_type='violin'):
     for fh in data_comparison_fhs:
         fn=basename(fh)
         plot_fh='%s/plots/aas/%s.%s.pdf' % (info.prj_dh,fn,plot_type)
-        data_fit_fns=fn.split('_VERSUS_')[::-1]
+        data_fit_fns=fn.split('_VERSUS_')
         data_fiti_ctrl=0
         data_fit_labels=data_fit_fns
         # print plot_fh
@@ -241,14 +241,14 @@ def plot_violin(info,data_comparison_fhs=None,plot_type='violin'):
                                 data_fit_fns,col,
                                 data_fiti_ctrl=data_fiti_ctrl,
                                 aasORcds=aasORcds,
-                                data_fits_labels=data_fit_labels,
+                                data_fits_labels=[],
                                 color_test='yellow',
                                 color_ctrl='lightgray',
                                 figsize=[2.65,2.5],
                                 color_xticks=(0,0.2,1),
                                 ns=False,
                                 numeric=True,
-                                # ylims=ylims,
+                                ylims=[-8,8],
                                 force=True,
                                 ylabel=ylabel,
                                 plot_fh=plot_fh)

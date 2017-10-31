@@ -59,32 +59,10 @@ def plot_data_comparison_multiviolin(prj_dh,data_fits,col,
         data_comparison_test=fhs2data_combo(data_fit_test_fhs,[col],index='mutids')
         data_comparison_ctrl=fhs2data_combo(data_fit_ctrl_fhs,[col],index='mutids')
 
-        # data_comparison_test=pd.DataFrame()
-        # for data_fit_fh in data_fit_fhs:
-        #     data_fit=pd.read_csv(data_fit_fh)   
-        #     if data_fit.index.name!="mutids":
-        #         data_fit=data_fit.set_index("mutids")
-
-        #     if data_fit_fhs.index(data_fit_fh)==0:
-        #         data_comparison_ctrl=data_fit.copy()
-        #         data_comparison_ctrl_tmp=data_fit.copy()
-        #     elif data_fit_fhs.index(data_fit_fh)==1:
-        #         data_comparison_test=data_fit.copy()
-        #     else:
-        #         data_comparison_test=pd.concat([data_comparison_test.loc[:,col],
-        #                                       data_fit.loc[:,col]],axis=1)
-        #         data_comparison_ctrl=pd.concat([data_comparison_ctrl.loc[:,col],
-        #                                       data_comparison_ctrl_tmp.loc[:,col]],axis=1)
-
-        # data_comparison_test.index.name='mutids'
-        # data_comparison_ctrl.index.name='mutids'
-        # print data_comparison_test.columns
-        # print data_comparison_ctrl.columns
-
         data_comparison_test.columns=data_fits[1:]    
         data_comparison_ctrl.columns=data_fits[1:]    
-        data_comparison_test.to_csv(data_comparison_test_fh)
-        data_comparison_ctrl.to_csv(data_comparison_ctrl_fh)
+        #data_comparison_test.to_csv(data_comparison_test_fh)
+        #data_comparison_ctrl.to_csv(data_comparison_ctrl_fh)
     else:    
         data_comparison_test=pd.read_csv(data_comparison_test_fh).set_index('mutids')
         data_comparison_ctrl=pd.read_csv(data_comparison_ctrl_fh).set_index('mutids')
@@ -128,13 +106,10 @@ def plot_data_comparison_multiviolin(prj_dh,data_fits,col,
                    cut=0, 
                    # bw=0.1,
                    scale="width",ax=ax)
-    plt.legend(title=col_hue,
-               loc=2,bbox_to_anchor=(0.0, 1.25),#, 1., .102),
+    plt.legend(title=col_hue,loc='upper center',
+               bbox_to_anchor=(0.5, 1.1),#, 1., .102),
                ncol=2, borderaxespad=0.1,frameon=True,
               )
-    # ax.tick_params(axis='x', 
-    #                colors=color_xticks,
-    #               labelsize=11)
     ax.set_xlabel("")
     if not ylabel is None:
         ax.set_ylabel(ylabel)
@@ -175,6 +150,7 @@ def plot_data_comparison_multiviolin(prj_dh,data_fits,col,
                     )
         # data_all.to_csv('test1.csv')
     if plot_fh!=None:
+        #plt.tight_layout()
         plt.savefig(plot_fh,format='pdf')
         plt.clf();plt.close()
     return ax,data_comparison,data_all

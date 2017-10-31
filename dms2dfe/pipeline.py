@@ -66,7 +66,7 @@ def pipeline(prj_dh,step=None,test=False):
         if step==None:
             logging.info("Location of output data: %s/plots/aas/data_comparison" % (prj_dh))
             logging.info("Location of output visualizations: %s/plots/aas/" % (prj_dh))
-            logging.info("For information about file formats of outputs, refer to http://kc-lab.github.io/dms2dfe .")
+            logging.info("For information about file formats of outputs, refer to http://kc-lab.github.io/dms2dfe/io .")
     else:
         configure.main(prj_dh)                  
     logging.shutdown()
