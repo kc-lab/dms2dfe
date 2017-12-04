@@ -8,7 +8,8 @@ from os.path import exists,splitext,dirname
 import argparse
 import pkg_resources
 import logging
-    
+logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_dh+'.log'
+
 # GET INPTS    
 def main():
     """

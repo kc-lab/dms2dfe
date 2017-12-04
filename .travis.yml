@@ -22,7 +22,7 @@ before_install:
 install:
 - python setup.py install --record installed_files.txt
 script:
-- pytest test/test_configure.py
+- python test/test_datasets.py
 after_success:
 - coveralls
 deploy:

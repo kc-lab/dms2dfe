@@ -298,7 +298,7 @@ def plot_pie(data_comparison,col,col_count,explodei=None,
     ax.axis('equal')
     if plot_fh!=None:
         fig.savefig(plot_fh,format='pdf',transparent=True)
-        fig.savefig(plot_fh+'.png',format='png',transparent=True)
+        fig.savefig(plot_fh.replace('.pdf','.png'),format='png',transparent=True)
         if legend_save:
 #                 fig=plt.figure()
 #                 ax = plt.subplot()  #create the axes 

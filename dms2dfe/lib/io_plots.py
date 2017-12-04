@@ -59,9 +59,9 @@ def saveplot(plot_fh,form='both',
             plt.tight_layout()
         if plot_fh!=None:
             if form=="pdf" or form=="both":
-                save(plot_fh,'pdf',transparent)
+                save(plot_fh.replace('.png','.pdf'),'pdf',transparent)
             if form=="png" or form=="both":
-                save(plot_fh,'png',transparent)
+                save(plot_fh.replace('.pdf','.png'),'png',transparent)
         plt.clf()
         plt.close()
 
