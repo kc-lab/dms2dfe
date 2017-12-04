@@ -37,6 +37,11 @@ def convertstr2format(col,form):
     return col
 
 def make_pathable_string(s):
+    """
+    Removes symbols from a string to be compatible with directory structure.
+
+    :param s: string
+    """
     return s.replace(" ","_").replace("$","").replace("\\","")\
             .replace("(","").replace(")","")\
             .replace("{","").replace("}","").replace("%","_")\
@@ -44,6 +49,9 @@ def make_pathable_string(s):
             .replace("\n","_").replace("\t","_")
 
 def get_logger(argv=None):
+    """
+    Initiates logging information in a pre-defined format. 
+    """
     import logging
     import datetime
     log_format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s'
@@ -64,6 +72,13 @@ def get_logger(argv=None):
     return logging
             
 def linebreaker(l,break_pt=16):
+    """
+    used for adding labels in plots.
+
+    :param l: list of strings
+    :param break_pt: number, insert new line after this many letters 
+    """
+
     l_out=[]
     for i in l:
         if len(i)>break_pt:
@@ -86,6 +101,13 @@ def linebreaker(l,break_pt=16):
     return l_out
 
 def splitlabel(label,splitby=' ',ctrl='__'):
+    """
+    used for adding labels in plots.
+
+    :param label: string
+    :param splitby: string split the label by this character/string
+    :param ctrl: string, marker that denotes a control condition  
+    """
     splits=label.split(splitby)
     if len(splits)==2:
         return splits
@@ -94,6 +116,10 @@ def splitlabel(label,splitby=' ',ctrl='__'):
         return splits+[ctrl]
 
 def get_time():
+    """
+    Gets current time in a form of a formated string. Used in logger function.
+
+    """
     import datetime
     time=make_pathable_string('%s' % datetime.datetime.now())
     return time.replace('-','_').replace(':','_').replace('.','_')
