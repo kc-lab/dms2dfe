@@ -39,6 +39,7 @@ def getdssp_data(pdb_fh,dssp_fh):
 
     :param pdb_fh: path to .pdb file
     :param dssp_fh: path to DSSP source.
+    :returns dssp_data: pandas table with extracted DSSP data
     """
     dssp_data_fh="%s/../tmp/dssp"% (abspath(dirname(__file__)))
     dssp_com="%s -i %s -o %s" % (dssp_fh,pdb_fh,dssp_data_fh)
@@ -84,6 +85,7 @@ def pdb2dfromactivesite(pdb_fh,active_sites=[]):
     
     :param pdb_fh: path to .pdb file.
     :param active_sites: optional list of residue numbers as sources. 
+    :returns dfromligands: pandas table with distances from ligand
     """
     junk_residues = ["HOH"," MG","CA"," NA","SO4","IOD","NA","CL","GOL","PO4"]
     pdb_parser=PDBParser()
@@ -138,6 +140,15 @@ def pdb2dfromactivesite(pdb_fh,active_sites=[]):
 
 
 def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
+    """
+    Extracts Residue wise conservation scores 
+
+    :param fsta_fh: path to FASTA file
+    :param host: host name e.g. E. coli
+    :param clustalo_fh: path to Clustalo libraries
+    :param rate4site_fh: path to rate4site libraries
+    :returns data_conserv: pandas table with conservation scores per residue
+    """
     from Bio.Blast import NCBIWWW
     from Bio.Blast import NCBIXML
     from skbio import TabularMSA, Protein
@@ -254,6 +265,13 @@ def get_consrv_score(fsta_fh,host,clustalo_fh,rate4site_fh):
     return data_feats_conserv
 
 def get_residue_depth(pdb_fh,msms_fh):
+    """
+    Extracts Residue depth from PDB structure 
+
+    :param pdb_fh: path to PDB structure file
+    :param msms_fh: path to MSMS libraries
+    :returns data_depth: pandas table with residue depth per residue
+    """
     from Bio.PDB import Selection,PDBParser
     from Bio.PDB.Polypeptide import is_aa
     from Bio.PDB.ResidueDepth import get_surface,_read_vertex_array,residue_depth,ca_depth,min_dist
@@ -311,6 +329,12 @@ def get_residue_depth(pdb_fh,msms_fh):
     return depth_df
 
 def get_bfactor(pdb_fh,ref_out=False):
+    """
+    Extracts B (temperature) factor from PDB structure 
+
+    :param pdb_fh: path to PDB structure file
+    :returns data_bfactor: pandas table with B factor per residue
+    """
     pdb_parser=PDBParser()
     pdb_data=pdb_parser.get_structure("pdb_name",pdb_fh)
     data_bfactor=pd.DataFrame(columns=['ref_3letter','Temperature factor (flexibility)'])
@@ -333,6 +357,7 @@ def get_dfrominterface(pdb_fh):
     This calculates distances between each ligand atom or optionally provided amino acids (sources) and each residue in the protein.
     
     :param pdb_fh: path to .pdb file.
+    :returns dinter: pandas table with distances from dimer interface
     """
     junk_residues = ["HOH"," MG","CA"," NA","SO4","IOD","NA","CL","GOL","PO4"]
     pdb_parser=PDBParser()
@@ -367,6 +392,12 @@ def get_dfrominterface(pdb_fh):
         return dfrominter
     
 def get_pdb_feats(pdb_fh):
+    """
+    Extracts features from PDB structure 
+
+    :param pdb_fh: path to PDB structure file
+    :returns pdb_feats: pandas table with PDB features
+    """
     pdb_parser=PDBParser()
     pdb_data=pdb_parser.get_structure("pdb_name",pdb_fh)
     model = pdb_data[0]
@@ -377,6 +408,14 @@ def get_pdb_feats(pdb_fh):
     return pdb_feats
 
 def get_data_feats_pos(prj_dh,info,data_out_fh):
+    """
+    Extracts position wise features 
+
+    :param prj_dh: path to project directory
+    :param data_out_fh: path to output table
+    :param info: dict, information about the project
+    :returns data_feats_pos: pandas table with position wise features
+    """
     if not exists(data_out_fh):
         cctmr=info.cctmr
         fsta_fh=info.fsta_fh
@@ -526,6 +565,14 @@ def get_data_feats_pos(prj_dh,info,data_out_fh):
 
 def get_data_feats_mut_diffs(data_feats_pos,feats_sub_pos_tups,
                              data_out_fh):
+    """
+    This calculates arithmatic operations (+-/*) on the selected features.
+    
+    :param data_feats_pos: pandas table of position wise features.
+    :param feats_sub_pos: pandas table of substitution wise features. 
+    :param data_ous_fh: path to output table. 
+    :returns dfromligands: pandas table with distances from ligand
+    """
     data_feats_aas_fh='%s/data_feats_aas' % abspath(dirname(__file__))
     data_feats_aas=pd.read_csv(data_feats_aas_fh)
     data_feats_aas=data_feats_aas.set_index("aas",drop=True)
@@ -561,6 +608,14 @@ def get_data_feats_mut_diffs(data_feats_pos,feats_sub_pos_tups,
     return data_feats_pos
 
 def get_data_feats_sub(data_out_fh,data_feats_aas_fh='%s/data_feats_aas' % abspath(dirname(__file__))):
+    """
+    Extracts substitution wise features 
+
+    :param data_out_fh: path to output table
+    :param data_feats_aas_fh: path to extracted input features
+    :returns data_feats_sub: pandas table with substitution wise features
+    """
+
 #     data_feats_aas_fh='%s/data_feats_aas' % abspath(dirname(__file__))
     if not exists(data_out_fh):
         data_feats_aas=pd.read_csv(data_feats_aas_fh)
@@ -596,6 +651,14 @@ def get_data_feats_sub(data_out_fh,data_feats_aas_fh='%s/data_feats_aas' % abspa
         logging.info("already processed") 
 
 def get_data_feats_mut(prj_dh,data_out_fh,info):
+    """
+    Extracts individual mutation wise features 
+
+    :param prj_dh: project directory
+    :param data_out_fh: path to output table
+    :param info: dict, information about the project
+    :returns data_feats_mut: pandas table with mutation wise features
+    """
     if not exists(data_out_fh):
         data_feats_mut_fh="%s/cfg/feats_mut" % (prj_dh)
         data_feats_mut_diffs_fh="%s/data_feats/aas/data_feats_mut_diffs" % (prj_dh)
@@ -629,6 +692,14 @@ def get_data_feats_mut(prj_dh,data_out_fh,info):
         logging.info("already processed") 
 
 def concat_feats(data_feats_all,data_feats,col_index):
+    """
+    Concatenates tables containing individual mutation wise and position wise features. 
+
+    :param data_feats_all: mutation wise features
+    :param data_feats: position wise features
+    :param col_index: columns to be concatenated
+    """
+
     data_feats_all=set_index(data_feats_all,col_index)
     data_feats    =set_index(data_feats    ,col_index)
     data_feats_all=data_feats_all.join(data_feats)
@@ -637,6 +708,16 @@ def concat_feats(data_feats_all,data_feats,col_index):
 
 def get_data_feats_all(data_feats_mut_fh,data_feats_pos_fh,data_feats_sub_fh,
                       data_out_fh,info):
+    """
+    Combines all the extracted features.
+
+    :param data_feats_mut_fh: path to file containing individual mutation-wise features
+    :param data_feats_pos_fh: path to file containing position-wise features
+    :param data_feats_sub_fh: path to file containing substitution-wise features
+    :param data_out_fh: path to the file where the combined data would be saved
+    :param info: Information of the experiment, taken from prj_dh/cfg directory
+    :returns data_feats_all: pandas table with combined data.
+    """
     if not exists(data_out_fh):
         from os.path import splitext
         from dms2dfe.lib.io_seq_files import fasta_nts2prt
