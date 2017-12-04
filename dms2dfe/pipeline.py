@@ -6,8 +6,8 @@
 import sys
 from os.path import exists,splitext,dirname
 import argparse
+import pkg_resources
 import logging
-from dms2dfe import configure, ana0_fastq2dplx,ana0_fastq2sbam,ana0_getfeats,ana1_sam2mutmat,ana2_mutmat2fit,ana3_fit2comparison,ana4_modeller,ana4_plotter
     
 # GET INPTS    
 def main():
@@ -30,17 +30,22 @@ def main():
 
     """
     logging.info("start")
-    parser = argparse.ArgumentParser(description='dms2dfe')
+    version_info='%(prog)s {version}'.format(version=pkg_resources.require("dms2dfe")[0].version)
+    parser = argparse.ArgumentParser(description=version_info)
     parser.add_argument("prj_dh", help="path to project directory", 
                         action="store", default=False)    
     parser.add_argument("--test", help="Debug mode on", dest="test", 
                         action='store_true', default=False)    
     parser.add_argument("--step", help="0: configure project directory,\n0.1: demultiplex fastq by provided borcodes,\n0.2: alignment,\n0.3: get molecular features,\n1: variant calling,\n2: get preferential enrichments,\n3: identify molecular determinants,\n4: identify relative selection pressures,\n5: make visualizations", dest="step", 
                         type=float,action="store", choices=[0,0.1,0.2,0.3,1,2,3,4,5],default=None)  
+    parser.add_argument('-v','--version', action='version',version=version_info)
+#    parser.add_argument('-h', '--help', action='help', #default=argparse.SUPPRESS,
+#                    help='Show this help message and exit. \n Version info: %s' % version_info)
     args = parser.parse_args()
     pipeline(args.prj_dh,test=args.test,step=args.step)
 
 def pipeline(prj_dh,step=None,test=False):        
+    from dms2dfe import configure, ana0_fastq2dplx,ana0_fastq2sbam,ana0_getfeats,ana1_sam2mutmat,ana2_mutmat2fit,ana3_fit2comparison,ana4_modeller,ana4_plotter
     if exists(prj_dh):
         if step==0 or step==None:
             configure.main(prj_dh,"deps")
