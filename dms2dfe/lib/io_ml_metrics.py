@@ -133,6 +133,16 @@ import forestci as fci
 from dms2dfe.lib.io_stats import get_regression_metrics
 def get_RF_ci(RF_type,RF_classi,X_train,X_test,y_test,y_score,
                 classes=['yes','no'],plot_fh=None):
+    """
+    Get confidence intervals for predicted classifications
+
+    :param RF_type: type of random forest algorithm
+    :param RF_classi: Classification estimator object
+    :param X_train: pandas dataframe, Training data  
+    :param X_test: pandas dataframe, Testing data
+    :param y_test: pandas dataframe with the target values
+    :param y_score: pandas dataframe with the y score values
+    """
     # calculate inbag and unbiased variance
     inbag = fci.calc_inbag(X_train.shape[0], RF_classi)
     V_IJ_unbiased = fci.random_forest_error(RF_classi,inbag, X_train,
@@ -184,6 +194,13 @@ def get_RF_ci(RF_type,RF_classi,X_train,X_test,y_test,y_score,
     saveplot(plot_fh)
     
 def get_RF_cm(y_test, y_pred,classes,plot_fh=None,data_out_fh=None):
+    """
+    Get the confusion matrix of the random forest estimator
+
+    :param y_test: pandas dataframe with the target values
+    :param y_pred: pandas dataframe with the y pred    
+    :param classes: list of classes
+    """
     fig=plt.figure(figsize=[2.5,2])
     data=pd.DataFrame(confusion_matrix(y_test, y_pred))
     data.columns=classes
@@ -195,6 +212,12 @@ def get_RF_cm(y_test, y_pred,classes,plot_fh=None,data_out_fh=None):
         data.to_csv(data_out_fh)
 
 def get_RF_cr(y_test,y_pred,classes,data_out_fh=None):
+    """
+    Get classification report by comparing test and predicted values of y
+
+    :param y_test: list of test values 
+    :param y_pred: list of predicted values 
+    """
     s=classification_report(y_test, y_pred)
     for i,line in enumerate(s.split('\n')):
         line=line.replace(' / ','/')
@@ -212,6 +235,11 @@ def get_RF_cr(y_test,y_pred,classes,data_out_fh=None):
     return data
 
 def get_RF_regress_metrics(data_regress_fh,data_dh='data_ml/',plot_dh='plots/'):
+    """
+    Get metrics of regression models
+
+    :param data_regress_fh: path to the file containing regression data
+    """
     data_regress=read_pkl(data_regress_fh)
     RF_regress=data_regress['RF_regress']
     X_train=data_regress['X_train']
@@ -233,12 +261,22 @@ def get_RF_regress_metrics(data_regress_fh,data_dh='data_ml/',plot_dh='plots/'):
                  y_test,y_pred,plot_fh=plot_fh)    
     
 def gcv2rfc(gridcv):
+    """
+    Make grid CV compatible random forest estimators.
+
+    :param gridcv: grid CV object
+    """
     classi=gridcv.best_estimator_
     classi.n_estimators=gridcv.param_grid['n_estimators'][0]
     classi.estimators_=gridcv.best_estimator_.estimators_
     return classi
 
 def get_RF_classi_metrics(data_classi_fh,data_dh='data_ml/',plot_dh='plots/'):
+    """
+    Get the metrics of Random Forest classification models
+
+    :param data_classi_fh: path to file containing Classification training data
+    """
     data_classi=read_pkl(data_classi_fh)
     RF_classi=data_classi['RF_classi']
     X_train=data_classi['X_train']
@@ -276,6 +314,11 @@ def get_RF_classi_metrics(data_classi_fh,data_dh='data_ml/',plot_dh='plots/'):
     get_RF_cr(y_test,y_pred,classes,data_out_fh=data_out_fh)
 
 def get_GB_cls_metrics(data_fh,info):
+    """
+    Get the metrics of Gradient Boost classification models
+
+    :param data_classi_fh: path to file containing Classification training data
+    """
     from pylab import figtext
     try:
         dpkl=read_pkl(data_fh)
