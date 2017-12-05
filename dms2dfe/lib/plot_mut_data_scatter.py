@@ -280,7 +280,7 @@ def data_comparison2scatter_mutilayered(data,data_label,color_dots=None,
     Wrapper to plot multi layered scatter plot
 
     :param data: pandas dataframe
-    :param data_label: label
+    :param data_label: label of the data
     """
     from dms2dfe.lib.io_strs import splitlabel
 
@@ -330,6 +330,13 @@ def plot_mulitilayered_scatter_per_class_comparison(prj_dh,
                                                     col_filter=None,
                                                     figsize=[9,3],
                                                     force=False):
+    """
+    Wrapper to plot multi layered scatter from data_comparison
+
+    :param prj_dh: path to the project directory
+    :param data_fns: list of filenames
+    :param data_labels: list of corresponding labels    
+    """
     plot_type='scatter_mutilayered_per_class_comparison'
     dtype='data_comparison'
     data_mutants_select=pd.DataFrame()

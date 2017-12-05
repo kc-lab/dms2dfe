@@ -60,13 +60,23 @@ def data2mut_matrix(data_fit,values_col,index_col,type_form):
     return data_fit_heatmap
 
 def plotsspatches(ssi,ssi_ini,aai,aai_ini,patches,patches_colors,ax):
-# H Alpha helix
-# B Beta bridge
-# E Strand
-# G Helix-3
-# I Helix-5
-# T Turn
-# S Bend
+    """
+    Plots secondary struncture
+    # H Alpha helix
+    # B Beta bridge
+    # E Strand
+    # G Helix-3
+    # I Helix-5
+    # T Turn
+    # S Bend
+
+    :param ssi: list with secondary sture elements
+    :param ssi_ini: start index of sec. structures 
+    :param aai_ini: start amino acid index of sec. structures 
+    :param patches: shapes of sec. structures 
+    :param patches_colour: colours of sec. structures 
+    :param ax: axes object 
+    """
     sss=["H","B","E","G","I","T","S"]
     for ss in sss:
         if ssi==ss:
@@ -86,6 +96,12 @@ def plotsspatches(ssi,ssi_ini,aai,aai_ini,patches,patches_colors,ax):
     return patches,patches_colors,aai_ini,ssi_ini,ax
 
 def plotss(data_feats,ax,refi_lims,fontsize=20,ticks=False):
+    """
+    Plots secondary structures
+
+    :param data_feats: pandas dataframe with position wise features
+    :param ax: axes object
+    """
     if not ticks:
         ax.set_axis_off()
     #no sec struct
@@ -122,6 +138,12 @@ def plotss(data_feats,ax,refi_lims,fontsize=20,ticks=False):
     return ax
 
 def plotacc(data_feats,ax,refi_lims,fontsize=20,ticks=False):
+    """
+    Plots surface accessibility
+
+    :param data_feats: pandas dataframe with position wise features
+    :param ax: axes object    
+    """
     if not ticks:
         ax.set_axis_off()
 
@@ -394,6 +416,15 @@ def make_plot_cluster_sub_matrix(data_combo,xcol,boundaries,
                                  col_cluster=True,
                                  test=False,
                                  plot_fh=None):
+    """
+    This plots heatmap of fitness values.
+    
+    :param data_fit: input data (`data_lbl` or `data_fit`) (dataframe).
+    :param type_form: type of values ["aas" : amino acid | "cds" : codons].
+    :param col: eg. columns with values. col for data_fit
+    :param cmap: name of colormap (str).
+    :param center: center colormap to this value (int).
+    """
     # data_combo_fh='%s/data_feats/data_fit_boxplot_per_feat_%s.csv' % (prj_dh,data_fit_fn)
     # data_combo=pd.read_csv(data_combo_fh).set_index('mutids')
     if not 'mutids' in data_combo:
@@ -461,6 +492,11 @@ def clustermap(df,highlight_xywhs=[],
                if_xticks_rotate=False,
               figsize=(4, 4),
               plot_fh=None):
+    """
+    This plots clustermap.
+    
+    :param df: pandas dataframe.
+    """
     import seaborn as sns
     import scipy.cluster.hierarchy as sch
     from scipy.cluster.hierarchy import fcluster
