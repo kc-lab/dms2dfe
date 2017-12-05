@@ -44,6 +44,13 @@ def plot_data_comparison_multiviolin(prj_dh,data_fits,col,
                                     ylabel=None,
                                      figsize=[4,3],
                                      plot_fh=None):
+    """
+    Plotting distributions of comparison of fold change data 
+
+    :param prj_dh: path to project directory
+    :param data_fits: pandas dataframe with fold change data
+    :param col: column with the fold change data
+    """
     data_fit_fhs=["%s/data_fit/%s/%s" % (prj_dh,aasORcds,s) for s in data_fits]
     if plot_fh!=None:
         data_comparison_ctrl_fh=plot_fh+"data_comparison_ctrl.csv"
@@ -157,6 +164,15 @@ def plot_data_comparison_multiviolin(prj_dh,data_fits,col,
     return ax,data_comparison,data_all
 
 def annotatesigni(ax,x1,x2,y_max,s,space=0,lift=None):
+    """
+    Annotate singificance of the difference between distributions
+
+    :param ax: axes object
+    :param x1: data 1
+    :param x2: data 2
+    :param y_max: maximum value of y
+    """
+
     if lift==None:
         y_max=(y_max+1)
     elif lift!=None:
@@ -177,6 +193,13 @@ def plot_data_comparison_multiviolin_arching_pvals(prj_dh,data_fits,col,
                                      data_fits_labels=None,ylabel=None,statest='wilcox',
                                      figsize=[4,3],
                                      plot_fh=None):
+    """
+    plotting the comparison of distributions with arching p value annotations
+
+    :param prj_dh:  path to project directory
+    :param data_fits: list of data_fits to be compared
+    :param col: name of column of data to be compared 
+    """
     data_fit_fhs=["%s/data_fit/%s/%s" % (prj_dh,aasORcds,s) for s in data_fits]
 
     for data_fit_fh in data_fit_fhs:
@@ -247,6 +270,12 @@ def plot_pie(data_comparison,col,col_count,explodei=None,
             plot_fh=None,
             legend=False,legend_save=False,
             ):
+    """
+    Plot pie charts
+
+    :param data_comparison: pandas datafrae containing comparison data
+    :param col: name of the column with data
+    """
     counts=data_comparison.groupby(col).count().loc[:,col_count]
     counts=counts.sort_index()
     fig=plt.figure(figsize=[2.1,2.1],dpi=300)

@@ -19,11 +19,23 @@ import subprocess
 from dms2dfe.lib.io_dfs import set_index
 
 def getcolsmets(d,cs):
+    """
+    Get the total non-na items in column. 
+
+    :param d: pandas dataframe
+    :param cs: list of columns
+    """
     cols=[c for c in d.columns if cs in c]
     counts=[len(d[c].dropna()) for c in cols]
     return dict(zip(cols,counts))
 
 def get_2SD_cutoffs(d,reps,N=False):
+    """
+    Get 2SD cutoffs for values in given column
+
+    :param d: pandas dataframe
+    :param reps: names of replicate conditions
+    """
     t=d.copy()
     mus=[]
     sigmas=[]
@@ -40,6 +52,11 @@ def get_2SD_cutoffs(d,reps,N=False):
     return mu+sigma*2,mu,sigma
 
 def get_repli_FiA(d,csel='.NiA_tran.sel',cref='.NiA_tran.ref'):
+    """
+    Get replicates from data_fit
+
+    :param d: pandas dataframe data_fit
+    """
     sels=np.sort([c for c in d.columns if csel in c])
     refs=np.sort([c for c in d.columns if cref in c])
     FCAi=1
@@ -55,6 +72,12 @@ def get_repli_FiA(d,csel='.NiA_tran.sel',cref='.NiA_tran.ref'):
     return d.loc[:,cols_FCA]
 
 def data_fit2cutoffs(d,sA,sB,N=True):
+    """
+    Get cutoffs of data fit to assign classes
+
+    :param d: pandas dataframe with fold change values
+    :param sA,sB: columns with two conditions to be compared
+    """
     refs=[c for c in d.columns if sA in c]
     sels=[c for c in d.columns if sB in c]
     _,mu1,sigma1=get_2SD_cutoffs(d,refs)
@@ -107,6 +130,11 @@ def class_comparison(dA,dB):
 
 
 def get_data_metrics(prj_dh):
+    """
+    Obtain metrics for fold change values from a experiment
+
+    :param prj_dh: path to project directory
+    """
     data_fit_fns_all=[basename(s) for s in glob('%s/data_fit/aas/*' % prj_dh)]
     data_fit_fns_all2labels=dict(zip(data_fit_fns_all,data_fit_fns_all))
     data_fit_metrics=pd.DataFrame(index=data_fit_fns_all)
