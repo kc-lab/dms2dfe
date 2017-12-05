@@ -12,6 +12,7 @@ docs
 #docs/_templates
 #docs/Makefile
 
+ms_datasets/*
 update_forks
 dms2dfe/bin/*
 dms2dfe/dms2dfe_dependencies/*

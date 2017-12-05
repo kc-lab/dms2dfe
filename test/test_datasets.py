@@ -27,15 +27,17 @@ def test_datasets():
     for prj_dh in datasets:
         print prj_dh
         if exists(prj_dh):
-            subprocess.call('dms2dfe %s' % (prj_dh),shell=True)
+            if not exists(prj_dh+"/plots"):
+                subprocess.call('dms2dfe %s' % (prj_dh),shell=True)
             x = listfiles(prj_dh)
-            y = listfiles('../analysis/%s' % prj_dh)
-            print(x,y)
+            y = listfiles('../outputs/%s' % prj_dh)
+            print(">files in analysis directory:",x)
+            print(">files in outputs directory:",y)
             files_only_in_either = set(x) ^ set(y)
             if (len(y)!=0) or (len(files_only_in_either)==0):
                 print ">>> SUCCESS"
             else:
-                print ">>> TEST NOT SUCCESSFUL. Following files are different betn analysi and output"
+                print ">>> TEST NOT SUCCESSFUL. Following files are different betn analysis and output"
                 print files_only_in_either
         break
 test_datasets()

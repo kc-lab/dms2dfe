@@ -103,7 +103,7 @@ def main(prj_dh,inputs=None):
             subprocess.call("cd %s;make all; cd -;" % dirname(bowtie2_fh),shell=True,stdout=log_f, stderr=subprocess.STDOUT)
 
         #samtools
-    depn='samtools'
+        depn='samtools'
         samtools_fh=deps_dh+"/samtools-0.1.20/samtools"        
         if not exists(samtools_fh):
             logging.info("configuring: samtools")
