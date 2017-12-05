@@ -30,9 +30,9 @@ def test_datasets():
             subprocess.call('dms2dfe %s' % (prj_dh),shell=True)
             x = listfiles(prj_dh)
             y = listfiles('../analysis/%s' % prj_dh)
-#            print(x,y)
+            print(x,y)
             files_only_in_either = set(x) ^ set(y)
-            if len(files_only_in_either)==0:
+            if (len(y)!=0) or (len(files_only_in_either)==0):
                 print ">>> SUCCESS"
             else:
                 print ">>> TEST NOT SUCCESSFUL. Following files are different betn analysi and output"
