@@ -39,6 +39,12 @@ logging=get_logger()
 
 def y2classes(data_combo,y_coln,classes=2,
              middle_percentile_skipped=0):
+    """
+    Converts target (y) data from a series to classes
+
+    :param data_combo: pandas datafram containing y values
+    :param y_coln: name of column containing y values 
+    """
     data_combo.loc[:,'classes']=np.nan
     if classes==2:
         median=data_combo.loc[:,y_coln].median()
@@ -72,6 +78,11 @@ def X_cols2numeric(data_all,X_cols,keep_cols=[]):
     return data_all
 
 def X_cols2binary(data,cols=None):    
+    """
+    Converts predictor i.e. X values to binary classes
+
+    :param data: pandas table
+    """
     if cols==None:
         cols=[]
         for col in data.columns.tolist():
@@ -89,10 +100,22 @@ def X_cols2binary(data,cols=None):
     return data
 
 def zscore(df,col):
+    """
+    Z-score normalize a given column
+
+    :param df: pandas table
+    :param col: column name
+    """
     df.loc[:,col] = (df.loc[:,col]-df.loc[~pd.isnull(df.loc[:,col]),col].mean())/df.loc[~pd.isnull(df.loc[:,col]),col].std()
     return df
 
 def rescalecols(data_combo,kind="zscore"):
+    """
+    Rescales a columns of dataframe
+
+    :param data_combo: pandas dataframe
+    """
+
     for col in data_combo.columns.tolist():
 #         print col
         if is_numeric(data_combo.loc[:,col]):
@@ -104,6 +127,12 @@ def rescalecols(data_combo,kind="zscore"):
     return data_combo
 
 def binary2classes(y_pred,classes):
+    """
+    Get class values from binary
+
+    :param y_pred: list of binary values 
+    :param classes: list of classes 
+    """
     y_pred_classes=[]
     if len(classes)>2:
         for row in y_pred:
