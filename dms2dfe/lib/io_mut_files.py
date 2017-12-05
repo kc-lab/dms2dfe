@@ -451,7 +451,13 @@ def get_data_lbl_type(data_fit,data_lbl_type,data_lbl_col='NiA_tran'):
 #data_lbl_fn.NiA_trans.ref
 def make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,data_lbl_col='NiA_tran',type_form='aas',
                  test='ztest',multitest='fdr_bh'):
-    
+    """
+    Estimates fold changes
+
+    :param data_lbl_ref_fn: filename of the file (data_lbl) containing counts of mutations from the reference condition
+    :param data_lbl_sel_fn: filename of the file (data_lbl) containing counts of mutations from the selection condition
+    :param info: dict, information of the experiment
+    """
     repli=pd.read_csv('%s/cfg/repli' % info.prj_dh).set_index('varname')
     col_sep="."
     data_fit=None
@@ -492,6 +498,15 @@ def make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,data_lbl_col='NiA_tran',t
                 return data_fit
 
 def make_deseq2_annot(unsel,sel,data_lbl_col,prj_dh,type_form='aas'):
+    """
+    Makes DESeq2 annotation file.
+
+    :param unsel: unselected condition
+    :param sel: selected condtition
+    :param prj_dh: path to the project directory
+    :param data_lbl_col: column of the data_lbl pandas table to be used 
+    """
+
     repli=pd.read_csv('%s/cfg/repli' % prj_dh).set_index('varname')
     col_sep="."
     data_deseq2_annot_dh='%s/data_fit/%s_all' % (prj_dh,type_form)
@@ -525,6 +540,15 @@ def make_deseq2_annot(unsel,sel,data_lbl_col,prj_dh,type_form='aas'):
     return data_deseq2_annot,data_deseq2_annot_fh
 
 def make_deseq2_count(unsel,sel,data_deseq2_annot,data_lbl_col,prj_dh,type_form='aas'):
+    """
+    Makes DESeq2 count file
+
+    :param unsel: unselected condition
+    :param sel: selected condtition
+    :param prj_dh: path to the project directory
+    :param data_lbl_col: column of the data_lbl pandas table to be used 
+    :param data_deseq2_annot: pandas table with annotation information 
+    """
     data_deseq2_count_dh='%s/data_fit/%s_all' % (prj_dh,type_form)
     data_deseq2_count_fh='%s/%s_WRT_%s.deseq2_count.csv' % (data_deseq2_count_dh,sel,unsel)
     if not exists(data_deseq2_count_fh):
@@ -538,6 +562,14 @@ def make_deseq2_count(unsel,sel,data_deseq2_annot,data_lbl_col,prj_dh,type_form=
     return data_lbl_all,data_deseq2_count_fh
 
 def make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info):
+    """
+    Wrapper for DESeq2 mediated GLM normalization
+
+    :param data_lbl_ref: pandas table with counts of mutations from reference condition
+    :param data_lbl_sel: pandas table with counts of mutations from selected condition
+    :param data_fit: pandas table with fold change values
+    :param info: dict with information of the experiment
+    """
     data_lbl_col='NiA_norm'
     data_deseq2_annot,data_deseq2_annot_fh=make_deseq2_annot(data_lbl_ref_fn,data_lbl_sel_fn,
                                                              data_lbl_col,info.prj_dh)
@@ -586,6 +618,14 @@ def make_GLM_norm(data_lbl_ref_fn,data_lbl_sel_fn,data_fit,info):
 
 from dms2dfe.lib.io_mut_class import class_fit
 def data_lbl2data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,type_forms=['aas']):
+    """
+    Wrapper for overall counts to fold change conversion
+
+    :param data_lbl_ref_fn: filename of table with counts of mutations from reference condition
+    :param data_lbl_sel_fn: filename of table with counts of mutations from selected condition
+    :param info: dict with information of the experiment
+    """
+
     for type_form in type_forms : # cds OR aas
         data_fit_fh='%s/data_fit/%s/%s_WRT_%s' % (info.prj_dh,type_form,data_lbl_sel_fn,data_lbl_ref_fn)
         if not exists(data_fit_fh):
@@ -626,6 +666,11 @@ def data_lbl2data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,type_forms=['aas']):
                 data_fit.to_csv(data_fit_fh)
 
 def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="FiA",syn2nan=True):
+    """
+    Rescale fold changes by the fold change of synonymous mutations at that position
+
+    :param data_fit: pandas table with fold change values
+    """
     if not sum(~pd.isnull(data_fit.loc[(data_fit.loc[:,'mut']==data_fit.loc[:,'ref']),col_fit]))==0:
         data_fit=set_index(data_fit,'mutids')
         if col_fit_rescaled in data_fit.columns:
@@ -653,6 +698,14 @@ def rescale_fitnessbysynonymous(data_fit,col_fit="FCA_norm",col_fit_rescaled="Fi
         return data_fit
 
 def data_lbl2data_fit_lite(fits_pairs,prj_dh,data_lbl_dh,data_fit_dh,force=False):
+    """
+    Short wrapper for conversion of mutation counts to fold changes
+
+    :param fits_pair: list with pair of selected and reference condition
+    :param pj_dh: path to the protject directory
+    :param data_lbl_dh: path to the diorectory containing data_lbl csv tables
+    :param data_fit_dh: path to the directory of data_fit csvs
+    """
     data_fit_fh='%s/%s/aas/%s_WRT_%s' % (prj_dh,data_fit_dh,fits_pairs[1],fits_pairs[0])
     if not exists(data_fit_fh) or force:
         data_lbl_fhs=['%s/%s/aas/%s' % (prj_dh,data_lbl_dh,s) for s in fits_pairs]
