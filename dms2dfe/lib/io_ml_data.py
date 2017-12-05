@@ -157,10 +157,23 @@ def binary2classes(y_pred,classes):
 
 # diff
 def get_abs_diff(mutid_mm,data_feats,col):
+    """
+    Getting absolute differences between molecular features
+
+    :param mutids_mm: list, mutation IDs of the multiple mutations
+    :param data_feats: pandas datafram with fratures of mutations
+    :param col: column of the data_feats to be used for absolute differences
+    """
     mutid_m1,mutid_m2=mutid_mm.split(':')
     return abs(data_feats.loc[mutid_m1,col]-data_feats.loc[mutid_m2,col])
 
 def add_feats(data_feats_all_mm,data_feats_all):
+    """
+    Add molecular features of mutations.
+
+    :param data_feats_all_mm: pandas dataframe with alll the features of multiple mutations
+    :param data_feats_all: pandas dataframe with features of single mutations
+    """
     for col in data_feats_all:
         data_feats_all_mm.loc[:,"$\Delta$(%s)" % col]=data_feats_all_mm.apply(lambda x: \
                                     get_abs_diff(x['mutids'],data_feats_all,col), axis=1)
@@ -168,6 +181,11 @@ def add_feats(data_feats_all_mm,data_feats_all):
 
 
 def get_cols_del(data_feats):
+    """
+    Get columns to be deleted 
+
+    :param data_feats: pandas dataframe with all the features
+    """
     cols_del_strs=["Helix formation","beta bridge","Chirality","Offset from residue to the partner",
              "Energy (kcal/mol) of ","Secondary structure",
              'torsion','pKa',
@@ -183,6 +201,13 @@ def get_cols_del(data_feats):
     return cols_del
 
 def keep_cols(dXy,dXy_ori,ycol,cols_keep=None):
+    """
+    Keep columns 
+
+    :param dXy: pandas dataframe with predictors(X) and target(y) data
+    :param dXy_ori: original pandas dataframe with with predictors(X) and target(y) data
+    :param ycol: column name of the target values
+    """
     if cols_keep is None:
         cols_keep=[
          'Conservation score (inverse shannon uncertainty): gaps ignored',#'Conservation score (ConSurf)',
@@ -202,6 +227,11 @@ def keep_cols(dXy,dXy_ori,ycol,cols_keep=None):
     return make_dXy(dXy,ycol,unique_quantile=0,index="mutids",if_rescalecols=False)
 
 def get_corr_feats(corr,mx=0.9):
+    """
+    Get correlated features
+
+    :param corr: pandas dataframe, Correlation matrix
+    """
     feats=[]
     for row in corr.index:
         for col in corr.columns:
@@ -212,6 +242,12 @@ def get_corr_feats(corr,mx=0.9):
     return np.unique(feats)
 
 def feats_sel_corr(dXy,ycol,method='spearman',range_coef=[0.9,0.8,0.7]):
+    """
+    Remove strongly correlated features
+
+    :param dXy: pandas dataframe with target(y) and predictor(X) data
+    :param ycol: column name of target values
+    """
     Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
     data=dXy.loc[:,Xcols]
     del_cols=data.columns.tolist()
@@ -230,6 +266,12 @@ def feats_inter(dXy,ycol,cols1=None,cols2=None,
                 inter='all',
                 if_rescalecols=True,
                 join=True):
+    """
+    Get interactions between molecular features
+
+    :param dXy: pandas dataframe with target(y) and predictor(X) data
+    :param ycol: column name of target values    
+    """
     Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
     if cols1 is None and cols2 is None:
         cols_predefined=False
@@ -260,6 +302,12 @@ def feats_inter(dXy,ycol,cols1=None,cols2=None,
     return dXy,[c for c in dXy.columns.tolist() if c!=ycol],ycol
 
 def feats_inter_sel_corr(dXy,ycol,Xcols,dXy_input,top_cols=None,range_coef=[0.9,0.8,0.7]):
+    """
+    Get interactions between only non-highly correlated molecular features
+
+    :param dXy: pandas dataframe with target(y) and predictor(X) data
+    :param ycol: column name of target values    
+    """
     dXy,Xcols,ycol=feats_inter(dXy,ycol,cols1=top_cols,cols2=top_cols)
     dXy,Xcols,ycol=keep_cols(dXy,dXy_input,ycol,cols_keep=dXy_input.columns.tolist())
     dXy,Xcols,ycol=feats_sel_corr(dXy,ycol,range_coef=range_coef)
@@ -267,6 +315,12 @@ def feats_inter_sel_corr(dXy,ycol,Xcols,dXy_input,top_cols=None,range_coef=[0.9,
     return dXy,Xcols,ycol
 
 def make_dXy(dXy,ycol,unique_quantile=0.25,index="mutids",if_rescalecols=True):
+    """
+    Create a pandas table with target and predictor data
+
+    :param dXy: pandas dataframe with target(y) and predictor(X) data
+    :param ycol: column name of target values    
+    """
     dXy=set_index(dXy,index)
     # print 'len(cols_del)=%s' % len(get_cols_del(dXy))
     dXy=dXy.drop(get_cols_del(dXy),axis=1)
@@ -280,26 +334,14 @@ def make_dXy(dXy,ycol,unique_quantile=0.25,index="mutids",if_rescalecols=True):
         dXy.loc[:,Xcols]=rescalecols(dXy.loc[:,Xcols])
     return dXy,Xcols,ycol
 
-# from boruta import BorutaPy
-# def feats_sel_boruta(model,dXy,Xcols,ycol):
-#     model_boruta = BorutaPy(model, n_estimators='auto', random_state=88)
-#     X=dXy.loc[:,Xcols].as_matrix()
-#     y=dXy.loc[:,ycol].as_matrix()
-#     model_boruta.fit(X,y)
-# #     print Xcols,model_boruta.support_
-#     Xcols=np.array(Xcols)
-#     Xcols=Xcols[np.array(model_boruta.support_)]
-#     return dXy.loc[:,Xcols.tolist()+[ycol]],Xcols,ycol
-
-# def make_input(d,ycol,index="mutids",if_rescalecols=True):
-#     d=set_index(d,index)
-#     # remove feats with unique categories deviating max by 1sd
-#     if if_rescalecols:
-#         d=rescalecols(d)
-#     d=d.dropna(axis=0, how='any').dropna(axis=1, how='all')
-#     return d
-
 def make_cls_input(data_combo,y_coln_cls,middle_percentile_skipped):
+    """
+    Make input for classifier
+
+    :param data_combo: pandas dataframe containing training data
+    :param y_coln_cls: name of column containing target values
+    :param middle_percentile_skipped: skip middle percentile at boundary while creating classes [0,..,1] 
+    """
     data_ml=y2classes(data_combo,y_coln_cls,
                        middle_percentile_skipped=middle_percentile_skipped)
     data_ml=data_ml.drop(y_coln_cls,axis=1)
@@ -333,6 +375,15 @@ def make_reg_input(data_combo,data_cls_train,data_cls_tests,
                     y_coln_cls="classes",
                     topNfeats=25
                     ):
+    """
+    Make input for regression model
+
+    :param data_combo: pandas dataframe containing training+testing data
+    :param data_cls_train: pandas dataframe containing training data
+    :param data_cls_test: pandas dataframe containing testing data
+    :param y_coln_reg: name of column containing target values
+    :param feature_importances_cls: pandas dataframe containing feature importances 
+    """
     data_reg_train=data_cls_train.copy()
     data_reg_tests=data_cls_tests.copy()
     data_reg_train.loc[:,y_coln_reg]=data_combo.loc[data_cls_train.index.values,y_coln_reg]
@@ -355,6 +406,14 @@ def make_reg_input(data_combo,data_cls_train,data_cls_tests,
 
 
 def make_data_combo(data_fit_dm,data_feats,ycol,Xcols):
+    """
+    Create a combined dataframe from mutation data
+
+    :param data_fit_dm: pandas dataframe with fold changes
+    :param data_feats: pandas datframe with features
+    :param ycol: column of target values
+    :param Xcols: list containing predictor values
+    """
     cols_numeric=[c for c in data_feats if is_numeric(data_feats.loc[:,c])]
     data_feats=data_feats.loc[:,cols_numeric]
     for col in get_cols_del(data_feats):
