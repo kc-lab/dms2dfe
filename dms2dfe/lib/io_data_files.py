@@ -37,6 +37,11 @@ def is_cfg_ok(cfg_dh,cfgs) :
     return True
 
 def auto_find_missing_paths(prj_dh):
+    """
+    Finds the missing paths in the configuration given in cfg/ directory
+
+    :param prj_dh: path to the project directory  
+    """
     info=pd.read_csv(prj_dh+"/cfg/info")
     info_path_vars=[varn for varn in info['varname'] if ("_fh" in varn) or ("_dh" in varn)]
     info=info.set_index("varname")
@@ -66,6 +71,12 @@ def auto_find_missing_paths(prj_dh):
         sys.exit()
 
 def get_raw_input(info,var):
+    """
+    Get intearactive inputs from user
+
+    :param info: dict, with information about experiment
+    :param var: variable whose value is obtained from interactive shell
+    """
     # from dms2dfe.lib.io_dfs import set_index
     # info=set_index(info,'var')
     val=raw_input("%s: %s (default: %s) =" % (var,info.loc[var, "description"],info.loc[var, "default"]))
@@ -159,7 +170,8 @@ def raw_input2info(prj_dh,inputORdefault):
 def is_xls_ok(cfg_xls,cfg_xls_sheetnames_required) :
     """
     Checks if the required sheets are present in the configuration excel file.
-    Input/s : path to configuration excel file 
+
+    :param cfg_xls: path to configuration excel file 
     """
     cfg_xls_sheetnames=cfg_xls.sheet_names
     cfg_xls_sheetnames= [str(x) for x in cfg_xls_sheetnames]# unicode to str
@@ -176,6 +188,8 @@ def is_info_ok(xls_fh):
     """
     This checks the sanity of info sheet in the configuration excel file.
     For example if the files exists or not.
+
+    :param cfg_xls: path to configuration excel file     
     """
     info=pd.read_excel(xls_fh,'info')
     info_path_vars=[varn for varn in info['varname'] if ("_fh" in varn) or ("_dh" in varn)]
@@ -192,7 +206,8 @@ def xls2h5(cfg_xls,cfg_h5,cfg_xls_sheetnames_required) :
     """
     Converts configuration excel file to HDF5(h5) file.
     Here sheets in excel files are converted to groups in HDF5 file.
-    Input/s : (path to configuration excel file, path to output HDF5 file)
+
+    :param cfg_xls: path to configuration excel file 
     """
     for qry_sheet_namei in  cfg_xls_sheetnames_required:  
         qry_sheet_df=cfg_xls.parse(qry_sheet_namei)
@@ -205,7 +220,8 @@ def xls2csvs(cfg_xls,cfg_xls_sheetnames_required,output_dh):
     """
     Converts configuration excel file to HDF5(h5) file.
     Here sheets in excel files are converted to groups in HDF5 file.
-    Input/s : (path to configuration excel file, path to output HDF5 file)
+
+    :param cfg_xls: path to configuration excel file 
     """
     for qry_sheet_namei in  cfg_xls_sheetnames_required:  
         qry_sheet_df=cfg_xls.parse(qry_sheet_namei)
@@ -214,6 +230,11 @@ def xls2csvs(cfg_xls,cfg_xls_sheetnames_required,output_dh):
 #         print "%s/%s" % (output_dh,qry_sheet_namei)
 
 def convert2h5form(df):
+    """
+    Convert dataframe compatible to  Hdf5 format
+
+    :param df: pandas dataframe
+    """
     from dms2dfe.lib.io_strs import convertstr2format 
     df.columns=[convertstr2format(col,"^[a-zA-Z0-9_]*$") for col in df.columns.tolist()]
     return df
@@ -221,6 +242,9 @@ def convert2h5form(df):
 def csvs2h5(dh,sub_dh_list,fn_list,output_dh,cfg_h5):
     """
     This converts the csv files to tables in HDF5.
+
+    :param dh: path to the directory with csv files
+    :param fn_list: list of filenames of the csv files 
     """
     for fn in fn_list:
         for sub_dh in sub_dh_list : # get aas or cds  
@@ -233,6 +257,9 @@ def csvs2h5(dh,sub_dh_list,fn_list,output_dh,cfg_h5):
 def csvs2h5(dh,sub_dh_list,fn_list):
     """
     This converts csvs into HDF5 tables.
+
+    :param dh: path to the directory with csv files
+    :param fn_list: list of filenames of the csv files 
     """
     for fn in fn_list:
         for sub_dh in sub_dh_list : # get aas or cds  
@@ -323,10 +350,22 @@ def getusable_comparison_list(prj_dh):
     return  comparison_list  
 
 def to_pkl(data,fh):
+    """
+    Saves a dict in pkl format
+
+    :param data: dict, containing data
+    :param fh: path to the output pkl file
+    """
     if not fh is None:
         with open(fh, 'wb') as f:
             pickle.dump(data, f, -1)    
 
 def read_pkl(fh):
+    """
+    Reads a file in pkl format
+
+    :param fh: path to the pkl file
+    :returns data: dict, containing data
+    """
     with open(fh,'rb') as f:
         return pickle.load(f) 
