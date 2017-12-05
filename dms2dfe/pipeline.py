@@ -30,8 +30,7 @@ def main():
     Also the scripts can be envoked through bash from locally downloaded `dms2dfe` folder.
 
     """
-    logging.info("start")
-    version_info='%(prog)s {version}'.format(version=pkg_resources.require("dms2dfe")[0].version)
+    version_info='%(prog)s v{version}'.format(version=pkg_resources.require("dms2dfe")[0].version)
     parser = argparse.ArgumentParser(description=version_info)
     parser.add_argument("prj_dh", help="path to project directory", 
                         action="store", default=False)    
@@ -43,6 +42,7 @@ def main():
 #    parser.add_argument('-h', '--help', action='help', #default=argparse.SUPPRESS,
 #                    help='Show this help message and exit. \n Version info: %s' % version_info)
     args = parser.parse_args()
+    logging.info("start")
     pipeline(args.prj_dh,test=args.test,step=args.step)
 
 def pipeline(prj_dh,step=None,test=False):        
