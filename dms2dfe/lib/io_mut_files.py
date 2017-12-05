@@ -50,6 +50,11 @@ def makemutids(data_lbl,refis):
     return mutids    
 
 def makemutids_fromprtseq(prt_seq,muts=None):
+    """
+    Make mutation IDs from a given protein sequence
+
+    :param prt_seq: string, protein sequence
+    """
     refs=list(prt_seq)
     refis=range(1,len(refs)+1,1)
     if muts is None:
@@ -64,6 +69,13 @@ def makemutids_fromprtseq(prt_seq,muts=None):
 
 
 def mutids_converter(mutids,out,type_form):
+    """
+    Convert Mutation IDs to different formats
+
+    :param mutids: list of mutation IDs
+    :param out: format of the mutations
+    :param type_form: amino acid level or codon level mutations
+    """
     if type_form=='aas':
         offset=0
     elif type_form=='cds':
@@ -140,6 +152,14 @@ def collate_cctmr(lbl_mat_cds,cctmr):
 
 def transform_data_lbl(prj_dh,transform_type,
                       type_form='aas',data_lbl_col='NiA_norm',):
+    """
+    Transforamtion of counts of mutants in data_lbl table
+
+
+    :param prj_dh: path to the project directory
+    :param transform_type: type of transformation log, plog, glog etc
+    :returns data_lbl: data_lbl with transformed counts
+    """
     data_lbl_fhs=glob("%s/data_lbl/aas/*" % prj_dh)
     if len(data_lbl_fhs)>0:
         col_sep="."
@@ -174,6 +194,14 @@ def transform_data_lbl(prj_dh,transform_type,
                 data_lbl.to_csv(data_lbl_fh)
         
 def transform_data_lbl_deseq(prj_dh,transform_type,rscript_fh,type_form='aas'):
+    """
+    Transforamtion of counts of mutants in data_lbl table using DESeq2
+
+
+    :param prj_dh: path to the project directory
+    :param transform_type: type of transformation rlog or VST
+    :returns data_lbl: data_lbl with transformed counts
+    """
     data_lbl_fhs=glob("%s/data_lbl/aas/*" % prj_dh)
     data_lbl_col='NiA_norm'
     col_sep="."
@@ -364,6 +392,12 @@ def mut_mat_cds2data_lbl(lbli,lbl_mat_mut_cds_fh,
 
 def get_data_lbl_reps(data_lbl_fn,data_lbl_type,repli,info,data_fit=None,
                       data_lbl_col='NiA_tran',type_form='aas',col_sep='.'):
+    """
+    Gets the replicates for a given filename of data_lbl
+
+    :param data_lbl_fn: filename of data_lbl
+    :param data_lbl_type: codon level or amino acid level mutations
+    """
     if data_lbl_fn in repli.index:
         reps=repli.loc[data_lbl_fn,:].dropna()
         for rep in reps:
@@ -399,6 +433,12 @@ def get_data_lbl_reps(data_lbl_fn,data_lbl_type,repli,info,data_fit=None,
             logging.warning('does not exists: %s' % data_lbl_fn)
 
 def get_data_lbl_type(data_fit,data_lbl_type,data_lbl_col='NiA_tran'):
+    """
+    Gets the type of mutations in a given data_lbl table
+
+    :param data_fit: data_fit table
+    :param data_lbl_type: type of mutations eg. codon level or amino acid level
+    """
     data_lbl_type_col="%s.%s" % (data_lbl_col,data_lbl_type)
     data_lbl_type_reps_cols=[c for c in data_fit if data_lbl_type_col in c]
     # print data_lbl_type_reps_cols
@@ -411,6 +451,7 @@ def get_data_lbl_type(data_fit,data_lbl_type,data_lbl_col='NiA_tran'):
 #data_lbl_fn.NiA_trans.ref
 def make_data_fit(data_lbl_ref_fn,data_lbl_sel_fn,info,data_lbl_col='NiA_tran',type_form='aas',
                  test='ztest',multitest='fdr_bh'):
+    
     repli=pd.read_csv('%s/cfg/repli' % info.prj_dh).set_index('varname')
     col_sep="."
     data_fit=None

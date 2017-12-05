@@ -27,9 +27,9 @@ def vector2bfactor(vector,pdb_fh,pdb_clrd_fh):
     """
     Incorporates vector with values to the B-factor of PDB file.
 
-    : param vector : vector with values
-    : param pdb_fh : path of input PDB file
-    : param pdb_clrd_fh : path of output PDB file 
+    :param vector: vector with values
+    :param pdb_fh: path of input PDB file
+    :param pdb_clrd_fh: path of output PDB file 
     """
     aas_21_3letter=['ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE',
                     'LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL']
