@@ -5,7 +5,7 @@
 
 """
 ================================
-``plot``
+``plot_mut_data_scatter``
 ================================
 """
 import sys
@@ -29,6 +29,13 @@ from dms2dfe.lib.io_dfs import set_index,denanrows
 
 def gettopnlastdiff(data,col1,col2,zcol=None,rows=5,zcol_threshold=None,
                     col_classes=None,classes=[]):
+    """
+    Plot difference between top mutants
+
+    :param data: pandas dataframe
+    :param col1: name of column1
+    :param col2: name of column2
+    """
     data.loc[:,'diff']=data.loc[:,col2]-data.loc[:,col1]
     if zcol is None:
         data_heads=data.sort_values(by='diff',ascending=True).head(rows)#.index
@@ -59,6 +66,14 @@ def plot_sc(data,ax,xcol,ycol,ylabel='',
             space=0.2,
             axlims=None,
            ):
+    """
+    Plot scatter 
+
+    :param data: pandas dataframe
+    :param ax: axes object
+    :param xcol: column name of x data
+    :param ycol: column name of y data
+    """
     if (not zcol is None) and (sum(~pd.isnull(data.loc[:,zcol]))==0):
         zcol=None
     if zcol is None:
@@ -115,8 +130,18 @@ def plot_sc(data,ax,xcol,ycol,ylabel='',
     return ax,heads,tails,axlims
 
 def mutids2refrei(mutid):
+    """
+    Convert mutids to reference amino acid and index
+
+    :param mutid: mutation ID
+    """
     return mutid[:-1]
 def mutids2subid(mutid):
+    """
+    Convert mutids to substitution id
+
+    :param mutid: mutation ID
+    """
     return mutid[0]+mutid[-1]
 
 def plot_scatter_mutilayered(data_all,xcol,ycol,
@@ -134,6 +159,13 @@ def plot_scatter_mutilayered(data_all,xcol,ycol,
                              space=0.2,
                              figsize=[8.5,6],
                              plot_fh=None,):
+    """
+    Plot multi-layered scatter 
+
+    :param data_all: pandas dataframe
+    :param xcol: column name of x data
+    :param ycol: column name of y data
+    """
     # print data_all.shape    
     if 'mutids' in data_all:
         data_all=data_all.set_index('mutids')
@@ -221,6 +253,12 @@ def plot_scatter_mutilayered(data_all,xcol,ycol,
     return data_all_mut,data_all_sub,data_all_pos
 
 def set_title_higher(axes,labels,height=1.2,color='k'):
+    """
+    Set title higher
+
+    :param axes: list of axes object
+    :param labels: list of labels for titles
+    """
     for i in range(len(labels)):
         ax=axes[i]
         label=labels[i]
@@ -238,6 +276,12 @@ def data_comparison2scatter_mutilayered(data,data_label,color_dots=None,
                                         repel=0.045,
                                         figsize=[15,5],
                                         plot_fh=None):
+    """
+    Wrapper to plot multi layered scatter plot
+
+    :param data: pandas dataframe
+    :param data_label: label
+    """
     from dms2dfe.lib.io_strs import splitlabel
 
     # print data.shape
