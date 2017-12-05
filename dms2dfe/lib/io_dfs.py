@@ -16,6 +16,12 @@ from dms2dfe.lib.io_strs import get_logger
 logging=get_logger()
 
 def set_index(data,col_index):
+    """
+    Sets the index if the index is not present
+
+    :param data: pandas table 
+    :param col_index: column name which will be assigned as a index
+    """
     if col_index in data:
         data=data.reset_index().set_index(col_index)
         if 'index' in data:
@@ -27,6 +33,14 @@ def set_index(data,col_index):
 # dfs
 def concat_cols(df1,df2,idx_col,df1_cols,df2_cols,
                 df1_suffix,df2_suffix,wc_cols=[],suffix_all=False):
+    """
+    Concatenates two pandas tables 
+
+    :param df1: dataframe 1
+    :param df2: dataframe 2
+    :param idx_col: column name which will be used as a common index 
+    """
+
     df1=df1.set_index(idx_col)
     df2=df2.set_index(idx_col)    
     if not len(wc_cols)==0:
@@ -52,12 +66,22 @@ def concat_cols(df1,df2,idx_col,df1_cols,df2_cols,
     return combo
 
 def del_Unnamed(df):
+    """
+    Deletes all the unnamed columns
+
+    :param df: pandas dataframe
+    """
     cols_del=[c for c in df.columns if 'Unnamed' in c]
     for c in cols_del:
         del df[c]
     return df
 
 def get_colmin(data):
+    """
+    Get rowwise column names with minimum values
+
+    :param data: pandas dataframe
+    """
     data=data.T
     colmins=[]
     for col in data:
@@ -65,6 +89,14 @@ def get_colmin(data):
     return colmins
 
 def fhs2data_combo(fhs,cols,index,labels=None,col_sep=': '):
+    """
+    Collates data from multiple csv files
+
+    :param fhs: list of paths to csv files
+    :param cols: list of column names to concatenate
+    :param index: name of the column name to be used as the common index of the output pandas table 
+    """
+
     if labels is None:
         labels=[basename(fh) for fh in fhs]
     if len(fhs)>0:
@@ -83,6 +115,12 @@ def fhs2data_combo(fhs,cols,index,labels=None,col_sep=': '):
         logging.error('no fhs found: len(fhs)=0')
 
 def fhs2data_combo_appended(fhs, cols=None,labels=None,labels_coln='labels'):
+    """
+    Collates data from multiple csv files vertically
+
+    :param fhs: list of paths to csv files
+    :param cols: list of column names to concatenate
+    """    
     if labels is None:
         labels=[basename(fh) for fh in fhs]
     if len(fhs)>0:
@@ -97,6 +135,12 @@ def fhs2data_combo_appended(fhs, cols=None,labels=None,labels_coln='labels'):
         return data_all
 
 def rename_cols(df,names,renames=None,prefix=None,suffix=None):
+    """
+    rename columns of a pandas table
+
+    :param df: pandas dataframe
+    :param names: list of new column names
+    """
     if not prefix is None:
         renames=[ "%s%s" % (prefix,s) for s in names]
     if not suffix is None:    
@@ -169,12 +213,29 @@ def debad(data_all,axis,condi="any",bad=0):
     return data_all
 
 def denan(data_all,axis,condi="any"):
+    """
+    Remove columns/rows with np.nan (NaN) values
+
+    :param data_all: pandas dataframe
+    :param axis: columns=1, rows=0 
+    """
     return debad(data_all,axis,condi=condi,bad='nan')
 
 def denanrows(data_all):
+    """
+    Remove rows with np.nan (NaN) values
+
+    :param data_all: pandas dataframe
+    """    
     return debad(data_all,axis=0,condi="any",bad='nan')
 
 def reorderbydf(df2,df1):
+    """
+    Reorder rows of a dataframe by other dataframe
+
+    :param df2: input dataframe
+    :param df1: template dataframe 
+    """
     df3=pd.DataFrame()
     for idx,row in df1.iterrows():
         df3=df3.append(df2.loc[idx,:])
