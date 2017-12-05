@@ -21,6 +21,12 @@ import logging
 logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..): %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
 def get_fsta_feats(fsta_fh):
+    """
+    Gets basic fasta features e.g. length name etc
+    
+    :param fsta_fh: path to fasta file
+    :returns fsta_id,fsta_seq,fsta_len: id, sequence, length
+    """
     with open(fsta_fh,'r') as fsta_data:
         for fsta_record in SeqIO.parse(fsta_data, "fasta") :
             fsta_id=fsta_record.id
@@ -270,6 +276,14 @@ def qcd2sbam(fastq_fhs_list,fsta_fh,alignment_type,bt2_ref_fh,bowtie2_fh,samtool
         logging.error("can not find: %s " % basename(fastq_R1_fh))
 
 def fasta_nts2prt(fsta_fh,host='coli',fsta_prt_fh=None):
+    """
+    Translates nucleotide fasta to amino acid fasta
+    
+    :param fsta_fh: path to fasta file
+    :param host: host organism e.g. E. coli
+    :param fsta_prt_fh: path to fasta protein sequence
+    :returns fsta_seq_prt: fasta protein sequence
+    """
     from dms2dfe.lib.convert_seq import cds2aas
     from Bio import SeqIO,Seq,SeqRecord
     from Bio.Alphabet import IUPAC
