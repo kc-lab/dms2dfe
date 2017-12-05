@@ -18,6 +18,12 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(
 def fit_gauss(x, a, x0, sigma):
     """
     This fits gaussian.
+    Eq: a*np.exp(-(x-x0)**2/(2*sigma**2))
+
+    :param x: value of x
+    :param a: value of a
+    :param x0: value of x0
+    :param sigma: value of sigma
     """
     return a*np.exp(-(x-x0)**2/(2*sigma**2))
 

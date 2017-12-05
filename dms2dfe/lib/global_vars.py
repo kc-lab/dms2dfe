@@ -7,6 +7,8 @@
 ================================
 ``global_vars``
 ================================
+
+This contains all the global variables used variously in the package.
 """
 import numpy as np
 

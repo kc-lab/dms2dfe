@@ -31,6 +31,12 @@ logging=get_logger()
 
 
 def corrplot(info):
+    """
+    Plots a correlation matrix heatmap between range of features and fold change values
+
+    :param info: dict, with the information of the experiment
+    """
+
     from dms2dfe.lib.io_dfs import fhs2data_combo
     from glob import glob
     from dms2dfe.lib.plot_mut_data_heatmaps import clustermap
@@ -304,6 +310,14 @@ def data_combo2ml(data_combo,data_fn,data_dh,plot_dh,
 
 def data_regress2data_fit(prj_dh,data_fit_key,
                           data_regress_all,col='FCA_norm'):
+
+    """
+    Transforms the fold changes estimated from a regression model in the format of data_fit 
+
+    :param prj_dh: path to the project dorectory
+    :param data_fit_key: path key to data_fit file
+    :param data_regress_all: pandas table with regression estimated fold change values 
+    """
     # from dms2dfe.lib.io_nums import str2num
     from dms2dfe.lib.io_mut_files import rescale_fitnessbysynonymous,class_fit,mutids_converter
 
@@ -345,6 +359,14 @@ from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegress
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble.partial_dependence import plot_partial_dependence,partial_dependence
 def run_est(est,X,y,params,cv=True):        
+    """
+    Runs an estimator
+
+    :param est: estimator object
+    :param X: predictors (X) values
+    :param y: target (y) values
+    :param params: additional fitting parameters
+    """
     if est=='GBR':
         est = GradientBoostingRegressor(random_state=88)
     elif est=='GBC':
@@ -355,6 +377,12 @@ def run_est(est,X,y,params,cv=True):
         print [r2s,np.mean(r2s)] 
     return r2s,est
 def est2feats_imp(est,Xcols,Xy=None):
+    """
+    Get Feature importances from estimator
+
+    :param est: Estimator object
+    :param Xcols: list of column names of predictors
+    """
     try:
         feat_imp = pd.DataFrame(est.feature_importances_, Xcols)#.sort_values(ascending=False)
     except:
@@ -373,6 +401,12 @@ def dXy2ml(dXy,ycol,params=None,
            out_fh=None,
           regORcls='reg',
            force=False,cores=8):
+    """
+    Wrapper for ml operations
+
+    :param dXy: pandas table with preditors (X) and target (y) values
+    :param ycol: column name of the target column
+    """
     if out_fh is None:
         out_fh='%s_%s.pkl' % ('dXy2ml',get_time())
 
@@ -512,7 +546,13 @@ def dXy2ml(dXy,ycol,params=None,
 from dms2dfe.lib.io_ml_metrics import get_GB_cls_metrics
 
 def data_fit2ml(dX_fh,dy_fh,info,regORcls='cls'):
+    """
+    Wrapper for overall data_fit to regression modelling
 
+    :param dX_fh: path to the file containing preditor values
+    :param dy_fh: path to the file containing target values
+    :param info: dict contaning information about the experiment
+    """
     dy=pd.read_csv(dy_fh).set_index('mutids')
     dX=pd.read_csv(dX_fh).set_index('mutids')
     out_fh='%s/data_ml/%s.pkl' % (info.prj_dh,basename(dy_fh))
