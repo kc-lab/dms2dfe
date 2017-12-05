@@ -103,7 +103,7 @@ def main(prj_dh,inputs=None):
             subprocess.call("cd %s;make all; cd -;" % dirname(bowtie2_fh),shell=True,stdout=log_f, stderr=subprocess.STDOUT)
 
         #samtools
-	depn='samtools'
+    depn='samtools'
         samtools_fh=deps_dh+"/samtools-0.1.20/samtools"        
         if not exists(samtools_fh):
             logging.info("configuring: samtools")
@@ -168,7 +168,7 @@ def main(prj_dh,inputs=None):
         if not exists(rate4site_fh):
             logging.info("configuring: rate4site")
             soft_lnk="https://launchpadlibrarian.net/155121258/rate4site_3.0.0.orig.tar.gz"
-	    #soft_lnk="ftp://rostlab.org/rate4site/rate4site-3.0.0.tar.gz"
+        #soft_lnk="ftp://rostlab.org/rate4site/rate4site-3.0.0.tar.gz"
             com="wget -q %s --directory-prefix=%s/rate4site;\
                 tar -xvzf %s/rate4site/rate4site*.tar.gz -C %s/rate4site;\
                 cd %s/rate4site/rate4site-3.0.0;\
@@ -176,7 +176,7 @@ def main(prj_dh,inputs=None):
             sub_call_return=subprocess.call(com,shell=True,stdout=log_f, stderr=subprocess.STDOUT)
             #print sub_call_return
             if int(sub_call_return)!=0:
-            	logging.error("rate4site could not be installed. Error code=%s. More details in %s/dms2dfe_dependencies.log ." % (sub_call_return,deps_dh))
+                logging.error("rate4site could not be installed. Error code=%s. More details in %s/dms2dfe_dependencies.log ." % (sub_call_return,deps_dh))
                 inpt=raw_input("On a debian system, install 'rate4site' by this command:\n\n$ sudo apt-get install rate4site; sudo apt-get update\n\nand THEN input 'y' (otherwise 'n').:")
                 if 'y' in inpt:
                     com='ln -s /usr/bin/rate4site %s/rate4site/rate4site-3.0.0/src/rate4site/rate4site' % (deps_dh)

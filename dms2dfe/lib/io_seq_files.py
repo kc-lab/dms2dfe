@@ -56,7 +56,7 @@ def Rs2mergedandjoined(fastq_R1_read,fastq_R2_read,fastq_merged_f,fastq_joined_f
     eg. R1 R2 R1 R2 ..
 
     merged files (*_dplxd_joined.fastq) have the R1 and R2 joined together.
-    eg.	R1R2 R1R2 ..
+    eg.    R1R2 R1R2 ..
             
     :param fastq_R1_read: sequence of R1 read of .fastq (str).
     :param fastq_R2_read: sequence of R2 read of .fastq (str).
@@ -306,19 +306,19 @@ def fasta_nts2prt(fsta_fh,host='coli',fsta_prt_fh=None):
     return fsta_seq_prt
 
 def cctmr_fasta2ref_fasta(fsta_fh,cctmr):
-	"""
-	Converts concatamer sequence to monomer fasta.
+    """
+    Converts concatamer sequence to monomer fasta.
 
-	:param fsta_fh: path to fasta file
-	:param cctmr: seqeunce of individual monoer sequence
-	"""
+    :param fsta_fh: path to fasta file
+    :param cctmr: seqeunce of individual monoer sequence
+    """
     from dms2dfe.lib.convert_seq import cds2aas
     from Bio import SeqIO,Seq,SeqRecord
     from Bio.Alphabet import IUPAC
 
     fsta_cctmr1_fh="%s_cctmr1.fasta" % (splitext(fsta_fh)[0])
     with open(fsta_fh,'r') as fsta_data:
-	#print [i for i in SeqIO.parse(fsta_data, "fasta")]
+    #print [i for i in SeqIO.parse(fsta_data, "fasta")]
         for fsta_record in SeqIO.parse(fsta_data, "fasta") :
             fsta_id=fsta_record.id
             #print fsta_id
@@ -344,15 +344,15 @@ def fasta_writer(otpt_f,read_id,read_seq):
     otpt_f.write(read_seq+"\n")
 
 def getcov(sbam_fh,fsta_fh,refini=0,refend=None,data_out_fh=None):    
-	"""
-	Get coverage statistics from sorted bam file
+    """
+    Get coverage statistics from sorted bam file
 
-	:param sbam_fh: path to sorted bam file
-	:param fsta_fh: path to fasta file
-	:pram refini: int, start index
-	:pram refend: int, stop index
-	:pram data_out_fh: string, path to output table
-	"""
+    :param sbam_fh: path to sorted bam file
+    :param fsta_fh: path to fasta file
+    :pram refini: int, start index
+    :pram refend: int, stop index
+    :pram data_out_fh: string, path to output table
+    """
     refid,refseq,reflen=get_fsta_feats(fsta_fh)
     if refend is None:
         refend=reflen
@@ -370,15 +370,15 @@ def getcov(sbam_fh,fsta_fh,refini=0,refend=None,data_out_fh=None):
 
 def getdepth_cds(sbam_fh,fsta_fh,
                  cctmr=None,refini=0,refend=None,data_out_fh=None):
-	"""
-	get codon level depth from sorted bam file
+    """
+    get codon level depth from sorted bam file
 
-	:param sbam_fh: path to sorted bam file
-	:param fsta_fh: path to fasta file 
-	:pram refini: int, start index
-	:pram refend: int, stop index
-	:pram data_out_fh: string, path to output table
-	"""
+    :param sbam_fh: path to sorted bam file
+    :param fsta_fh: path to fasta file 
+    :pram refini: int, start index
+    :pram refend: int, stop index
+    :pram data_out_fh: string, path to output table
+    """
     refid,refseq,reflen=get_fsta_feats(fsta_fh)
     if refend is None:
         refend=reflen
