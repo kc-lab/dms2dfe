@@ -46,7 +46,7 @@ doi: http://dx.doi.org/10.1101/072645
 
 ## Questions
 
-Please mention them here: https://github.com/kc-lab/dms2dfe/issues .
+Please mention them here: https://github.com/rraadd88/dms2dfe/issues .
 
 ## Footnotes
 
