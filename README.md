@@ -15,13 +15,13 @@ dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of 
 
 ## Full documentation
 
-Latest version: http://kc-lab.github.io/dms2dfe
+Latest version: http://rraadd88.github.io/dms2dfe
 
-dms2dfe v1.0.6: http://kc-lab.github.io/dms2dfe/v1.0.6/html/
+dms2dfe v1.0.6: http://rraadd88.github.io/dms2dfe/v1.0.6/html/
 
 ## Quick installation
 
-To install the package written in python 2.7, [create a conda environment](http://kc-lab.github.io/dms2dfe/latest/html/1installation.html), simply execute following command: 
+To install the package written in python 2.7, [create a conda environment](http://rraadd88.github.io/dms2dfe/latest/html/1installation.html), simply execute following command: 
 
     pip install dms2dfe
 
