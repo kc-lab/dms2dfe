@@ -15,9 +15,9 @@ dms2dfe (**D**eep **M**utational **S**canning (DMS) data to **D**istribution of 
 
 ## Full documentation
 
-Latest version: http://rraadd88.github.io/dms2dfe
+Latest version: http://rraadd88.github.io/soft/dms2dfe/latest/html/index.html
 
-dms2dfe v1.0.6: http://rraadd88.github.io/dms2dfe/v1.0.6/html/
+dms2dfe v1.0.6: http://rraadd88.github.io/soft/dms2dfe/v1.0.6/html/index.html
 
 ## Quick installation
 
